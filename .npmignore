@@ -1,0 +1,7 @@
+.git
+src
+node_modules
+test
+.gitignore
+.travis.yml
+package-lock.json
