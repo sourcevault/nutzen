@@ -9,10 +9,9 @@ npm install sourcevault/hoplon#dist
 
 [![Build Status](https://travis-ci.org/sourcevault/hoplon.svg?branch=dev)](https://travis-ci.org/sourcevault/hoplon)
 
-`hoplon` provides a simple API to create Haskell / Elixir / Erlang style gaurds for graceful error handling :
+`hoplon` provides a simple API to create Haskell / Elixir / Erlang style gaurds for graceful error handling.
 
-1. [Introduction](#introduction)
-1. [API](#introduction)
+1. [API](#API)
 
 .. **quick examples** ..
 
@@ -26,14 +25,15 @@ var adder = hoplon
 .args(2,add)
 .args_not(2,() => console.log("only accepts 2 arugument"))
 ```
-If you notice we do not check if x, y are numbers, we can rewrite :
+
+If you notice we do not check if x, y are numbers, we can complete our error handling :
 
 ```js
 var bothNum = (x,y)=> (((typeof x) is "number") && ((typeof y) is "number"))
 
 var argE = () => console.log("only accepts 2 arugument")
 
-var typeE = () => console.log("only accepts 2 arugument")
+var typeE = () => console.log("argument type has to be number")
 
 var add = (x,y)=> x + y
 
@@ -44,28 +44,27 @@ var adder = hoplon
 ```
 This now allows us to cover both `typeError` and `argumentError` for the adder function.
 
-#### Introduction
+##### *Why ?*
 
-Gaurds are function wrappers that are commonly found in functional programming language, they help in making sure error handling code does not clutter core logic.
+Gaurds are function wrappers that are commonly found in functional programming language, they help in making sure error handling code does not clutter core logic. They are especially useful in languages such as javascipt that have virtually no type checks.
 
 #### API
 
 The API surface is kept small, we shall see with examples how to use each one of them:
 
-- `when` : `(function,function)` - first function should return a bloolean, which determines if second function is run or not.
+◾️ `when` : `(function,function)` - first function should return a bloolean, which determines if second function is run or not.
 
-- `when_not`: `(function,function)` - same as above but if the first function return `true` then the second function is **not** run.
+◾️ `when_not`: `(function,function)` - same as above but if the first function return `true` then the second function is **not** run.
 
-- `args` : `(number,function)` - function is run if argument number matches number provided to `hoplon.args`.
+◾️ `args` : `(number,function)` - function is run if argument number matches number provided to `hoplon.args`.
 
-- `args_not` : `(number,function)` - function is run if arguments provided by user **doesn't match** what is described in `hoplon.args_not`.
+◾️ `args_not` : `(number,function)` - function is run if `arguments.length` provided by user **doesn't match** what is described in hoplon object.
 
-- `args_when` : `(number,function,function)` - a combination of `args` and `when` operators, `number` is number of argument we are ready to accept, first function is a validator just like what we would use with `.when` and last function is what would run if the first two conditions are met.
+◾️ `args_when` : `(number,function,function)` - a combination of `args` and `when` operators, first argument is number of argument we are ready to accept, first function is a validator just like what we would use with `.when` and last function is what would run if the first two conditions are met.
 
-- `args_when_not` : `(number,function,function)` - just like `args_when` but if either conditions are not met ( argument or function ).
+◾️ `args_when_not` : `(number,function,function)` - just like `args_when` but if either conditions are not met ( argument or function ).
 
-- `rest` : `(function)` - in case `hoplon` is unable to match anything, it would resort to returning `undefined` unless a function is provided using `.rest`, in which case the return value of the function is used.
-
+◾️ `rest` : `(function)` - in case `hoplon` is unable to match anything, it would resort to returning `null` unless a function is added using `.rest`, in which case the return value of that function is used.
 
 ## LICENCE
 
