@@ -6,7 +6,7 @@
   "license": "MIT",
   "description": "Elixir type guards for javascript, but better.",
   "repository": "https://github.com/sourcevault/hoplon.git",
-  "version": "0.0.1",
+  "version": "0.0.11",
   "main": "dist/main.js",
   "scripts": {
     "test": "make travis"

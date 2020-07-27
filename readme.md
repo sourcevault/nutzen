@@ -1,5 +1,6 @@
 
-![](./logo.jpg)
+![](https://raw.githubusercontent.com/sourcevault/hoplon/dev/logo.jpg)
+<!-- ![](./logo.jpg) -->
 
 ```js
 npm install hoplon
@@ -9,7 +10,7 @@ npm install sourcevault/hoplon#dist
 
 [![Build Status](https://travis-ci.org/sourcevault/hoplon.svg?branch=dev)](https://travis-ci.org/sourcevault/hoplon)
 
-`hoplon` is a module to provide extensive support for the creation of functional gaurds, like that exists in Haskell / Elixir / Erlang for graceful error handling.
+`hoplon` is a module to provide extensive support for the creation of functional guards, like that exists in Haskell / Elixir / Erlang for graceful error handling.
 
 1. [Methods](#methods)
 1. [Shorthand](#shorthand)
@@ -47,7 +48,7 @@ This now allows us to cover both `typeError` and `argumentError` for the adder f
 
 ##### *Why ?*
 
-Gaurds are function wrappers that are commonly found in functional programming language, they help in making sure error handling code does not clutter core logic. They are especially useful in languages such as javascipt that have virtually no type checks.
+Guards are function wrappers that are commonly found in functional programming language, they help in making sure error handling code does not clutter core logic. They are especially useful in languages such as javascipt that have virtually no type checks.
 
 They also provide a powerful way to use pattern matching to structure our code and external API.
 
@@ -91,8 +92,4 @@ Each of the methods in the API have their own shorthands to reduce the need for 
 - Code released under MIT Licence, see [LICENSE](https://github.com/sourcevault/hoplon/blob/dist/LICENCE) for details.
 
 - Documentation and image released under CC-BY-4.0 see [LICENSE](https://github.com/sourcevault/hoplon/blob/dev/LICENCE1) for details.
-
-
-
-
 
