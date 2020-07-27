@@ -139,12 +139,4 @@ data =
 
 hoplon = binapi entry,(SI data)
 
-
-V = hoplon.ar do
-  1,(x) ->
-
-    'run me!'
-
-
-z V
-
+module.exports = hoplon
