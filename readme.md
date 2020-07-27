@@ -48,15 +48,15 @@ This now allows us to cover both `typeError` and `argumentError` for the adder f
 
 ##### *Why ?*
 
-Guards are function wrappers that are commonly found in functional programming language, they help in making sure error handling code does not clutter core logic. They are especially useful in languages such as javascipt that have virtually no type checks.
+Guards are function wrappers that are commonly found in functional programming language, they help in making sure error handling code does not clutter core logic. They are especially useful in languages such as javascript that have virtually no type checks.
 
 They also provide a powerful way to use pattern matching to structure our code and external API.
 
 ### Methods
 
-The API surface is fairly extentive to provide all types of niche functions to provide as much help to simplify creation of error handling in large codebases.
+The API surface is fairly extensive to provide all types of niche functions to provide as much help to simplify creation of error handling in large code-bases.
 
-◾️ `when` : `(function,function)` - first function should return a bloolean, which determines if second function is run or not.
+◾️ `when` : `(function,function)` - first function should return a boolean, which determines if second function is run or not.
 
 ◾️ `when_not`: `(function,function)` - same as above but if the first function return `true` then the second function is **not** run.
 
@@ -89,7 +89,7 @@ Each of the methods in the API have their own shorthands to reduce the need for 
 
 ## LICENCE
 
-- Code released under MIT Licence, see [LICENSE](https://github.com/sourcevault/hoplon/blob/dist/LICENCE) for details.
+- Code released under MIT License, see [LICENSE](https://github.com/sourcevault/hoplon/blob/dist/LICENCE) for details.
 
 - Documentation and image released under CC-BY-4.0 see [LICENSE](https://github.com/sourcevault/hoplon/blob/dev/LICENCE1) for details.
 
