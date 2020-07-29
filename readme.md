@@ -1,5 +1,5 @@
-<!-- ![](./logo.jpg) -->
-![](https://raw.githubusercontent.com/sourcevault/hoplon/dev/logo.jpg)
+
+![](./logo.jpg)
 
 ```js
 npm install hoplon
