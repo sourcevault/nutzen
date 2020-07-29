@@ -52,7 +52,7 @@
     str = "";
     for (i$ = 0, len$ = (ref$ = data.fns).length; i$ < len$; ++i$) {
       I = i$;
-      ref1$ = ref$[i$], fname = ref1$[0], lens = ref1$[1][0];
+      ref1$ = ref$[i$], fname = ref1$.fname, lens = ref1$.args[0];
       str += c.ok('- ' + fname);
       switch (fname) {
       case 'ar':
@@ -65,6 +65,10 @@
       if (I < data.fns.length - 1) {
         str += '\n';
       }
+    }
+    if (data.fault) {
+      str += '\n';
+      str += c.er("- " + (data.fault[1] + ' <[' + data.fault[2] + ']>'));
     }
     str += "\n-----\n";
     str += c.ok('def :');
@@ -99,7 +103,7 @@
   };
   printE.all_match_fail = function(){
     l(c.er("[" + pkgname + "][pattern.matching.error] unable to match arguments"));
-    l(c.warn("\n - direct call only matches arguments with following acceptable types :\n\n    (function)------(maps to)----> .def\n\n    (number,function)------------> .args\n\n    (function,function)----------> .when\n\n    (number,function,function)---> .args_when\n"));
+    l(c.warn("\n - direct call only matches arguments with following acceptable types :\n\n    (function|array)------(maps to)----> .def\n\n    (number,function/array)------------> .args\n\n    (function,function/array)----------> .when\n\n    (number,function,function/array)---> .args_when\n"));
     show_stack();
   };
   get_full_str = function(fname){
@@ -131,13 +135,13 @@
     data = (function(){
       switch (type) {
       case 'f':
-        return [1, '(function)'];
+        return [1, '(function|array)'];
       case 'nf':
-        return [2, '(number|[num...],function)'];
+        return [2, '(number|[num...],function|array)'];
       case 'ff':
-        return [2, '(function,function)'];
+        return [2, '(function,function|array)'];
       case 'nff':
-        return [3, '(number|[num...],function,function)'];
+        return [3, '(number|[num...],function,function|array)'];
       }
     }());
     switch (info) {
@@ -160,40 +164,41 @@
       case 'f':
         switch (info) {
         case 'fun':
-          return [c.ok('(') + c.er('function') + c.ok(')'), c.er('fun')];
+          return [c.er('function|array'), c.er('fun')];
         }
         break;
       case 'nf':
         switch (info) {
         case 'num':
-          return [c.ok("(") + c.er('number|array') + c.ok(',function') + c.ok(')'), c.er('num|array') + c.ok(',fun')];
+          return [c.er('number|[num...]') + c.ok(',function|array'), c.er('num|[num...]') + c.ok(',fun|arr')];
         case 'fun':
-          return [c.ok('(number,') + c.er('function') + c.ok(')'), c.ok('num,') + c.er('fun')];
+          return [c.ok('(number|[num...],') + c.er('function|array'), c.ok('num|[num...],') + c.er('fun|array')];
         case 'array':
-          return [c.ok("(") + c.er('[num..]') + c.ok(',function') + c.ok(')'), c.er('[num..]') + c.ok(',fun')];
+          return [c.er('[num..]') + c.ok(',function|array'), c.er('[num..]') + c.ok(',fun|array')];
         }
         break;
       case 'ff':
         switch (info) {
         case 'first':
-          return [c.ok('(') + c.er('function') + c.ok(',function') + c.ok(')'), c.er('fun') + c.ok(',fun')];
+          return [c.er('function') + c.ok(',function|array'), c.er('fun') + c.ok(',fun|array')];
         case 'second':
-          return [c.ok('(') + c.ok('function,') + c.er('function') + c.ok(')'), c.ok('fun,') + c.er('fun')];
+          return [c.ok('function,') + c.er('function|array'), c.ok('fun,') + c.er('fun|array')];
         }
         break;
       case 'nff':
         switch (info) {
         case 'num':
-          return [c.ok('(') + c.er('number|array') + c.ok(',function,function') + c.ok(')'), c.er('num|arr') + c.ok(',fun,fun')];
+          return [c.er('number|[num..]') + c.ok(',function,function|array'), c.er('num|[num..]') + c.ok(',fun,fun|array')];
         case 'array':
-          return [c.ok('(') + c.er('[num..]') + c.ok(',function,function') + c.ok(')'), c.er('[num..]') + c.ok(',fun,fun')];
+          return [c.er('[num..]') + c.ok(',function,function|array'), c.er('[num..]') + c.ok(',fun,fun|array')];
         case 'first':
-          return [c.ok('(') + c.ok('array/number,') + c.er("function") + c.ok(",function)"), c.ok('num|arr') + c.er("fun") + c.ok(',fun')];
+          return [c.ok('number[num..],') + c.er("function") + c.ok(",function|array"), c.ok('num|[num..]') + c.er("fun") + c.ok(',fun|array')];
         case 'second':
-          return [c.ok("(num|arr,function,") + c.er("function") + c.ok(")"), c.ok('num|arr,fun,') + c.ok('fun')];
+          return [c.ok("num|[num..],function,") + c.er("function|array"), c.ok('num|[num..],fun,') + c.ok('fun|array')];
         }
       }
     }());
+    parts[0] = c.ok("(") + parts[0] + c.ok(")");
     parts.push('One of the argument cannot be used by the function');
     return parts;
   };
@@ -208,16 +213,14 @@
     return show_stack();
   };
   printE.route = function(str, Er){
-    var __, outerE, _, eName, attr, fname, eType;
-    __ = Er[0], outerE = Er[1];
-    switch (outerE) {
+    var type, info1, info2;
+    type = Er[0], info1 = Er[1], info2 = Er[2];
+    switch (type) {
     case 'path':
-      _ = Er[0], __ = Er[1], eName = Er[2], attr = Er[3];
-      printE[eName](str, attr);
+      printE[info1](str, info2);
       break;
     case 'input':
-      _ = Er[0], __ = Er[1], fname = Er[2], eType = Er[3];
-      printE.typeError(fname, eType, str);
+      printE.typeError(info1, info2, str);
     }
   };
   module.exports = reg.printE;

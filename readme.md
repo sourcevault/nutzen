@@ -52,40 +52,61 @@ Guards are function wrappers that are commonly found in functional programming l
 
 They also provide a powerful way to use pattern matching to structure our code and external API.
 
-### Methods
+🟢 Figure 1 - shorthands for method names, method names and their types.
 
-The API surface is fairly extensive to provide all types of niche functions to provide as much help to simplify creation of error handling in large code-bases.
+|**SHORT**      |**LONG NAME**        |**TYPES**                                  |
+|:--------------|:--------------------|:------------------------------------------|
+| `ar`          | `args`              |`(number|[num...],function|array)`         |
+| `wh`          | `when`              |`(function,function|array)`                |
+| `whn`         | `when_not`          |`(function,function|array)`                |
+| `arn`         | `args_not`          |`(number|[num...],function|array)`         |
+| `arwh`        | `args_when`         |`(number|[num...],function,function|array)`|
+| `arwhn`       | `args_when_not`     |`(number|[num...],function,function|array)`|
+| `arnwhn`      | `args_not_when_not` |`(number|[num...],function,function|array)`|
+| `def`         | `default`           |`(function|array)`                         |
 
-◾️ `when` : `(function,function)` - first function should return a boolean, which determines if second function is run or not.
+### Method Description
 
-◾️ `when_not`: `(function,function)` - same as above but if the first function return `true` then the second function is **not** run.
+The API surface is kept large to provide as much help when it comes to writing error-handling logic in large codebases.
 
-◾️ `args` : `(number,function)` - function is run if argument number matches number provided to `hoplon.args`.
+◾️ `args` : `(number|[num...],function|array)`
 
-◾️ `args_not` : `(number,function)` - function is run if `arguments.length` provided by user **doesn't match** what is described in hoplon object.
+First argument can be an array of number or just a number, which describes how many arguments are acceptable before running the function provided in the second argument.
 
-◾️ `args_when` : `(number,function,function)` - a combination of `args` and `when` operators, first argument is number of argument we are ready to accept, first function is a validator just like what we would use with `.when` and last function is what would run if the first two conditions are met.
+Second argument can also just be an array, in which case, we just return an array.
 
-◾️ `args_when_not` : `(number,function,function)` - just like `args_when` but only runs if the validator function return false.
+◾️ `when` : `(function,function|array)`
 
-◾️ `args_not_when_not` : `(number,function,function)` - just like `args_when_not` but runs if either conditions fails ( argument or function ), ( since the method name is quite a mouthful, its better to use the shorthand `.arnwhn`).
+first function should return a boolean, which determines if second function is run or not.
 
-◾️ `default` : `(function)` - in case `hoplon` is unable to match anything, it would resort to returning `undefined` unless a function is added using `.default`, in which case the return value of that function is used.
+◾️ `when_not`: `(function,function|array)`
 
-### shorthand
+Same as above but if the first function return `true` then the second function is **not** run.
 
-Each of the methods in the API have their own shorthands to reduce the need for wordy method names, wordy method names are only provided for reference purposes, in fact we encourage the use of shorthands for committed code.
+◾️ `args_not` : `(number|[num...],function|array)`
 
-| short  | long              |
-|--------|-------------------|
-| ar     | args              |
-| wh     | when              |
-| whn    | when_not          |
-| arn    | args_not          |
-| arwh   | args_when         |
-| arwhn  | args_when_not     |
-| arnwhn | args_not_when_not |
-| def    | default           |
+Same as `args` but the functions added is only run if the argument.length **doesn't match** the values provided in the first argument to `args_not`.
+
+◾️ `args_when` : `(number|[num...],function,function|array)`
+
+A combination of `args` and `when` operators, first argument is number of argument we are ready to accept, first function is a validator just like what we would use with `.when` and last function is what would run if the first two conditions are met.
+
+◾️ `args_when_not` : `(number|[num...],function,function|array)`
+
+Just like `args_when` but only runs if the validator function return false.
+
+◾️ `args_not_when_not` : `(number|[num...],function,function|array)`
+
+Just like `args_when_not` but runs if either conditions fails ( argument or function ), ( since the method name is quite a mouthful, its better to use the shorthand `.arnwhn`).
+
+◾️ `default` : `(function|array)`
+
+In case `hoplon` is unable to match anything, it would resort to returning `undefined` unless a function is added using `.default`, in which case the return value of that function is used.
+
+#### `⛔️ Note ⛔️`
+
+All the methods accept array as their last value, this functionality is added to make it possible to easily return static values for efficient and easy pattern matching.
+
 
 ## LICENCE
 
