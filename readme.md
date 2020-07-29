@@ -9,7 +9,7 @@ npm install sourcevault/hoplon#dist
 
 [![Build Status](https://travis-ci.org/sourcevault/hoplon.svg?branch=dev)](https://travis-ci.org/sourcevault/hoplon)
 
-`hoplon` is a module to provide extensive support for the creation of functional guards, like that exists in Haskell / Elixir / Erlang for graceful error handling.
+`hoplon` is a small utility function to provide extensive support for creation of functional guards, like that exists in Haskell / Elixir / Erlang for graceful error handling.
 
 .. **quick examples** ..
 
@@ -102,8 +102,7 @@ In case `hoplon` is unable to match anything, it would resort to returning `unde
 
 #### `⛔️ Note ⛔️`
 
-All the methods accept array as their last value, this functionality is added to make it possible to easily return static values for efficient and easy pattern matching.
-
+All the methods accept array as their last value, functionality was added to make it possible to easily return static values for efficient and easy pattern matching.
 
 ## LICENCE
 
