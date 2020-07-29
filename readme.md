@@ -1,6 +1,5 @@
-
-![](https://raw.githubusercontent.com/sourcevault/hoplon/dev/logo.jpg)
 <!-- ![](./logo.jpg) -->
+![](https://raw.githubusercontent.com/sourcevault/hoplon/dev/logo.jpg)
 
 ```js
 npm install hoplon
@@ -11,9 +10,6 @@ npm install sourcevault/hoplon#dist
 [![Build Status](https://travis-ci.org/sourcevault/hoplon.svg?branch=dev)](https://travis-ci.org/sourcevault/hoplon)
 
 `hoplon` is a module to provide extensive support for the creation of functional guards, like that exists in Haskell / Elixir / Erlang for graceful error handling.
-
-1. [Methods](#methods)
-1. [Shorthand](#shorthand)
 
 .. **quick examples** ..
 
@@ -50,22 +46,23 @@ This now allows us to cover both `typeError` and `argumentError` for the adder f
 
 Guards are function wrappers that are commonly found in functional programming language, they help in making sure error handling code does not clutter core logic. They are especially useful in languages such as javascript that have virtually no type checks.
 
-They also provide a powerful way to use pattern matching to structure our code and external API.
+They also encourage efficient use of pattern matching to structure code and external API.
 
-🟢 Figure 1 - shorthands for method names, method names and their types.
+🟢 Figure 1 - shorthands for method names and their types.
 
-|**SHORT**      |**LONG NAME**        |**TYPES**                                  |
-|:--------------|:--------------------|:------------------------------------------|
-| `ar`          | `args`              |`(number|[num...],function|array)`         |
-| `wh`          | `when`              |`(function,function|array)`                |
-| `whn`         | `when_not`          |`(function,function|array)`                |
-| `arn`         | `args_not`          |`(number|[num...],function|array)`         |
-| `arwh`        | `args_when`         |`(number|[num...],function,function|array)`|
-| `arwhn`       | `args_when_not`     |`(number|[num...],function,function|array)`|
-| `arnwhn`      | `args_not_when_not` |`(number|[num...],function,function|array)`|
-| `def`         | `default`           |`(function|array)`                         |
-
-### Method Description
+```
+|SHORT          |LONG NAME            |TYPES                                      |
+|---------------|---------------------|-------------------------------------------|
+| ar            | args                | (number|[num...],function|array)          |
+| wh            | when                | (function,function|array)                 |
+| whn           | when_not            | (function,function|array)                 |
+| arn           | args_not            | (number|[num...],function|array)          |
+| arwh          | args_when           | (number|[num...],function,function|array) |
+| arwhn         | args_when_not       | (number|[num...],function,function|array) |
+| arnwhn        | args_not_when_not   | (number|[num...],function,function|array) |
+| def           | default             | (function|array)                          |
+```
+#### Method Descriptions
 
 The API surface is kept large to provide as much help when it comes to writing error-handling logic in large codebases.
 
