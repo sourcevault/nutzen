@@ -53,9 +53,9 @@ They also encourage efficient use of pattern matching to structure code and exte
 ```
 SHORT      LONG NAME           TYPES
 ---------------------------------------------------------------------------
-ma         match               (function)
 ar         args                (number|[num...],function|array)
 wh         when                (function,function|array)
+ma         match               (function)|f1,f2,...|[function....]
 whn        when_not            (function,function|array)
 arn        args_not            (number|[num...],function|array)
 arwh       args_when           (number|[num...],function,function|array)
@@ -77,7 +77,7 @@ Second argument can also just be an array, in which case, we just return an arra
 
 first function should return a boolean, which determines if second function is run or not.
 
-◾️ `match` : `(function)`
+◾️ `match` : `(function)|f1,f2,...|[function....]`
 
 It's common in `.when` operations to have **both** the validator and the return function be the same.
 

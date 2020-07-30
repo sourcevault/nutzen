@@ -33,18 +33,18 @@
     }
   };
   V.ma = function(args){
-    if (args.length > 1) {
-      return ['fault', 'many_args'];
-    }
+    var i$, len$, I;
     if (args.length === 0) {
       return ['fault', 'few_args'];
     }
-    switch (betterTypeof(args[0])) {
-    case 'function':
-      return ['f', args];
-    default:
-      return ['fault', 'first'];
+    args = R.flatten(args);
+    for (i$ = 0, len$ = args.length; i$ < len$; ++i$) {
+      I = args[i$];
+      if (!(typeof I === 'function')) {
+        return ['fault', 'typeError'];
+      }
     }
+    return ['f', args];
   };
   num = function(args){
     var i$, ref$, len$, i, v;

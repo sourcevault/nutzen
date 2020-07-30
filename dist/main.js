@@ -12,16 +12,18 @@
     });
   };
   resolve = function(data, input){
-    var arglen, i$, ref$, len$, ref1$, fname, args, type, f, ret, validator, lens, j$, len1$, I, def;
+    var arglen, i$, ref$, len$, ref1$, fname, args, type, j$, len1$, f, ret, validator, lens, I, def;
     arglen = input.length;
     for (i$ = 0, len$ = (ref$ = data.fns).length; i$ < len$; ++i$) {
       ref1$ = ref$[i$], fname = ref1$.fname, args = ref1$.args, type = ref1$.type;
       switch (fname) {
       case 'ma':
-        f = args[0];
-        ret = f.apply(null, input);
-        if (!(ret === undefined || ret === false)) {
-          return ret;
+        for (j$ = 0, len1$ = args.length; j$ < len1$; ++j$) {
+          f = args[j$];
+          ret = f.apply(null, input);
+          if (!(ret === undefined || ret === false)) {
+            return ret;
+          }
         }
         break;
       case 'wh':

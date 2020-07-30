@@ -4,9 +4,9 @@
   "email": "joykrishnamondal@gmail.com",
   "homepage": "https://github.com/sourcevault/hoplon#readme.md",
   "license": "MIT",
-  "description": "Elixir type guards for javascript, but better.",
+  "description": "Erlang/Elixir type guards for javascript, but with every imaginable method.",
   "repository": "https://github.com/sourcevault/hoplon.git",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "main": "dist/main.js",
   "scripts": {
     "test": "make travis"

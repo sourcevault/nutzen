@@ -92,12 +92,12 @@
   };
   printE.path_too_long = function(str, attr){
     l(c.er("[" + pkgname + "][api.error] path is too long"));
-    l('\n', gench(str) + c.er('.' + attr.join('.') + '(~)'), '\n');
+    l('\n', gench(str) + c.er('.' + attr.join('.') + '(xx)'), '\n');
     show_stack();
   };
   printE.def_is_defined = function(str){
     l(c.er("[" + pkgname + "][api.error]"));
-    l('\n', gench(str) + c.er('.def(~)'), '\n');
+    l('\n', gench(str) + c.er('.def(xx)'), '\n');
     l(c.warn("default function can't be defined more than once.\n"));
     show_stack();
   };
@@ -151,7 +151,7 @@
     data = (function(){
       switch (fname) {
       case 'ma':
-        return [1, '(function)'];
+        return [1, 'function|[fun....]'];
       case 'def':
         return [1, "(function|unknown)"];
       case 'ar':
@@ -168,9 +168,9 @@
     }());
     switch (eType) {
     case 'many_args':
-      return ["too many arguments", c.er("~"), "only " + data[0] + " arguments accepted\ntype : " + data[1]];
+      return ["too many arguments", c.er("xx"), "only " + data[0] + " arguments accepted\ntype : " + data[1]];
     case 'few_args':
-      return ["too few arguments", c.er("~"), "requires " + data[0] + " arguments\ntype : " + data[1]];
+      return ["too few arguments", c.er("xx"), "requires " + data[0] + " arguments\ntype : " + data[1]];
     }
   };
   StrEType = function(fname, eType){
@@ -184,7 +184,7 @@
     parts = (function(){
       switch (ctype) {
       case 'ma':
-        return [c.er('function'), c.er('<!--!>')];
+        return [c.er('function|[fun....]'), c.er('xx')];
       case 'def':
         return [c.er('function|unknown'), c.er('fun')];
       case 'ar':
