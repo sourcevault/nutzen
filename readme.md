@@ -51,16 +51,17 @@ They also encourage efficient use of pattern matching to structure code and exte
 🟢 Figure 1 - shorthands for method names and their types.
 
 ```
-|SHORT          |LONG NAME            |TYPES                                      |
-|---------------|---------------------|-------------------------------------------|
-| ar            | args                | (number|[num...],function|array)          |
-| wh            | when                | (function,function|array)                 |
-| whn           | when_not            | (function,function|array)                 |
-| arn           | args_not            | (number|[num...],function|array)          |
-| arwh          | args_when           | (number|[num...],function,function|array) |
-| arwhn         | args_when_not       | (number|[num...],function,function|array) |
-| arnwhn        | args_not_when_not   | (number|[num...],function,function|array) |
-| def           | default             | (function|array)                          |
+SHORT      LONG NAME           TYPES
+---------------------------------------------------------------------------
+ma         match               (function)
+ar         args                (number|[num...],function|array)
+wh         when                (function,function|array)
+whn        when_not            (function,function|array)
+arn        args_not            (number|[num...],function|array)
+arwh       args_when           (number|[num...],function,function|array)
+arwhn      args_when_not       (number|[num...],function,function|array)
+arnwhn     args_not_when_not   (number|[num...],function,function|array)
+def        default             (function|any)
 ```
 #### Method Descriptions
 
@@ -75,6 +76,16 @@ Second argument can also just be an array, in which case, we just return an arra
 ◾️ `when` : `(function,function|array)`
 
 first function should return a boolean, which determines if second function is run or not.
+
+◾️ `match` : `(function)`
+
+It's common in `.when` operations to have **both** the validator and the return function be the same.
+
+Making it redundant to have them run twice.
+
+`match` looks at the return value of the validator to find the return value itself.
+
+If `match` returns `false` or `undefined` then `hoplon` jumps to the next validator, in *any other value type* `hoplon` returns and breaks.
 
 ◾️ `when_not`: `(function,function|array)`
 
@@ -96,9 +107,11 @@ Just like `args_when` but only runs if the validator function return false.
 
 Just like `args_when_not` but runs if either conditions fails ( argument or function ), ( since the method name is quite a mouthful, its better to use the shorthand `.arnwhn`).
 
-◾️ `default` : `(function|array)`
+◾️ `default` : `(function|any)`
 
 In case `hoplon` is unable to match anything, it would resort to returning `undefined` unless a function is added using `.default`, in which case the return value of that function is used.
+
+It's also possible to just provide default a static value or object.
 
 #### `⛔️ Note ⛔️`
 
@@ -109,4 +122,3 @@ All the methods accept array as their last value, functionality was added to mak
 - Code released under MIT License, see [LICENSE](https://github.com/sourcevault/hoplon/blob/dist/LICENCE) for details.
 
 - Documentation and image released under CC-BY-4.0 see [LICENSE](https://github.com/sourcevault/hoplon/blob/dev/LICENCE1) for details.
-
