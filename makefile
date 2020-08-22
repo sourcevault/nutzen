@@ -35,6 +35,7 @@ travis:
 	done
 
 testy:
+	npm install --only=dev
 	lsc -co dist src
 	lsc -c test/*.ls
 	make pkg
@@ -42,4 +43,3 @@ testy:
 
 w.testy:
 	nodemon --exec "make testy" ${TEST_FILES} ${SRC_FILES}
-

@@ -1,12 +1,28 @@
 
+com = require "./common"
+
 reg = {}
 
   ..packageJ   = {}
     ..name     = \hoplon
     ..homepage = \https://github.com/sourcevault/hoplon#readme.md
 
-  printE = {}
+  ..com = com
+
+  ..already_created = new Set!
+
+  ..self = Symbol "self"
+
+  ..print = {}
     ..fail = null
+    ..route = null
+
+
+  ..betterTypeof = null
+
+  ..verify = {}
+
+  ..main = {}
 
 
 module.exports = reg

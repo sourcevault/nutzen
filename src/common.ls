@@ -1,12 +1,10 @@
 # --------------------------------------------------------------------------------------
 
-js-render     = require 'json-stringify-pretty-compact'
-
 R             = require "ramda"
 
-SI            = require "seamless-immutable"
+chalk         = require "chalk"
 
-reg           = require "./registry"
+pretty-error  = require "pretty-error"
 
 # --------------------------------------------------------------------------------------
 
@@ -16,16 +14,30 @@ z = l
 
 noop = !->
 
-j = (json) !-> l js-render json
+#--------------------------------------------------------------------------------------
+
+if (typeof window is "undefined") and (typeof module is "object")
+
+  util = require "util"
+
+  util_inspect_custom = util.inspect.custom
+
+
+else
+
+  util_inspect_custom = Symbol.for "nodejs.util.inspect.custom"
+
+#--------------------------------------------------------------------------------------
 
 
 main =
-  j                   : j
   z                   : z
   R                   : R
   l                   : l
-  SI                  : SI
-  reg                 : reg
   noop                : noop
+  chalk               : chalk
+  pretty-error        : pretty-error
+  util_inspect_custom : util_inspect_custom
+
 
 module.exports = main
