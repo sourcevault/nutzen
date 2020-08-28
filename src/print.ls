@@ -117,14 +117,9 @@ print.log =  ->
 
   str += "\n"
   str += "-----------------"
-  str += "\n"
-
-  str +=  c.ok "def   :"
 
   if state.def
-    str +=  c.ok " [function]|any"
-  else
-    str += c.warn " undefined"
+    str +=  c.ok " \n- def"
 
   str
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -

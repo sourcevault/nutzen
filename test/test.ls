@@ -26,14 +26,8 @@ adder = hop
 .whn bothNum,typeE
 .arn 2,argE
 .ar 2,add
+.def 1
 
-if not ((adder.pipe 2,4) is 6)
-  p!
-
-w = adder.wrap!
-
-if not ((w 2,4) is 6)
-  p!
 
 
 
