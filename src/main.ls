@@ -4,7 +4,7 @@ require "./print" # [...load print.js...]
 
 require "./verify" # [...load print.js...]
 
-{com,already_created,verify,self,print,main} = reg
+{com,already_created,verify,modflag,print,main} = reg
 
 #---------------------------------------------------
 
@@ -15,11 +15,13 @@ require "./verify" # [...load print.js...]
 #---------------------------------------------------
 
 init =
-  str   :[]
-  fns   :[]
-  def   :null
-  ldef  :false
-  fault :false
+  str      :[]
+  fns      :[]
+  def      :null
+  ldef     :false
+  fault    :false
+  immutable:false
+  mutelog  :false
 
 #---------------------------------------------------
 #---------------------------------------------------
@@ -38,7 +40,7 @@ settle = (F,A) ->
 
 main.pipe =  !->
 
-  state = @[self]
+  state = @[modflag]
 
   if state is undefined
     print.route void,[\state_undefined]
@@ -284,6 +286,7 @@ main.pipe =  !->
   def = state.def
 
   if def
+
     return settle def,arguments
 
 
@@ -305,13 +308,15 @@ looper = (state) ->
 
   already_created.add instance
 
-  instance[self] = state
+  instance[modflag] = state
 
   instance
 
 handle = {}
 
-handle.fault = (state,data,fname) ->
+handle.fault = (self,data,fname) ->
+
+  state = self[modflag]
 
   FT = [\input,fname,data]
 
@@ -321,41 +326,71 @@ handle.fault = (state,data,fname) ->
 
   looper neo
 
-handle.ok = (state,data,fname)->
+handle.ok = (self,data,fname)->
 
-  fns = state.fns.concat {fname:fname,data:data}
+  state = self[modflag]
 
-  neo = Object.assign {},state,{fns:fns,str:(state.str.concat fname)}
+  if (state.immutable) or (state.str.length is 0)
 
+    fns = state.fns.concat {fname:fname,data:data}
 
-  looper neo
+    neo = Object.assign {},state,{fns:fns,str:(state.str.concat fname)}
+
+    looper neo
+
+  else
+
+    state.fns.push {fname:fname,data:data}
+
+    state.str.push fname
+
+    neo = state
+
+    self
 
 handle.def = {}
 
-handle.def.ok = (state,data)->
+handle.def.ok = (self,data)->
 
-  neo = Object.assign do
-    {}
-    state
-    {
-      def:data
-      str:state.str.concat \def
-      ldef:true
-    }
+  state = self[modflag]
 
-  looper neo
+  if (state.immutable) or (state.str.length is 0)
+
+    neo = Object.assign do
+      {}
+      state
+      {
+        def:data
+        str:state.str.concat \def
+        ldef:true
+      }
+
+    looper neo
+
+  else
+
+    state.def = data
+
+    state.str.push state.str.push \def
+
+    state.ldef = true
+
+    neo = state
+
+    self
+
 
 handle.def.fault = handle.fault
 
 genfun = (vfun,fname) -> ->
 
-  state = @[self]
+  state = @[modflag]
 
   if state.fault then return @
 
   [zone,data] = vfun arguments
 
-  handle[zone] state,data,fname
+  handle[zone] @,data,fname
 
 #---------------------------------------------------
 #---------------------------------------------------
@@ -366,7 +401,7 @@ main[util_inspect_custom] = print.log
 
 main.def =  ->
 
-  state = @[self]
+  state = @[modflag]
 
   if state.fault then return @
 
@@ -382,7 +417,7 @@ main.def =  ->
 
   [zone,data] = verify.def arguments
 
-  handle.def[zone] state,data,\def
+  handle.def[zone] @,data,\def
 
 props = [\ma \wh \ar \whn \arn \arwh \arnwh \arwhn \arnwhn]
 
@@ -402,7 +437,34 @@ R.reduce do
 
 hoplon = looper init
 
+hoplon.immutable = looper Object.assign do
+  {}
+  init
+  {immutable:true}
+
+hoplon.mutelog = looper Object.assign do
+  {}
+  init
+  {mutelog:true}
+
+hoplon.immutable.mutelog = looper Object.assign do
+  {}
+  init
+  {immutable:true,mutelog:true}
+
+hoplon.mutelog.immutable = looper Object.assign do
+  {}
+  init
+  {immutable:true,mutelog:true}
+
+# ------------------------------------------------
+
+Object.freeze hoplon
+
 reg.hoplon = hoplon
 
-
 module.exports = hoplon
+
+
+
+

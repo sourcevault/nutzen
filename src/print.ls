@@ -4,7 +4,8 @@ reg = require "./registry"
 
 {z,chalk,l,pretty-error,R} = com
 
-{self} = reg
+{modflag} = reg
+
 
 print = reg.print
 
@@ -19,7 +20,6 @@ c = {}
 
 help =
   c.black "[  docs] #{packageJ.homepage}"
-
 
 # -------------------------------------------------------------------------------------------------------
 
@@ -47,15 +47,39 @@ pe.appendStyle do
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
 
+
 print.log =  ->
 
   str = ""
 
-  state = @[self]
+  state = @[modflag]
+
+  if state.mutelog
+
+    if state.fault
+      return c.err "[error.#{packageJ.name}]"
+
+    if state.immutable
+      return c.ok "[immutable.#{packageJ.name}]"
+
+    else
+      return c.warn "[mutable.#{packageJ.name}]"
+
 
   if state is undefined
 
     return [ I for I of main]
+
+  switch state.immutable
+  | true  =>
+    str += c.ok "[   immutable   ]"
+  | false =>
+    str += c.warn "[    mutable    ]"
+
+  str += "\n"
+  str += "-----------------"
+  str += "\n"
+
 
 
   for {fname,data},I in state.fns
@@ -91,7 +115,9 @@ print.log =  ->
     str += c.er "- ERROR : | #{fname} | #{innertxt}"
 
 
-  str += "\n-----\n"
+  str += "\n"
+  str += "-----------------"
+  str += "\n"
 
   str +=  c.ok "def   :"
 
@@ -295,8 +321,6 @@ print.state_undefined = !->
     \r  .pipe might be used as a callback, use .wrap instead.
 
       """
-
-
 
   show_stack!
 

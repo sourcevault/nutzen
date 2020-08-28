@@ -19,7 +19,7 @@
     return x + y;
   };
   hop = hoplon;
-  adder = hoplon.whn(bothNum, typeE).arn(2, argE).ar(2, add);
+  adder = hop.whn(bothNum, typeE).arn(2, argE).ar(2, add);
   if (!(adder.pipe(2, 4) === 6)) {
     p();
   }

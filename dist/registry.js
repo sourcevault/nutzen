@@ -8,7 +8,7 @@
   y$.homepage = 'https://github.com/sourcevault/hoplon#readme.md';
   x$.com = com;
   x$.already_created = new Set();
-  x$.self = Symbol("self");
+  x$.modflag = Symbol("modflag");
   z$ = x$.print = {};
   z$.fail = null;
   z$.route = null;

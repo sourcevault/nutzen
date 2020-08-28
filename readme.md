@@ -47,10 +47,6 @@ adder(1,2) // 3
 ```
 This now allows us to cover both `typeError` and `argumentError` for the adder function.
 
-#### `⛔️ Note ⛔️`
-
-Calling site arguments are passed in an array as first argument to downstream functions.
-
 ##### *Why ?*
 
 Guards are function wrappers that are commonly found in functional programming language, they help in making sure error handling code does not clutter core logic. They are especially useful in languages such as javascript that have virtually no type checks.
@@ -181,7 +177,30 @@ var adderF = adder.wrap() // 3
 adderF(1,2) // 3
 ```
 
+### Immutable hoplon
+
+In case immutable chain is needed, hoplon offers immutability through `hoplon.immutable` namespace.
+
+```js
+var ihop = hoplon.immutable
+
+var init = ihop
+.def(=> console.log ("wrong number of arguments"))
+
+var add2 = init.ar(2,(x,y)=> x + y)
+
+var add3 = init.ar(3,(x,y,z)=> x + y + z)
+
+console.log (add2 == add3) // false
+```
+
+#### `hoplon.mutelog` `hoplon.immutable.mutelog`
+
+hoplon's default log messages are quite detailed, in case the details need to be muted, `.mutelog` option is provided.
+
 #### Update and API change
+
+◾️ `0.0.18` - hoplon have been made mutable by default, immutublity moved to `hoplon.immutable`. `mutelog` option added.
 
 ◾️ `0.0.17` - internal rewrite to improve performance.
 

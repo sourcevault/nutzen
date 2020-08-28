@@ -11,7 +11,7 @@ reg = {}
 
   ..already_created = new Set!
 
-  ..self = Symbol "self"
+  ..modflag = Symbol "modflag"
 
   ..print = {}
     ..fail = null
