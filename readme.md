@@ -1,5 +1,4 @@
-
-![](https://raw.githubusercontent.com/sourcevault/hoplon/dev/logo.jpg)
+![](./logo.jpg)
 
 ```js
 npm install hoplon
@@ -48,10 +47,6 @@ adder(1,2) // 3
 ```
 This now allows us to cover both `typeError` and `argumentError` for the adder function.
 
-#### `⛔️ Note ⛔️`
-
-Calling site arguments are passed in an array as first argument to downstream functions.
-
 ##### *Why ?*
 
 Guards are function wrappers that are commonly found in functional programming language, they help in making sure error handling code does not clutter core logic. They are especially useful in languages such as javascript that have virtually no type checks.
@@ -62,7 +57,7 @@ They also encourage efficient use of pattern matching to structure code and exte
 
 ```
 METHOD NAME      EXPANDED            TYPES
-----------------------------------------------------------------------
+----------------------------------------------------------------------------
 ar               args                (number|[num...],function|any)
 wh               when                (function,function|any)
 whn              when not            (function,function|any)
@@ -71,10 +66,10 @@ arwh             args when           (number|[num...],function,function|any)
 arnwh            args not when       (number|[num...],function,function|any)
 arwhn            args when not       (number|[num...],function,function|any)
 arnwhn           args not when not   (number|[num...],function,function|any)
-----------------------------------------------------------------------
+----------------------------------------------------------------------------
 ma               match               (function)|f1,f2,...|[function....]
 def              default             (function|any)
-----------------------------------------------------------------------
+----------------------------------------------------------------------------
 pipe                            (see below)
 wrap                            (see below)
 ```
@@ -85,7 +80,7 @@ wrap                            (see below)
 ```
 METHOD NAME   TYPES
               ARG 1             ARG 2          ARG 3
---------------------------------------------------------
+-----------------------------------------------------------
 ar            number|[num...]  function|any
 wh            function         function|any
 whn           function         function|any
@@ -182,7 +177,30 @@ var adderF = adder.wrap() // 3
 adderF(1,2) // 3
 ```
 
+### Immutable hoplon
+
+In case immutable chain is needed, hoplon offers immutability through `hoplon.immutable` namespace.
+
+```js
+var ihop = hoplon.immutable
+
+var init = ihop
+.def(=> console.log ("wrong number of arguments"))
+
+var add2 = init.ar(2,(x,y)=> x + y)
+
+var add3 = init.ar(3,(x,y,z)=> x + y + z)
+
+console.log (add2 == add3) // false
+```
+
+#### `hoplon.mutelog` `hoplon.immutable.mutelog`
+
+hoplon's default log messages are quite detailed, in case the details need to be muted, `.mutelog` option is provided.
+
 #### Update and API change
+
+◾️ `0.0.18` - hoplon have been made mutable by default, immutublity moved to `hoplon.immutable`. `mutelog` option added.
 
 ◾️ `0.0.17` - internal rewrite to improve performance.
 
