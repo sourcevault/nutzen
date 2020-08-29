@@ -20,7 +20,8 @@ V_outer = hop
 .wh do
   -> true
   V_inner
-.wrap!
+.def null
+
 
 
 ret = V_outer [1,2,4],[1,2,4]

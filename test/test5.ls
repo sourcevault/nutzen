@@ -10,7 +10,7 @@ wait = (t,f) -> setTimeout f,t
 
 {com,print,hoplon} = reg
 
-{z,l,binapi,R} = com
+{z,l,R} = com
 
 betterTypeof = reg.betterTypeof
 
@@ -40,34 +40,33 @@ V = hop.ar 1, do
     type_str
     type_num
   .def 4
+.def null
 
 # ------- -----------------------------------------------
 
 A = [\integer,\boolean,\bill,\string,\obama,\arena]
 
-W = V.wrap!
+# <- wait 500
 
-<- wait 500
+# suite
+# .add \pipe,->
 
-suite
-.add \pipe,->
+#   I = 0
 
-  I = 0
+#   for K from 0 to 100
 
-  for K from 0 to 100
+#     I += V A[Math.round((A.length - 1)*Math.random!)]
 
-    I += V.pipe A[Math.round((A.length - 1)*Math.random!)]
+# .add \wrap,->
 
-.add \wrap,->
+#   I = 0
 
-  I = 0
+#   for K from 0 to 100
 
-  for K from 0 to 100
-
-    I += W A[Math.round((A.length - 1)*Math.random!)]
+#     I += W A[Math.round((A.length - 1)*Math.random!)]
 
 
-.on \cycle, (e)-> l String e.target
+# .on \cycle, (e)-> l String e.target
 
-# .run!
+# # .run!
 

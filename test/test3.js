@@ -14,7 +14,7 @@
   });
   V_outer = hop.wh(function(){
     return true;
-  }, V_inner).wrap();
+  }, V_inner).def(null);
   ret = V_outer([1, 2, 4], [1, 2, 4]);
   if (!ret) {
     p();

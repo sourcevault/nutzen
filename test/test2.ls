@@ -30,7 +30,7 @@ dum2 = (str) ->
 
 V = hop
 .ma dum1,dum2
-.wrap!
+.def null
 
 out = V \obj
 

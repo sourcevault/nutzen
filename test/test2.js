@@ -23,7 +23,7 @@
       return 'map';
     }
   };
-  V = hop.ma(dum1, dum2).wrap();
+  V = hop.ma(dum1, dum2).def(null);
   out = V('obj');
   if (!(out === 'object')) {
     p();

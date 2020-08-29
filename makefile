@@ -35,7 +35,6 @@ travis:
 	done
 
 testy:
-	npm install --only=dev
 	lsc -co dist src
 	lsc -c test/*.ls
 	make pkg

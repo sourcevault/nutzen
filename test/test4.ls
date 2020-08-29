@@ -6,7 +6,7 @@ require "../dist/main" # [..load main.js ..]
 
 {com,print,hoplon} = reg
 
-{z,l,binapi} = com
+{z,l} = com
 
 betterTypeof = reg.betterTypeof
 
@@ -32,7 +32,7 @@ type_str = (x) ->
 V = hop.ar 1,
   hop.ma type_str,type_num
   .def ["FROM UDEF"]
-.wrap!
+.def null
 
 out = V "integer"
 
