@@ -6,6 +6,9 @@ chalk         = require "chalk"
 
 pretty-error  = require "pretty-error"
 
+binapi        = require "binapi"
+
+
 # --------------------------------------------------------------------------------------
 
 l = console.log
@@ -31,13 +34,14 @@ else
 
 
 main =
-  z                   : z
-  R                   : R
-  l                   : l
-  noop                : noop
-  chalk               : chalk
-  pretty-error        : pretty-error
-  util_inspect_custom : util_inspect_custom
+  z             : z
+  R             : R
+  l             : l
+  noop          : noop
+  chalk         : chalk
+  binapi        : binapi
+  pretty-error  : pretty-error
+  uic           : util_inspect_custom
 
 
 module.exports = main

@@ -22,11 +22,12 @@ add = (x,y) -> x + y
 
 hop = hoplon
 
-adder = hop
+F1 = hop
 .whn bothNum,typeE
 .arn 2,argE
 .ar 2,add
 .def 1
+
 
 
 

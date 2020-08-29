@@ -6,7 +6,6 @@ reg = require "./registry"
 
 {modflag} = reg
 
-
 print = reg.print
 
 packageJ = reg.packageJ
@@ -47,12 +46,19 @@ pe.appendStyle do
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
 
+print.log = {}
 
-print.log =  ->
+print.log.proto = -> print.log.main @[modflag]
+
+print.log.wrap = (state) -> -> print.log.main state
+
+print.log.main = (state) ->
 
   str = ""
 
-  state = @[modflag]
+  if state is undefined
+
+    return [ I for I of main]
 
   if state.mutelog
 
@@ -65,11 +71,6 @@ print.log =  ->
     else
       return c.warn "[mutable.#{packageJ.name}]"
 
-
-  if state is undefined
-
-    return [ I for I of main]
-
   switch state.immutable
   | true  =>
     str += c.ok "[   immutable   ]"
@@ -79,8 +80,6 @@ print.log =  ->
   str += "\n"
   str += "-----------------"
   str += "\n"
-
-
 
   for {fname,data},I in state.fns
 
@@ -303,43 +302,10 @@ print.typeError = (data,fname,attribute) ->
 
   show_stack!
 
-print.state_undefined = !->
 
-  l do
-    c.err "[#{packageJ.name}][runtime.error]"
-
-  l do
-    c.warn """
-
-    \r  untethered .pipe.
-
-    \r  .pipe might be used as a callback, use .wrap instead.
-
-      """
-
-  show_stack!
-
-print.def_is_defined = (data) !->
-
-  l do
-    c.err "[#{packageJ.name}][api.error]"
-    c.er "multiple .def"
-
-  l do
-    '\n'
-    show_chain data,['def'],false
-    '\n'
-
-  l c.warn "default function can't be defined more than once.\n"
-
-
-  show_stack!
-
-
-print.route = (data,Er) !->
+print.route = ([Er,data]) !->
 
   [ECLASS,whichE,info] = Er
-
 
   switch ECLASS
   | \input =>
@@ -351,9 +317,6 @@ print.route = (data,Er) !->
       fname
       arg_placement
 
-  | \def_is_defined  => print.def_is_defined data
-
-  | \state_undefined  => print.state_undefined!
 
   | otherwise => l Er
 

@@ -2,8 +2,6 @@ reg = require "./registry"
 
 {com,verify,print,sig} = reg
 
-{already_created} = reg
-
 {z,R} = com
 
 V = verify
@@ -11,9 +9,6 @@ V = verify
 betterTypeof = (x) ->
 
   type = typeof x
-
-  if already_created.has x
-    return \self
 
   if (type is \object)
     if (Array.isArray x)
@@ -40,7 +35,6 @@ V.def = (args) ->
 
   switch betterTypeof f
   | \function => [\ok,[\f,f]]
-  | \self     => [\ok,[\o,f]]
   | otherwise => [\ok,[\s,f]] # static
 
 V.num = (num) ->
@@ -75,7 +69,6 @@ V.ar = (args) ->
 
   switch betterTypeof fun
   | \function     => ret.push [\f,fun]
-  | \self         => ret.push [\o,fun]
   | otherwise     => ret.push [\s,fun]
 
   [\ok,ret]
@@ -94,12 +87,10 @@ V.wh = (args) ->
 
   switch betterTypeof validator
   | \function => ret.push [\f,validator]
-  | \self     => ret.push [\o,validator]
   | otherwise => return [\fault,\first]
 
   switch betterTypeof ap
   | \function => ret.push [\f,ap]
-  | \self     => ret.push [\o,ap]
   | otherwise => ret.push [\s,ap]
 
   [\ok,ret]
@@ -119,7 +110,6 @@ V.ma = (arg-obj) ->
   for I in args
     switch betterTypeof I
     | \function => ret.push [\f,I]
-    | \self     => ret.push [\o,I]
     | otherwise => return [\fault,\typeError]
 
   [\ok,ret]
@@ -144,14 +134,12 @@ V.arwh = (args) ->
 
   switch betterTypeof validator
   | \function     => ret.push [\f,validator]
-  | \self         => ret.push [\s,validator]
   | otherwise     => return [\fault,\second]
 
   type = betterTypeof ap
 
   switch type
   | \function     => ret.push [\f,ap]
-  | \self         => ret.push [\o,ap]
   | otherwise     => ret.push [\s,ap]
 
   [\ok,ret]

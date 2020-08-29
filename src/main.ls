@@ -8,9 +8,7 @@ require "./verify" # [...load print.js...]
 
 #---------------------------------------------------
 
-{l,z,R} = com
-
-{util_inspect_custom} = com
+{l,z,R,uic} = com
 
 #---------------------------------------------------
 
@@ -18,7 +16,6 @@ init =
   str      :[]
   fns      :[]
   def      :null
-  ldef     :false
   fault    :false
   immutable:false
   mutelog  :false
@@ -34,17 +31,9 @@ settle = (F,A) ->
 
   switch ftype
   | \f => f ...A
-  | \o => f.pipe ...A
   | \s => f
 
-
-main.pipe =  !->
-
-  state = @[modflag]
-
-  if state is undefined
-    print.route void,[\state_undefined]
-    return null
+tightloop =  (state) -> ->
 
   arglen = arguments.length
 
@@ -289,14 +278,6 @@ main.pipe =  !->
 
     return settle def,arguments
 
-
-main.wrap = ->
-
-  state = @
-
-  -> main.pipe.apply state,arguments
-
-#---------------------------------------------------
 #---------------------------------------------------
 #---------------------------------------------------
 #---------------------------------------------------
@@ -305,8 +286,6 @@ main.wrap = ->
 looper = (state) ->
 
   instance = Object.create main
-
-  already_created.add instance
 
   instance[modflag] = state
 
@@ -320,11 +299,12 @@ handle.fault = (self,data,fname) ->
 
   FT = [\input,fname,data]
 
-  print.route state,FT
+  print.route [FT,state]
 
   neo = Object.assign {},state,{fault:FT}
 
   looper neo
+
 
 handle.ok = (self,data,fname)->
 
@@ -350,35 +330,23 @@ handle.ok = (self,data,fname)->
 
 handle.def = {}
 
-handle.def.ok = (self,data)->
+handle.def.ok = (self,data) ->
 
   state = self[modflag]
 
-  if (state.immutable) or (state.str.length is 0)
+  neo = Object.assign do
+    {}
+    state
+    {
+      def:data
+      str:state.str.concat \def
+    }
 
-    neo = Object.assign do
-      {}
-      state
-      {
-        def:data
-        str:state.str.concat \def
-        ldef:true
-      }
+  F  = tightloop neo
 
-    looper neo
+  F[uic] = print.log.wrap neo
 
-  else
-
-    state.def = data
-
-    state.str.push state.str.push \def
-
-    state.ldef = true
-
-    neo = state
-
-    self
-
+  F
 
 handle.def.fault = handle.fault
 
@@ -397,23 +365,13 @@ genfun = (vfun,fname) -> ->
 #---------------------------------------------------
 #---------------------------------------------------
 
-main[util_inspect_custom] = print.log
+main[uic] = print.log.proto
 
 main.def =  ->
 
   state = @[modflag]
 
   if state.fault then return @
-
-  if state.ldef
-
-    fault-type = [\def_is_defined,\def,'']
-
-    print.route state,fault-type
-
-    neo = Object.assign {},state,{fault:fault-type}
-
-    return looper neo
 
   [zone,data] = verify.def arguments
 
