@@ -37,10 +37,27 @@
       display: "none"
     }
   });
-  print.log = function(){
-    var str, state, I, i$, ref$, len$, ref1$, fname, data, spans, fdata, type, lens, ECLASS, innertxt;
+  print.log = {};
+  print.log.proto = function(){
+    return print.log.main(this[modflag]);
+  };
+  print.log.wrap = function(state){
+    return function(){
+      return print.log.main(state);
+    };
+  };
+  print.log.main = function(state){
+    var str, I, i$, ref$, len$, ref1$, fname, data, spans, fdata, type, lens, ECLASS, innertxt;
     str = "";
-    state = this[modflag];
+    if (state === undefined) {
+      return (function(){
+        var results$ = [];
+        for (I in main) {
+          results$.push(I);
+        }
+        return results$;
+      }());
+    }
     if (state.mutelog) {
       if (state.fault) {
         return c.err("[error." + packageJ.name + "]");
@@ -50,15 +67,6 @@
       } else {
         return c.warn("[mutable." + packageJ.name + "]");
       }
-    }
-    if (state === undefined) {
-      return (function(){
-        var results$ = [];
-        for (I in main) {
-          results$.push(I);
-        }
-        return results$;
-      }());
     }
     switch (state.immutable) {
     case true:
@@ -248,30 +256,14 @@
     l(c.black(type) + "\n");
     return show_stack();
   };
-  print.state_undefined = function(){
-    l(c.err("[" + packageJ.name + "][runtime.error]"));
-    l(c.warn("\n\r  untethered .pipe.\n\n\r  .pipe might be used as a callback, use .wrap instead.\n"));
-    show_stack();
-  };
-  print.def_is_defined = function(data){
-    l(c.err("[" + packageJ.name + "][api.error]"), c.er("multiple .def"));
-    l('\n', show_chain(data, ['def'], false), '\n');
-    l(c.warn("default function can't be defined more than once.\n"));
-    show_stack();
-  };
-  print.route = function(data, Er){
-    var ECLASS, whichE, info, __, fname, arg_placement;
+  print.route = function(arg$){
+    var Er, data, ECLASS, whichE, info, __, fname, arg_placement;
+    Er = arg$[0], data = arg$[1];
     ECLASS = Er[0], whichE = Er[1], info = Er[2];
     switch (ECLASS) {
     case 'input':
       __ = Er[0], fname = Er[1], arg_placement = Er[2];
       print.typeError(data, fname, arg_placement);
-      break;
-    case 'def_is_defined':
-      print.def_is_defined(data);
-      break;
-    case 'state_undefined':
-      print.state_undefined();
       break;
     default:
       l(Er);

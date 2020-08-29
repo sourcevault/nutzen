@@ -23,7 +23,7 @@ var add = (x,y)=> x + y
 var adder = hoplon
 .ar(2,add)
 .arn(2,() => console.log("only accepts 2 arugument"))
-.wrap()
+.def(null) // always provide a default when all match fails.
 
 adder(1,3) // 4
 ```
@@ -43,7 +43,7 @@ var adder = hoplon
 .arn(2,argE)
 .whn(bothNum,typeE)
 .ar(2,add)
-.wrap()
+.def(null)
 
 adder(1,2) // 3
 ```
@@ -72,8 +72,6 @@ arnwhn           args not when not   (number|[num...],function,function|any)
 ma               match               (function)|f1,f2,...|[function....]
 def              default             (function|any)
 ----------------------------------------------------------------------------
-pipe                            (see below)
-wrap                            (see below)
 ```
 
 
@@ -135,12 +133,6 @@ Just like `arwh` but only runs if the arguments do not match.
 
 Just like `arwhn` but runs if either conditions fails ( argument or function ), ( since the method name is quite a mouthful, its better to use the shorthand `.arnwhn`).
 
-◾️ `def` : `(function|any)`
-
-In case `hoplon` is unable to match anything, it would resort to returning `undefined` unless a function is added using `.def`, in which case the return value of that function is used.
-
-It's also possible to just provide a static value or object as default.
-
 ◾️ `ma` : `(function)|[function....]|f1,f2,...`
 
 It's common in `.wh` operations to have **both** the validator and the return function be the same.
@@ -151,33 +143,17 @@ Making it redundant to have them run twice.
 
 If `ma` returns `false` or `undefined` then `hoplon` jumps to the next validator, in *any other value type* `hoplon` returns and breaks.
 
-#### `⛔️ Note ⛔️`
+◾️ `def` : `(function|any)`
 
-All the methods also accept **non-functions** as their last value, functionality was added to make it possible to easily return static values for efficient and easy pattern matching.
+In case `hoplon` is unable to match anything, the return value of the function added to `.def`  is used.
 
-### `.pipe` and `.wrap`
+It's also possible to just provide a static value or object as default.
 
-To actually use a `hoplon`, there are two options, `.pipe` and `.wrap`.
+`⛔️ Note ⛔️`
 
-`.pipe` - for situations where `hoplon` is not being used in a callback.
+- Each hoplon object **always** has to end with a `.def`.
 
-`.wrap` - provides a function with the `hoplon` object bound in a closure, this can be used in a callback.
-
-
-Using the adder example from above :
-
-```js
-var adder = hoplon
-.arn(2,argE)
-.whn(bothNum,typeE)
-.ar(2,add)
-
-adder.pipe(1,2) // 3
-
-var adderF = adder.wrap() // 3
-
-adderF(1,2) // 3
-```
+- all the methods also accept **non-functions** as their last value, functionality was added to make it possible to easily return static values for efficient and easy pattern matching.
 
 ### Immutable hoplon
 
@@ -196,9 +172,9 @@ var add3 = init.ar(3,(x,y,z)=> x + y + z)
 console.log (add2 == add3) // false
 ```
 
-#### `hoplon.mutelog` `hoplon.immutable.mutelog`
+#### `hoplon.mutelog` and `hoplon.immutable.mutelog`
 
-hoplon's default log messages are quite detailed, in case the details need to be muted, `.mutelog` option is provided.
+hoplon's default log messages are quite detailed, in case the details need to be muted, `.mutelog` shortens the description.
 
 #### Update and API change
 
