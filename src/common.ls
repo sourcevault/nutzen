@@ -6,9 +6,6 @@ chalk         = require "chalk"
 
 pretty-error  = require "pretty-error"
 
-binapi        = require "binapi"
-
-
 # --------------------------------------------------------------------------------------
 
 l = console.log
@@ -39,7 +36,6 @@ main =
   l             : l
   noop          : noop
   chalk         : chalk
-  binapi        : binapi
   pretty-error  : pretty-error
   uic           : util_inspect_custom
 
