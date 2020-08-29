@@ -25,12 +25,6 @@ reg.betterTypeof = betterTypeof
 
 V.def = (args) ->
 
-  if (args.length > 1)
-    return [\fault,\many_args]
-
-  if (args.length is 0)
-    return [\fault,\few_args]
-
   [f] = args
 
   switch betterTypeof f

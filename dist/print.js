@@ -165,8 +165,6 @@
     switch (fname) {
     case 'ma':
       return 'ma';
-    case 'def':
-      return 'def';
     case 'ar':
     case 'arn':
       return 'ar';
@@ -185,8 +183,6 @@
       switch (ctype) {
       case 'ma':
         return [1, 'function|[fun....]'];
-      case 'def':
-        return [1, "(function|any)"];
       case 'ar':
         return [2, '(number|[num...],function|any)'];
       case 'wh':
@@ -214,8 +210,6 @@
       switch (ctype) {
       case 'ma':
         return [c.er('function|[fun....]'), c.er('xx')];
-      case 'def':
-        return [c.er('function|any'), c.er('fun')];
       case 'ar':
         switch (eType) {
         case 'first':

@@ -173,7 +173,6 @@ map_fname_to_ctypes = (fname)->
 
   switch fname
   | \ma                  => \ma
-  | \def                 => \def
   | \ar,\arn             => \ar
   | \wh,\whn             => \wh
   | \arwh,\arwhn,\arnwhn => \arwh
@@ -182,7 +181,6 @@ StrArgLen = (fname,ctype,eType)->
 
   data = switch ctype
   | \ma   => [1,'function|[fun....]']
-  | \def  => [1,"(function|any)"]
   | \ar   => [2,'(number|[num...],function|any)']
   | \wh   => [2,'(function,function|any)']
   | \arwh => [3,'(number|[num...],function,function|any)']
@@ -223,11 +221,6 @@ StrEType = (fname,eType) ->
       [
         c.er('function|[fun....]')
         c.er('xx')
-      ]
-  | \def =>
-      [
-        c.er('function|any')
-        c.er('fun')
       ]
 
   | \ar =>
