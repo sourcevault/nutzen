@@ -176,7 +176,9 @@ hoplon's default log messages are quite detailed, in case the details need to be
 
 #### Update and API change
 
-◾️ `0.0.18` - hoplon have been made mutable by default, immutublity moved to `hoplon.immutable`. `mutelog` option added.
+◾️ `0.0.20` - `.pipe` and `.wrap` removed and `.wrap` is done using `.def`. `.def` is compulsory for `hoplon`.
+
+◾️ `0.0.18` - hoplon have been made mutable by default, immutability moved to `hoplon.immutable`. `mutelog` option added.
 
 ◾️ `0.0.17` - internal rewrite to improve performance.
 
