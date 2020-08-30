@@ -23,12 +23,6 @@
   reg.betterTypeof = betterTypeof;
   V.def = function(args){
     var f;
-    if (args.length > 1) {
-      return ['fault', 'many_args'];
-    }
-    if (args.length === 0) {
-      return ['fault', 'few_args'];
-    }
     f = args[0];
     switch (betterTypeof(f)) {
     case 'function':
