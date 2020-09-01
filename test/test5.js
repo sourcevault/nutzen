@@ -33,4 +33,5 @@
   };
   V = hop.ar(1, hop.ma(type_str, type_num).def(4)).def(null);
   A = ['integer', 'boolean', 'bill', 'string', 'obama', 'arena'];
+  z("hello world");
 }).call(this);

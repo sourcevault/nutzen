@@ -138,11 +138,20 @@ tightloop =  (state) -> ->
 
         I = 0
 
+        has = false
+
         while (I < J)
-          if not (lens[I] is arglen)
-            return settle fin,arguments
+
+          if (lens[I] is arglen)
+
+            has = true
 
           I += 1
+
+        if not has
+
+          return settle fin,arguments
+
 
     # --------------------------------------------
 
@@ -230,14 +239,20 @@ tightloop =  (state) -> ->
 
         I = 0
 
+        has = false
+
         while (I < J)
 
-          if not (lens[I] is arglen)
+          if (lens[I] is arglen)
 
-            if (settle validator,arguments)
-              return settle fin,arguments
+            has = true
 
           I += 1
+
+        if not has
+          if (settle validator,arguments)
+            return settle fin,arguments
+
 
     # --------------------------------------------
 
@@ -261,14 +276,19 @@ tightloop =  (state) -> ->
 
         I = 0
 
+        has = false
+
         while (I < J)
 
-          if not (lens[I] is arglen)
+          if (lens[I] is arglen)
 
-            if not (settle validator,arguments)
-              return settle fin,arguments
+            has = true
 
           I += 1
+
+        if not has
+          if not (settle validator,arguments)
+            return settle fin,arguments
 
     # --------------------------------------------
 

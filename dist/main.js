@@ -26,7 +26,7 @@
   };
   tightloop = function(state){
     return function(){
-      var arglen, i$, ref$, len$, ref1$, fname, data, J, I, ret, validator, fin, spans, F, ltype, lens, def;
+      var arglen, i$, ref$, len$, ref1$, fname, data, J, I, ret, validator, fin, spans, F, ltype, lens, has, def;
       arglen = arguments.length;
       for (i$ = 0, len$ = (ref$ = state.fns).length; i$ < len$; ++i$) {
         ref1$ = ref$[i$], fname = ref1$.fname, data = ref1$.data;
@@ -95,11 +95,15 @@
           case 'a':
             J = lens.length;
             I = 0;
+            has = false;
             while (I < J) {
-              if (!(lens[I] === arglen)) {
-                return settle(fin, arguments);
+              if (lens[I] === arglen) {
+                has = true;
               }
               I += 1;
+            }
+            if (!has) {
+              return settle(fin, arguments);
             }
           }
           break;
@@ -165,13 +169,17 @@
           case 'a':
             J = lens.length;
             I = 0;
+            has = false;
             while (I < J) {
-              if (!(lens[I] === arglen)) {
-                if (settle(validator, arguments)) {
-                  return settle(fin, arguments);
-                }
+              if (lens[I] === arglen) {
+                has = true;
               }
               I += 1;
+            }
+            if (!has) {
+              if (settle(validator, arguments)) {
+                return settle(fin, arguments);
+              }
             }
           }
           break;
@@ -189,13 +197,17 @@
           case 'a':
             J = lens.length;
             I = 0;
+            has = false;
             while (I < J) {
-              if (!(lens[I] === arglen)) {
-                if (!settle(validator, arguments)) {
-                  return settle(fin, arguments);
-                }
+              if (lens[I] === arglen) {
+                has = true;
               }
               I += 1;
+            }
+            if (!has) {
+              if (!settle(validator, arguments)) {
+                return settle(fin, arguments);
+              }
             }
           }
         }
