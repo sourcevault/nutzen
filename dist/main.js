@@ -26,24 +26,30 @@
   };
   tightloop = function(state){
     return function(){
-      var arglen, i$, ref$, len$, ref1$, fname, data, J, I, ret, validator, fin, spans, F, ltype, lens, has, def;
+      var arglen, i$, ref$, len$, ref1$, fname, data, validator, fin, ret, J, I, spans, F, ltype, lens, has, funs, M, N, def;
       arglen = arguments.length;
       for (i$ = 0, len$ = (ref$ = state.fns).length; i$ < len$; ++i$) {
         ref1$ = ref$[i$], fname = ref1$.fname, data = ref1$.data;
         switch (fname) {
+        case 'wh':
+          validator = data[0], fin = data[1];
+          if (validator.apply(null, arguments)) {
+            return settle(fin, arguments);
+          }
+          break;
         case 'ma':
-          J = data.length;
-          I = 0;
           switch (data.length) {
           case 1:
-            ret = settle(data[0], arguments);
+            ret = data[0].apply(data, arguments);
             if (ret) {
               return ret;
             }
             break;
           default:
+            J = data.length;
+            I = 0;
             while (I < J) {
-              ret = settle(data[I], arguments);
+              ret = data[I].apply(data, arguments);
               if (ret) {
                 return ret;
               }
@@ -51,15 +57,9 @@
             }
           }
           break;
-        case 'wh':
-          validator = data[0], fin = data[1];
-          if (settle(validator, arguments)) {
-            return settle(fin, arguments);
-          }
-          break;
         case 'whn':
           validator = data[0], fin = data[1];
-          if (!settle(validator, arguments)) {
+          if (!validator.apply(null, arguments)) {
             return settle(fin, arguments);
           }
           break;
@@ -73,10 +73,10 @@
             }
             break;
           case 'a':
-            J = data.length;
+            J = lens.length;
             I = 0;
             while (I < J) {
-              if (I === arglen) {
+              if (lens[I] === arglen) {
                 return settle(F, arguments);
               }
               I += 1;
@@ -113,7 +113,7 @@
           switch (ltype) {
           case 'n':
             if (lens === arglen) {
-              if (settle(validator, arguments)) {
+              if (validator.apply(null, arguments)) {
                 return settle(fin, arguments);
               }
             }
@@ -123,8 +123,64 @@
             I = 0;
             while (I < J) {
               if (lens[I] === arglen) {
-                if (settle(validator, arguments)) {
+                if (validator.apply(null, arguments)) {
                   return settle(fin, arguments);
+                }
+              }
+              I += 1;
+            }
+          }
+          break;
+        case 'arma':
+          spans = data[0], funs = data[1];
+          ltype = spans[0], lens = spans[1];
+          switch (ltype) {
+          case 'n':
+            if (lens === arglen) {
+              switch (funs.length) {
+              case 1:
+                ret = funs[0].apply(funs, arguments);
+                if (ret) {
+                  return ret;
+                }
+                break;
+              default:
+                J = funs.length;
+                I = 0;
+                while (I < J) {
+                  ret = funs[I].apply(funs, arguments);
+                  if (ret) {
+                    return ret;
+                  }
+                  I += 1;
+                }
+              }
+            }
+            break;
+          case 'a':
+            spans = data[0], funs = data[1];
+            ltype = spans[0], lens = spans[1];
+            J = lens.length;
+            I = 0;
+            while (I < J) {
+              if (lens[I] === arglen) {
+                switch (funs.length) {
+                case 1:
+                  ret = funs[0].apply(funs, arguments);
+                  if (ret) {
+                    return ret;
+                  }
+                  break;
+                default:
+                  M = funs.length;
+                  N = 0;
+                  while (N < M) {
+                    ret = funs[N].apply(funs, arguments);
+                    if (ret) {
+                      return ret;
+                    }
+                    N += 1;
+                  }
                 }
               }
               I += 1;
@@ -137,7 +193,7 @@
           switch (ltype) {
           case 'n':
             if (lens === arglen) {
-              if (!settle(validator, arguments)) {
+              if (!validator.apply(null, arguments)) {
                 return settle(fin, arguments);
               }
             }
@@ -147,7 +203,7 @@
             I = 0;
             while (I < J) {
               if (lens[I] === arglen) {
-                if (!settle(validator, arguments)) {
+                if (!validator.apply(null, arguments)) {
                   return settle(fin, arguments);
                 }
               }
@@ -189,7 +245,7 @@
           switch (ltype) {
           case 'n':
             if (!(lens === arglen)) {
-              if (!settle(validator, arguments)) {
+              if (!validator.apply(null, arguments)) {
                 return settle(fin, arguments);
               }
             }
@@ -205,7 +261,7 @@
               I += 1;
             }
             if (!has) {
-              if (!settle(validator, arguments)) {
+              if (!validator.apply(null, arguments)) {
                 return settle(fin, arguments);
               }
             }
@@ -214,7 +270,12 @@
       }
       def = state.def;
       if (def) {
-        return settle(def, arguments);
+        switch (def[0]) {
+        case 'f':
+          return def[1].apply(def, arguments);
+        case 's':
+          return def[1];
+        }
       }
     };
   };
@@ -259,6 +320,10 @@
     }
   };
   handle.def = {};
+  handle.def.fault = function(){
+    return null;
+  };
+  handle.def.fault[uic] = print.log.def_fault;
   handle.def.ok = function(self, data){
     var state, neo, F;
     state = self[modflag];
@@ -270,7 +335,6 @@
     F[uic] = print.log.wrap(neo);
     return F;
   };
-  handle.def.fault = handle.fault;
   genfun = function(vfun, fname){
     return function(){
       var state, ref$, zone, data;
@@ -287,12 +351,12 @@
     var state, ref$, zone, data;
     state = this[modflag];
     if (state.fault) {
-      return this;
+      return handle.def.fault;
     }
     ref$ = verify.def(arguments), zone = ref$[0], data = ref$[1];
-    return handle.def[zone](this, data, 'def');
+    return handle.def.ok(this, data);
   };
-  props = ['ma', 'wh', 'ar', 'whn', 'arn', 'arwh', 'arnwh', 'arwhn', 'arnwhn'];
+  props = ['ma', 'arma', 'wh', 'ar', 'whn', 'arn', 'arwh', 'arnwh', 'arwhn', 'arnwhn'];
   R.reduce(function(ob, prop){
     ob[prop] = genfun(verify.getvfun(prop), prop);
     return ob;

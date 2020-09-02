@@ -1,5 +1,3 @@
-<!-- ![](./logo.jpg) -->
-
 ![](https://raw.githubusercontent.com/sourcevault/hoplon/dev/logo.jpg)
 
 ```js
@@ -60,16 +58,17 @@ They also encourage efficient use of pattern matching to structure code and exte
 ```
 METHOD NAME      EXPANDED            TYPES
 ----------------------------------------------------------------------------
-ar               args                (number|[num...],function|any)
-wh               when                (function,function|any)
-whn              when not            (function,function|any)
-arn              args not            (number|[num...],function|any)
-arwh             args when           (number|[num...],function,function|any)
-arnwh            args not when       (number|[num...],function,function|any)
-arwhn            args when not       (number|[num...],function,function|any)
-arnwhn           args not when not   (number|[num...],function,function|any)
+ar               args                number|[num...],function|any
+wh               when                function,function|any
+whn              when not            function,function|any
+ma               match               [f1,f2....]|f1,f2,...
+arn              args not            number|[num...],function|any
+arma             args match          number|[num...],[f1,f2....]|f1,f2,...
+arwh             args when           number|[num...],function,function|any
+arnwh            args not when       number|[num...],function,function|any
+arwhn            args when not       number|[num...],function,function|any
+arnwhn           args not when not   number|[num...],function,function|any
 ----------------------------------------------------------------------------
-ma               match               (function)|f1,f2,...|[function....]
 def              default             (function|any)
 ----------------------------------------------------------------------------
 ```
@@ -87,13 +86,16 @@ whn           function         function|any
 arn           number|[num...]  function|any
 arwh          number|[num...]  function        function|any
 arnwh         number|[num...]  function        function|any
+
 arwhn         number|[num...]  function        function|any
 arnwhn        number|[num...]  function        function|any
 def           function|any
 ```
+
 ```
         ARG N
-ma     (function)|[function....]|f₁,f₂,f₃  ......... fₙ
+ma      function|[function....]|f₁,f₂,f₃  ......... fₙ
+arma    function|[function....]|f₁,f₂,f₃  ......... fₙ
 ```
 ### Method Descriptions
 
@@ -133,7 +135,7 @@ Just like `arwh` but only runs if the arguments do not match.
 
 Just like `arwhn` but runs if either conditions fails ( argument or function ), ( since the method name is quite a mouthful, its better to use the shorthand `.arnwhn`).
 
-◾️ `ma` : `(function)|[function....]|f1,f2,...`
+◾️ `ma` : `function|[f1,f2,...]|f1,f2,...`
 
 It's common in `.wh` operations to have **both** the validator and the return function be the same.
 
@@ -141,7 +143,13 @@ Making it redundant to have them run twice.
 
 `ma` looks at the return value of the validator to find the return value itself.
 
-If `ma` returns `false` or `undefined` then `hoplon` jumps to the next validator, in *any other value type* `hoplon` returns and breaks.
+If `.ma` returns `false` or `undefined` then `hoplon` jumps to the next validator, in *any other value type* `hoplon` returns and breaks.
+
+◾️ `arma` : `number|[num...],function|[f1,f2,...]|f1,f2,...`
+
+Combines `.ar` and `.ma`, first argument can be a number or a array of number just like in `.ar`.
+
+Subsequent arguments are validator functions just like in `.ma`.
 
 ◾️ `def` : `(function|any)`
 
@@ -177,6 +185,8 @@ console.log (add2 == add3) // false
 hoplon's default log messages are quite detailed, in case the details need to be muted, `.mutelog` shortens the description.
 
 #### Update and API change
+
+◾️ `0.0.24` - `.arma` added as a new method.
 
 ◾️ `0.0.20` - `.pipe` and `.wrap` removed and `.wrap` is done using `.def`. `.def` is compulsory for `hoplon`.
 

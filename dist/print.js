@@ -46,6 +46,9 @@
       return print.log.main(state);
     };
   };
+  print.log.def_fault = function(){
+    return c.err("[error." + packageJ.name + "]");
+  };
   print.log.main = function(state){
     var str, I, i$, ref$, len$, ref1$, fname, data, spans, fdata, type, lens, ECLASS, innertxt;
     str = "";
@@ -88,6 +91,7 @@
       case 'arwh':
       case 'arnwh':
       case 'arwhn':
+      case 'arma':
       case 'arnwhn':
         spans = data[0], fdata = data[1];
         type = spans[0], lens = spans[1];
@@ -175,6 +179,8 @@
     case 'arwhn':
     case 'arnwhn':
       return 'arwh';
+    case 'arma':
+      return 'arma';
     }
   };
   StrArgLen = function(fname, ctype, eType){
@@ -183,10 +189,12 @@
       switch (ctype) {
       case 'ma':
         return [1, 'function|[fun....]'];
-      case 'ar':
-        return [2, '(number|[num...],function|any)'];
       case 'wh':
         return [2, '(function,function|any)'];
+      case 'arma':
+        return [2, '(number|[num...],[fun....]'];
+      case 'ar':
+        return [2, '(number|[num...],function|any)'];
       case 'arwh':
         return [3, '(number|[num...],function,function|any)'];
       }
@@ -209,31 +217,41 @@
     parts = (function(){
       switch (ctype) {
       case 'ma':
-        return [c.er('function|[fun....]'), c.er('xx')];
+        return [c.er('function|[fun....]')];
+      case 'arma':
+        switch (eType) {
+        case 'first':
+          return [c.er("number") + c.ok('|[num...],[fun....]')];
+        case 'array':
+          return [c.ok("number") + c.er('|[num..]') + c.ok(',[fun....]')];
+        case 'not_function':
+          return [c.ok("number|[num..]") + c.er(',[fun....]')];
+        }
+        break;
       case 'ar':
         switch (eType) {
         case 'first':
-          return [c.er("number") + c.ok('|[num...],function|any'), c.er('num') + c.ok('|[num...],fun|any')];
+          return [c.er("number") + c.ok('|[num...],function|any')];
         case 'array':
-          return [c.ok("number") + c.er('|[num..]') + c.ok(',function|any'), c.er('[num..]') + c.ok(',fun|any')];
+          return [c.ok("number") + c.er('|[num..]') + c.ok(',function|any')];
         }
         break;
       case 'wh':
         switch (eType) {
         case 'first':
-          return [c.er('function') + c.ok(',function|any'), c.er('fun') + c.ok(',fun|any')];
+          return [c.er('function') + c.ok(',function|any')];
         case 'second':
-          return [c.ok('function,') + c.er('function|any'), c.ok('fun,') + c.er('fun|any')];
+          return [c.ok('function,') + c.er('function|any')];
         }
         break;
       case 'arwh':
         switch (eType) {
         case 'num':
-          return [c.er('number') + c.ok('|[num..],function,function|any'), c.er('num') + c.ok(',fun,fun|any')];
+          return [c.er('number') + c.ok('|[num..],function,function|any')];
         case 'array':
-          return [c.ok('number|') + c.er('[num..]') + c.ok(',function,function|any'), c.er('[num..]') + c.ok(',fun,fun|any')];
+          return [c.ok('number|') + c.er('[num..]') + c.ok(',function,function|any')];
         case 'second':
-          return [c.ok('number[num..],') + c.er("function") + c.ok(",function|any"), c.ok('num|[num..],') + c.er("fun") + c.ok(',fun|any')];
+          return [c.ok('number[num..],') + c.er("function") + c.ok(",function|any")];
         }
       }
     }());
@@ -242,10 +260,9 @@
     return parts;
   };
   print.typeError = function(data, fname, attribute){
-    var ref$, long, short, type, ePart;
-    ref$ = StrEType(fname, attribute), long = ref$[0], short = ref$[1], type = ref$[2];
+    var ref$, long, type;
+    ref$ = StrEType(fname, attribute), long = ref$[0], type = ref$[1];
     l(c.err("[" + packageJ.name + "][typeError] " + long));
-    ePart = c.warn('.' + fname) + c.warn("(") + short + c.warn(")") + c.warn(" <-- error here");
     l('\n', show_chain(data, [fname]), '\n');
     l(c.black(type) + "\n");
     return show_stack();
