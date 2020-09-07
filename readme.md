@@ -163,7 +163,9 @@ It's also possible to just provide a static value or object as default.
 
 - all the methods also accept **non-functions** as their last value, functionality was added to make it possible to easily return static values for efficient and easy pattern matching.
 
-### Immutable hoplon
+### Namespaces
+
+***Immutable***
 
 In case immutable chain is needed, hoplon offers immutability through `hoplon.immutable` namespace.
 
@@ -180,11 +182,18 @@ var add3 = init.ar(3,(x,y,z)=> x + y + z)
 console.log (add2 == add3) // false
 ```
 
-#### `hoplon.mutelog` and `hoplon.immutable.mutelog`
+***Unary***
 
-hoplon's default log messages are quite detailed, in case the details need to be muted, `.mutelog` shortens the description.
+It's common enough to want to apply the `.ar` counting on a specific argument itself.
+
+`hoplon.unary` is a namespace where the `.ar` counting is done on the first argument.
+
+The condition of course is that the first argument **has** to be **array like**.
+
 
 #### Update and API change
+
+◾️ `0.0.25` - `.unary` namespace added.
 
 ◾️ `0.0.24` - `.arma` added as a new method.
 
