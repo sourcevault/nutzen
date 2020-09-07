@@ -11,8 +11,8 @@
     fns: [],
     def: null,
     fault: false,
-    immutable: false,
-    mutelog: false
+    unary: false,
+    immutable: false
   };
   settle = function(F, A){
     var ftype, f;
@@ -26,40 +26,56 @@
   };
   tightloop = function(state){
     return function(){
-      var arglen, i$, ref$, len$, ref1$, fname, data, J, I, ret, validator, fin, spans, F, ltype, lens, has, def;
-      arglen = arguments.length;
-      for (i$ = 0, len$ = (ref$ = state.fns).length; i$ < len$; ++i$) {
-        ref1$ = ref$[i$], fname = ref1$.fname, data = ref1$.data;
+      var first, arglen, I, fns, terminate, ref$, fname, data, validator, fin, ret, Jn, J, spans, F, ltype, lens, has, funs, Kn, K, def;
+      if (state.unary) {
+        first = arguments[0];
+        switch (R.type(first)) {
+        case 'Arguments':
+        case 'Array':
+          arglen = first.length;
+          break;
+        default:
+          print.route([['not_array'], state]);
+          return undefined;
+        }
+      } else {
+        arglen = arguments.length;
+      }
+      I = 0;
+      fns = state.fns;
+      terminate = fns.length;
+      do {
+        ref$ = fns[I], fname = ref$.fname, data = ref$.data;
         switch (fname) {
+        case 'wh':
+          validator = data[0], fin = data[1];
+          if (validator.apply(null, arguments)) {
+            return settle(fin, arguments);
+          }
+          break;
         case 'ma':
-          J = data.length;
-          I = 0;
           switch (data.length) {
           case 1:
-            ret = settle(data[0], arguments);
+            ret = data[0].apply(data, arguments);
             if (ret) {
               return ret;
             }
             break;
           default:
-            while (I < J) {
-              ret = settle(data[I], arguments);
+            Jn = data.length;
+            J = 0;
+            do {
+              ret = data[J].apply(data, arguments);
               if (ret) {
                 return ret;
               }
-              I += 1;
-            }
-          }
-          break;
-        case 'wh':
-          validator = data[0], fin = data[1];
-          if (settle(validator, arguments)) {
-            return settle(fin, arguments);
+              J += 1;
+            } while (J < Jn);
           }
           break;
         case 'whn':
           validator = data[0], fin = data[1];
-          if (!settle(validator, arguments)) {
+          if (!validator.apply(null, arguments)) {
             return settle(fin, arguments);
           }
           break;
@@ -73,14 +89,14 @@
             }
             break;
           case 'a':
-            J = data.length;
-            I = 0;
-            while (I < J) {
-              if (I === arglen) {
+            Jn = lens.length;
+            J = 0;
+            do {
+              if (lens[J] === arglen) {
                 return settle(F, arguments);
               }
-              I += 1;
-            }
+              J += 1;
+            } while (J < Jn);
           }
           break;
         case 'arn':
@@ -93,18 +109,18 @@
             }
             break;
           case 'a':
-            J = lens.length;
-            I = 0;
+            Jn = lens.length;
+            J = 0;
             has = false;
-            while (I < J) {
-              if (lens[I] === arglen) {
+            do {
+              if (lens[J] === arglen) {
                 has = true;
               }
-              I += 1;
-            }
-            if (!has) {
-              return settle(fin, arguments);
-            }
+              if (!has) {
+                return settle(fin, arguments);
+              }
+              J += 1;
+            } while (J < Jn);
           }
           break;
         case 'arwh':
@@ -113,22 +129,74 @@
           switch (ltype) {
           case 'n':
             if (lens === arglen) {
-              if (settle(validator, arguments)) {
+              if (validator.apply(null, arguments)) {
                 return settle(fin, arguments);
               }
             }
             break;
           case 'a':
-            J = lens.length;
-            I = 0;
-            while (I < J) {
-              if (lens[I] === arglen) {
-                if (settle(validator, arguments)) {
+            Jn = lens.length;
+            J = 0;
+            do {
+              if (lens[J] === arglen) {
+                if (validator.apply(null, arguments)) {
                   return settle(fin, arguments);
                 }
+                J += 1;
               }
-              I += 1;
+            } while (J < Jn);
+          }
+          break;
+        case 'arma':
+          spans = data[0], funs = data[1];
+          ltype = spans[0], lens = spans[1];
+          switch (ltype) {
+          case 'n':
+            if (lens === arglen) {
+              if (funs.length === 1) {
+                ret = funs[0].apply(funs, arguments);
+                if (ret) {
+                  return ret;
+                }
+              } else {
+                Jn = funs.length;
+                J = 0;
+                do {
+                  ret = funs[J].apply(funs, arguments);
+                  if (ret) {
+                    return ret;
+                    J += 1;
+                  }
+                } while (J < Jn);
+              }
             }
+            break;
+          case 'a':
+            spans = data[0], funs = data[1];
+            ltype = spans[0], lens = spans[1];
+            Jn = lens.length;
+            J = 0;
+            do {
+              if (lens[J] === arglen) {
+                if (funs.length === 1) {
+                  ret = funs[0].apply(funs, arguments);
+                  if (ret) {
+                    return ret;
+                  }
+                } else {
+                  Kn = funs.length;
+                  K = 0;
+                  do {
+                    ret = funs[K].apply(funs, arguments);
+                    if (ret) {
+                      return ret;
+                    }
+                    K += 1;
+                  } while (K < Kn);
+                }
+              }
+              J += 1;
+            } while (J < Jn);
           }
           break;
         case 'arwhn':
@@ -137,22 +205,22 @@
           switch (ltype) {
           case 'n':
             if (lens === arglen) {
-              if (!settle(validator, arguments)) {
+              if (!validator.apply(null, arguments)) {
                 return settle(fin, arguments);
               }
             }
             break;
           case 'a':
-            J = lens.length;
-            I = 0;
-            while (I < J) {
-              if (lens[I] === arglen) {
-                if (!settle(validator, arguments)) {
+            Jn = lens.length;
+            J = 0;
+            do {
+              if (lens[J] === arglen) {
+                if (!validator.apply(null, arguments)) {
                   return settle(fin, arguments);
                 }
               }
-              I += 1;
-            }
+              J += 1;
+            } while (J < Jn);
           }
           break;
         case 'arnwh':
@@ -167,15 +235,15 @@
             }
             break;
           case 'a':
-            J = lens.length;
-            I = 0;
+            Jn = lens.length;
+            J = 0;
             has = false;
-            while (I < J) {
-              if (lens[I] === arglen) {
+            do {
+              if (lens[J] === arglen) {
                 has = true;
               }
-              I += 1;
-            }
+              J += 1;
+            } while (J < Jn);
             if (!has) {
               if (settle(validator, arguments)) {
                 return settle(fin, arguments);
@@ -189,32 +257,38 @@
           switch (ltype) {
           case 'n':
             if (!(lens === arglen)) {
-              if (!settle(validator, arguments)) {
+              if (!validator.apply(null, arguments)) {
                 return settle(fin, arguments);
               }
             }
             break;
           case 'a':
-            J = lens.length;
-            I = 0;
+            Jn = lens.length;
+            J = 0;
             has = false;
-            while (I < J) {
-              if (lens[I] === arglen) {
+            do {
+              if (lens[J] === arglen) {
                 has = true;
               }
-              I += 1;
-            }
+              J += 1;
+            } while (J < Jn);
             if (!has) {
-              if (!settle(validator, arguments)) {
+              if (!validator.apply(null, arguments)) {
                 return settle(fin, arguments);
               }
             }
           }
         }
-      }
+        I += 1;
+      } while (I < terminate);
       def = state.def;
       if (def) {
-        return settle(def, arguments);
+        switch (def[0]) {
+        case 'f':
+          return def[1].apply(def, arguments);
+        case 's':
+          return def[1];
+        }
       }
     };
   };
@@ -259,18 +333,21 @@
     }
   };
   handle.def = {};
+  handle.def.fault = function(){
+    return null;
+  };
+  handle.def.fault[uic] = print.log.def_fault;
   handle.def.ok = function(self, data){
     var state, neo, F;
     state = self[modflag];
     neo = Object.assign({}, state, {
       def: data,
-      str: state.str.concat('def')
+      str: state.str
     });
     F = tightloop(neo);
     F[uic] = print.log.wrap(neo);
     return F;
   };
-  handle.def.fault = handle.fault;
   genfun = function(vfun, fname){
     return function(){
       var state, ref$, zone, data;
@@ -287,12 +364,12 @@
     var state, ref$, zone, data;
     state = this[modflag];
     if (state.fault) {
-      return this;
+      return handle.def.fault;
     }
     ref$ = verify.def(arguments), zone = ref$[0], data = ref$[1];
-    return handle.def[zone](this, data, 'def');
+    return handle.def.ok(this, data);
   };
-  props = ['ma', 'wh', 'ar', 'whn', 'arn', 'arwh', 'arnwh', 'arwhn', 'arnwhn'];
+  props = ['ma', 'arma', 'wh', 'ar', 'whn', 'arn', 'arwh', 'arnwh', 'arwhn', 'arnwhn'];
   R.reduce(function(ob, prop){
     ob[prop] = genfun(verify.getvfun(prop), prop);
     return ob;
@@ -301,16 +378,16 @@
   hoplon.immutable = looper(Object.assign({}, init, {
     immutable: true
   }));
-  hoplon.mutelog = looper(Object.assign({}, init, {
-    mutelog: true
+  hoplon.unary = looper(Object.assign({}, init, {
+    unary: true
   }));
-  hoplon.immutable.mutelog = looper(Object.assign({}, init, {
+  hoplon.immutable.unary = looper(Object.assign({}, init, {
     immutable: true,
-    mutelog: true
+    unary: true
   }));
-  hoplon.mutelog.immutable = looper(Object.assign({}, init, {
+  hoplon.unary.immutable = looper(Object.assign({}, init, {
     immutable: true,
-    mutelog: true
+    unary: true
   }));
   Object.freeze(hoplon);
   reg.hoplon = hoplon;

@@ -46,81 +46,65 @@ pe.appendStyle do
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
 
+name = packageJ.name
+
 print.log = {}
 
-print.log.proto = -> print.log.main @[modflag]
+print.log.def_fault = -> c.err "[error.#{name}]"
 
-print.log.wrap = (state) -> -> print.log.main state
+print.log.proto = ->
 
-print.log.main = (state) ->
-
-  str = ""
+  state = @[modflag]
 
   if state is undefined
 
-    return [ I for I of main]
+    return (c.er "[#{name}]") + (c.err "[state undefined]")
 
-  if state.mutelog
+  print.log.main state
 
-    if state.fault
-      return c.err "[error.#{packageJ.name}]"
-
-    if state.immutable
-      return c.ok "[immutable.#{packageJ.name}]"
-
-    else
-      return c.warn "[mutable.#{packageJ.name}]"
-
-  switch state.immutable
-  | true  =>
-    str += c.ok "[   immutable   ]"
-  | false =>
-    str += c.warn "[    mutable    ]"
-
-  str += "\n"
-  str += "-----------------"
-  str += "\n"
-
-  for {fname,data},I in state.fns
-
-    str += c.ok '- ' + fname
-
-    switch fname
-    | \ar,\arn,\arwh,\arnwh,\arwhn,\arnwhn =>
+print.log.wrap = (state) -> -> print.log.main state
 
 
-      [spans,fdata] = data
+arrange = R.pipe do
+  R.groupWith R.equals
+  R.map do
+    (x) ->
+      name = x[0]
+      switch x.length
+      | 1          => name
+      | otherwise  => name + "(" + x.length + ")"
+  (x) -> c.ok (x.join " ")
 
-      [type,lens] = spans
 
-      switch type
-      | \n =>
-        str += c.warn ' [ ' + lens + ' ]'
-      | \a =>
-        str += c.warn ' [ ' + (lens.join ' ') + ' ]'
 
-    if (I < (state.fns.length - 1))
-
-      str += "\n"
+print.log.main = (state) ->
 
   if state.fault
+      return c.err "[#{name}|error]"
 
-    [ECLASS,fname,type] = state.fault
+  str = ""
 
-    str += "\n"
+  if state.immutable
+    str += "|immutable"
+    clr = c.ok
+  else
+    str += "|mutable"
+    clr = c.warn
 
-    innertxt = ([ECLASS,type]).join " "
+  if state.apply
+    str += "|apply"
 
-    str += c.er "- ERROR : | #{fname} | #{innertxt}"
+  put = clr ("[#{name}" + str + "]")
+
+  arr = arrange state.str
 
 
-  str += "\n"
-  str += "-----------------"
-
-  if state.def
-    str +=  c.ok " \n- def"
+  str = put + " " + "[ " + arr + " ]"
 
   str
+
+
+
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -144,11 +128,11 @@ print.fail = (filename) -> !->
   process.exitCode = 1
 
 
-show_chain = (data,path = [],show-args = true)->
+show_chain = (input-str,path = [],show-args = true)->
 
   str = ""
 
-  for I in data.str
+  for I in input-str
 
     str += ".#{I}(~)"
 
@@ -176,13 +160,15 @@ map_fname_to_ctypes = (fname)->
   | \ar,\arn             => \ar
   | \wh,\whn             => \wh
   | \arwh,\arwhn,\arnwhn => \arwh
+  | \arma                => \arma
 
 StrArgLen = (fname,ctype,eType)->
 
   data = switch ctype
   | \ma   => [1,'function|[fun....]']
-  | \ar   => [2,'(number|[num...],function|any)']
   | \wh   => [2,'(function,function|any)']
+  | \arma => [2,'(number|[num...],[fun....]']
+  | \ar   => [2,'(number|[num...],function|any)']
   | \arwh => [3,'(number|[num...],function,function|any)']
 
   switch eType
@@ -207,6 +193,12 @@ StrArgLen = (fname,ctype,eType)->
       """
     ]
 
+lit = R.pipe do
+  R.zipWith (x,f) ->
+    switch R.type f
+    | \Function => f x
+    | otherwise => x
+  R.join ""
 
 StrEType = (fname,eType) ->
 
@@ -215,60 +207,67 @@ StrEType = (fname,eType) ->
   switch eType
   | \many_args,\few_args => return StrArgLen fname,ctype,eType
 
-
   parts = switch ctype
   | \ma =>
+
       [
-        c.er('function|[fun....]')
-        c.er('xx')
+        c.er 'function|[fun....]'
       ]
 
+  | \arma =>
+
+    switch eType
+
+    | \first =>
+
+      lit ["number" "|[num...],[fun....]"],[c.er,c.ok]
+
+    | \array =>
+
+      lit ["number" "|[num..]" ",[fun....]"],[c.ok,c.er,c.ok]
+
+    | \not_function =>
+
+      lit ["number|[num..]",",[fun....]"],[c.ok,c.er]
+
   | \ar =>
+
     switch eType
     | \first =>
-      [
-        c.er("number") + c.ok('|[num...],function|any')
-        c.er('num') + c.ok('|[num...],fun|any')
-      ]
+
+      lit ["number" "|[num...],function|any"],[c.er,c.ok]
+
     | \array =>
-      [
-        c.ok("number") + c.er('|[num..]') + c.ok(',function|any')
-        c.er('[num..]') + c.ok(',fun|any')
-      ]
+
+      lit ["number" "|[num..]" ",function|any"],[c.ok,c.er,c.ok]
 
   | \wh =>
     switch eType
     | \first =>
-      [
-        c.er('function') + c.ok(',function|any')
-        c.er('fun') + c.ok(',fun|any')
-      ]
+
+      lit ["function",",function|any"],[c.er,c.ok]
+
     | \second =>
-      [
-        c.ok('function,') + c.er('function|any')
-        c.ok('fun,') + c.er('fun|any')
-      ]
+
+      lit ["function","function|any"],[c.ok,c.er]
+
   | \arwh =>
     switch eType
     | \num =>
-      [
-        c.er('number') + c.ok('|[num..],function,function|any')
-        c.er('num') + c.ok(',fun,fun|any')
-      ]
+
+      lit ["number" "|[num..],function,function|any"],[c.er,c.ok]
 
     | \array =>
-      [
-        c.ok('number|') + c.er('[num..]') + c.ok(',function,function|any')
-        c.er('[num..]') + c.ok(',fun,fun|any')
-      ]
+
+      lit ["number|" "[num..]" ",function,function|any"],[c.ok,c.er,c.ok]
+
 
     | \second =>
-      [
-        c.ok('number[num..],') + c.er("function") + c.ok(",function|any")
-        c.ok('num|[num..],')    + c.er("fun")      + c.ok(',fun|any')
-      ]
 
-  parts[0] = (c.ok("(") + parts[0] + c.ok(")"))
+      lit ["number[num..],","function",",function|any"],[c.ok,c.er,c.ok]
+
+
+  parts[0] = lit ["(" parts[0] ")"],[c.ok,null,c.ok]
 
   parts.push 'One of the argument cannot be used by the function'
 
@@ -277,14 +276,11 @@ StrEType = (fname,eType) ->
 
 print.typeError = (data,fname,attribute) ->
 
-
-  [long,short,type] = StrEType fname,attribute
+  [long,type] = StrEType fname,attribute
 
   l c.err """
     [#{packageJ.name}][typeError] #{long}
     """
-
-  ePart = c.warn('.' + fname) + c.warn("(") + short + c.warn(")") + c.warn(" <-- error here")
 
   l do
     '\n'
@@ -296,12 +292,29 @@ print.typeError = (data,fname,attribute) ->
   show_stack!
 
 
+print.not_array = (data) ->
+
+
+  l c.err """
+    [#{packageJ.name}][typeError] first argument is not array like.
+    """
+
+  l do
+    '\n'
+    lit [\unary,(show_chain [...data.str,\def],[])],[c.warn,0]
+    '\n'
+
+  l lit ["unary namespace requires first argument to be array like.","\n"],[c.black,0]
+
+  show_stack!
+
+
 print.route = ([Er,data]) !->
 
   [ECLASS,whichE,info] = Er
 
   switch ECLASS
-  | \input =>
+  | \input   =>
 
     [ __, fname , arg_placement ] = Er
 
@@ -310,6 +323,7 @@ print.route = ([Er,data]) !->
       fname
       arg_placement
 
+  | \not_array => print.not_array data
 
   | otherwise => l Er
 

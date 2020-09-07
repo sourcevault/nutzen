@@ -80,7 +80,7 @@ V.wh = (args) ->
   ret = []
 
   switch betterTypeof validator
-  | \function => ret.push [\f,validator]
+  | \function => ret.push validator
   | otherwise => return [\fault,\first]
 
   switch betterTypeof ap
@@ -103,10 +103,47 @@ V.ma = (arg-obj) ->
 
   for I in args
     switch betterTypeof I
-    | \function => ret.push [\f,I]
+    | \function => ret.push I
     | otherwise => return [\fault,\typeError]
 
   [\ok,ret]
+
+V.arma = (arg-obj) ->
+
+  args = [...arg-obj]
+
+  if (args.length < 2)
+
+    return [\fault,\few_args]
+
+  ret = []
+
+  num  = R.head args
+
+  funs = R.tail args
+
+  retF = []
+
+  switch V.num num
+  | \num          => ret.push [\n,num]
+  | \array        => ret.push [\a,num]
+  | \fault        => return [\fault,\first]
+  | \fault.array  => return [\fault,\array]
+
+  funs = R.flatten funs
+
+  retF = []
+
+  for F in funs
+
+    switch betterTypeof F
+    | \function   => retF.push F
+    | otherwise   => return [\fault,\not_function]
+
+  ret.push retF
+
+  [\ok,ret]
+
 
 V.arwh = (args) ->
 
@@ -127,7 +164,7 @@ V.arwh = (args) ->
   | \fault.array  => return [\fault,\array]
 
   switch betterTypeof validator
-  | \function     => ret.push [\f,validator]
+  | \function     => ret.push validator
   | otherwise     => return [\fault,\second]
 
   type = betterTypeof ap
@@ -146,11 +183,15 @@ V.getvfun = (fname) ->
 
   | \ar,\arn                    => V.ar
 
+  | \arma                       => V.arma
+
   | \arwh,\arnwh,\arwhn,\arnwhn => V.arwh
 
   | \ma                         => V.ma
 
   | \def                        => V.def
+
+
 
 
 

@@ -46,7 +46,7 @@ V = hop.ar 1, do
 
 A = [\integer,\boolean,\bill,\string,\obama,\arena]
 
-z "hello world"
+
 # <- wait 500
 
 # suite

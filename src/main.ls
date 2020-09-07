@@ -17,8 +17,8 @@ init =
   fns      :[]
   def      :null
   fault    :false
+  unary    :false
   immutable:false
-  mutelog  :false
 
 #---------------------------------------------------
 #---------------------------------------------------
@@ -33,41 +33,39 @@ settle = (F,A) ->
   | \f => f ...A
   | \s => f
 
-tightloop =  (state) -> ->
+tightloop = (state) -> ->
 
-  arglen = arguments.length
+  if state.unary
 
-  for {fname,data} in state.fns
+    first = arguments[0]
+
+    switch R.type first
+
+    | \Arguments,\Array =>
+
+      arglen    = first.length
+
+    | otherwise =>
+
+      print.route [[\not_array],state]
+
+      return undefined
+
+  else
+
+    arglen    = arguments.length
+
+  I         = 0
+
+  fns       = state.fns
+
+  terminate = fns.length
+
+  do
+
+    {fname,data} = fns[I]
 
     switch fname
-
-    # --------------------------------------------
-
-    | \ma =>
-
-      J = data.length
-
-      I = 0
-
-      switch data.length
-      | 1 =>
-
-        ret = settle data[0],arguments
-
-        if ret
-          return ret
-
-
-      | otherwise =>
-
-        while (I < J)
-
-          ret = settle data[I],arguments
-
-          if ret
-            return ret
-
-          I += 1
 
     # --------------------------------------------
 
@@ -75,8 +73,39 @@ tightloop =  (state) -> ->
 
       [validator,fin] = data
 
-      if (settle validator,arguments)
-        return settle fin,arguments
+      if (validator ...arguments)
+
+        return (settle fin,arguments)
+
+    # --------------------------------------------
+
+    | \ma =>
+
+      switch data.length
+
+      | 1 =>
+
+        ret = data[0] ...arguments
+
+        if ret
+          return ret
+
+
+      | otherwise =>
+
+        Jn = data.length
+
+        J = 0
+
+        do
+
+          ret = data[J] ...arguments
+
+          if ret
+            return ret
+
+          J += 1
+        while J < Jn
 
     # --------------------------------------------
 
@@ -84,7 +113,8 @@ tightloop =  (state) -> ->
 
       [validator,fin] = data
 
-      if not (settle validator,arguments)
+      if not (validator ...arguments)
+
         return settle fin,arguments
 
     # --------------------------------------------
@@ -105,16 +135,18 @@ tightloop =  (state) -> ->
 
       | \a =>
 
-        J = data.length
+        Jn = lens.length
 
-        I = 0
+        J = 0
 
-        while (I < J)
+        do
+          if (lens[J] is arglen)
 
-          if (I is arglen)
             return settle F,arguments
 
-          I += 1
+          J += 1
+
+        while J < Jn
 
     # --------------------------------------------
 
@@ -134,23 +166,26 @@ tightloop =  (state) -> ->
 
       | \a =>
 
-        J = lens.length
+        Jn = lens.length
 
-        I = 0
+        J = 0
 
         has = false
 
-        while (I < J)
+        do
 
-          if (lens[I] is arglen)
+          if (lens[J] is arglen)
 
             has = true
 
-          I += 1
+          if not has
 
-        if not has
+            return settle fin,arguments
 
-          return settle fin,arguments
+          J += 1
+
+        while J < Jn
+
 
 
     # --------------------------------------------
@@ -161,29 +196,109 @@ tightloop =  (state) -> ->
 
       [ltype,lens] = spans
 
+      switch ltype
+
+      | \n =>
+
+        if (lens is arglen)
+          if validator ...arguments
+            return settle fin,arguments
+
+      | \a =>
+
+        Jn = lens.length
+
+        J = 0
+
+        do
+
+          if (lens[J] is arglen)
+            if validator ...arguments
+              return settle fin,arguments
+
+            J += 1
+        while J < Jn
+
+    # --------------------------------------------
+
+    | \arma     =>
+
+      [spans,funs] = data
+
+      [ltype,lens] = spans
 
       switch ltype
 
       | \n =>
 
         if (lens is arglen)
-          if settle validator,arguments
-            return settle fin,arguments
+
+          if (funs.length is 1)
+
+            ret = funs[0] ...arguments
+
+            if ret
+
+              return ret
+
+          else
+
+            Jn = funs.length
+
+            J = 0
+
+            do
+
+              ret = funs[J] ...arguments
+
+              if ret
+
+                return ret
+
+                J += 1
+
+            while J < Jn
 
       | \a =>
 
-        J = lens.length
 
-        I = 0
+        [spans,funs] = data
 
-        while (I < J)
+        [ltype,lens] = spans
 
-          if (lens[I] is arglen)
+        Jn = lens.length
 
-            if settle validator,arguments
-              return settle fin,arguments
+        J = 0
 
-          I += 1
+        do
+
+          if (lens[J] is arglen)
+
+            if (funs.length is 1)
+
+              ret = funs[0] ...arguments
+
+              if ret
+                return ret
+
+            else
+
+              Kn = funs.length
+
+              K = 0
+
+              do
+
+                ret = funs[K] ...arguments
+
+                if ret
+                  return ret
+
+                K += 1
+              while K < Kn
+
+          J += 1
+        while J < Jn
 
     # --------------------------------------------
 
@@ -199,23 +314,24 @@ tightloop =  (state) -> ->
 
         if (lens is arglen)
 
-          if not (settle validator,arguments)
+          if not (validator ...arguments)
             return settle fin,arguments
 
       | \a =>
 
-        J = lens.length
+        Jn = lens.length
 
-        I = 0
+        J = 0
 
-        while (I < J)
+        do
 
-          if (lens[I] is arglen)
+          if (lens[J] is arglen)
 
-            if not (settle validator,arguments)
+            if not (validator ...arguments)
               return settle fin,arguments
 
-          I += 1
+          J += 1
+        while J < Jn
 
     # --------------------------------------------
 
@@ -235,23 +351,26 @@ tightloop =  (state) -> ->
 
       | \a =>
 
-        J = lens.length
+        Jn = lens.length
 
-        I = 0
+        J = 0
 
         has = false
 
-        while (I < J)
+        do
 
-          if (lens[I] is arglen)
+          if (lens[J] is arglen)
 
             has = true
 
-          I += 1
+          J += 1
+
+        while J < Jn
 
         if not has
           if (settle validator,arguments)
             return settle fin,arguments
+
 
 
     # --------------------------------------------
@@ -267,36 +386,43 @@ tightloop =  (state) -> ->
       | \n =>
 
         if not (lens is arglen)
-          if not (settle validator,arguments)
+          if not (validator ...arguments)
             return settle fin,arguments
 
       | \a =>
 
-        J = lens.length
+        Jn = lens.length
 
-        I = 0
+        J = 0
 
         has = false
 
-        while (I < J)
+        do
 
-          if (lens[I] is arglen)
+          if (lens[J] is arglen)
 
             has = true
 
-          I += 1
+          J += 1
+        while J < Jn
 
         if not has
-          if not (settle validator,arguments)
+          if not (validator ...arguments)
             return settle fin,arguments
+
+
+    I += 1
+  while I < terminate
 
     # --------------------------------------------
 
   def = state.def
 
   if def
+    switch def[0]
+    | \f => return def[1] ...arguments
+    | \s => return def[1]
 
-    return settle def,arguments
 
 #---------------------------------------------------
 #---------------------------------------------------
@@ -350,6 +476,10 @@ handle.ok = (self,data,fname)->
 
 handle.def = {}
 
+handle.def.fault = -> null
+
+handle.def.fault[uic] = print.log.def_fault
+
 handle.def.ok = (self,data) ->
 
   state = self[modflag]
@@ -359,7 +489,7 @@ handle.def.ok = (self,data) ->
     state
     {
       def:data
-      str:state.str.concat \def
+      str:state.str
     }
 
   F  = tightloop neo
@@ -367,8 +497,6 @@ handle.def.ok = (self,data) ->
   F[uic] = print.log.wrap neo
 
   F
-
-handle.def.fault = handle.fault
 
 genfun = (vfun,fname) -> ->
 
@@ -391,13 +519,13 @@ main.def =  ->
 
   state = @[modflag]
 
-  if state.fault then return @
+  if state.fault then return handle.def.fault
 
   [zone,data] = verify.def arguments
 
-  handle.def[zone] @,data,\def
+  handle.def.ok @,data
 
-props = [\ma \wh \ar \whn \arn \arwh \arnwh \arwhn \arnwhn]
+props = [\ma \arma \wh \ar \whn \arn \arwh \arnwh \arwhn \arnwhn]
 
 #---------------------------------------------------
 
@@ -420,20 +548,20 @@ hoplon.immutable = looper Object.assign do
   init
   {immutable:true}
 
-hoplon.mutelog = looper Object.assign do
+hoplon.unary = looper Object.assign do
   {}
   init
-  {mutelog:true}
+  {unary:true}
 
-hoplon.immutable.mutelog = looper Object.assign do
+hoplon.immutable.unary = looper Object.assign do
   {}
   init
-  {immutable:true,mutelog:true}
+  {immutable:true,unary:true}
 
-hoplon.mutelog.immutable = looper Object.assign do
+hoplon.unary.immutable = looper Object.assign do
   {}
   init
-  {immutable:true,mutelog:true}
+  {immutable:true,unary:true}
 
 # ------------------------------------------------
 

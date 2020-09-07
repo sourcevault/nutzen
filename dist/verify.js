@@ -90,7 +90,7 @@
     ret = [];
     switch (betterTypeof(validator)) {
     case 'function':
-      ret.push(['f', validator]);
+      ret.push(validator);
       break;
     default:
       return ['fault', 'first'];
@@ -116,12 +116,49 @@
       I = args[i$];
       switch (betterTypeof(I)) {
       case 'function':
-        ret.push(['f', I]);
+        ret.push(I);
         break;
       default:
         return ['fault', 'typeError'];
       }
     }
+    return ['ok', ret];
+  };
+  V.arma = function(argObj){
+    var args, ret, num, funs, retF, i$, len$, F;
+    args = arrayFrom$(argObj);
+    if (args.length < 2) {
+      return ['fault', 'few_args'];
+    }
+    ret = [];
+    num = R.head(args);
+    funs = R.tail(args);
+    retF = [];
+    switch (V.num(num)) {
+    case 'num':
+      ret.push(['n', num]);
+      break;
+    case 'array':
+      ret.push(['a', num]);
+      break;
+    case 'fault':
+      return ['fault', 'first'];
+    case 'fault.array':
+      return ['fault', 'array'];
+    }
+    funs = R.flatten(funs);
+    retF = [];
+    for (i$ = 0, len$ = funs.length; i$ < len$; ++i$) {
+      F = funs[i$];
+      switch (betterTypeof(F)) {
+      case 'function':
+        retF.push(F);
+        break;
+      default:
+        return ['fault', 'not_function'];
+      }
+    }
+    ret.push(retF);
     return ['ok', ret];
   };
   V.arwh = function(args){
@@ -148,7 +185,7 @@
     }
     switch (betterTypeof(validator)) {
     case 'function':
-      ret.push(['f', validator]);
+      ret.push(validator);
       break;
     default:
       return ['fault', 'second'];
@@ -171,6 +208,8 @@
     case 'ar':
     case 'arn':
       return V.ar;
+    case 'arma':
+      return V.arma;
     case 'arwh':
     case 'arnwh':
     case 'arwhn':

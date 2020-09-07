@@ -22,11 +22,6 @@ add = (x,y) -> x + y
 
 hop = hoplon
 
-F = hop.arn [2,3], (-> \fault)
-
-.def \ok
-
-F 1,2,3,4
 
 
 
