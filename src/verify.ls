@@ -43,6 +43,18 @@ V.num = (num) ->
   else
     return \fault
 
+
+tron = (arr)->
+
+  ob = {}
+
+  for I in arr
+
+    ob[I] = true
+
+  ob
+
+
 V.ar = (args) ->
 
   if (args.length > 2)
@@ -56,8 +68,8 @@ V.ar = (args) ->
   ret = []
 
   switch V.num num
-  | \num          => ret.push [\n,num]
-  | \array        => ret.push [\a,num]
+  | \num          => ret.push tron [num]
+  | \array        => ret.push tron num
   | \fault        => return [\fault,\first]
   | \fault.array  => return [\fault,\array]
 
@@ -125,8 +137,8 @@ V.arma = (arg-obj) ->
   retF = []
 
   switch V.num num
-  | \num          => ret.push [\n,num]
-  | \array        => ret.push [\a,num]
+  | \num          => ret.push tron [num]
+  | \array        => ret.push tron num
   | \fault        => return [\fault,\first]
   | \fault.array  => return [\fault,\array]
 
@@ -158,8 +170,8 @@ V.arwh = (args) ->
   ret = []
 
   switch V.num num
-  | \num          => ret.push [\n,num]
-  | \array        => ret.push [\a,num]
+  | \num          => ret.push tron [num]
+  | \array        => ret.push tron num
   | \fault        => return [\fault,\first]
   | \fault.array  => return [\fault,\array]
 

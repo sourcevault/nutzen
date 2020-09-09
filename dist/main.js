@@ -26,7 +26,7 @@
   };
   tightloop = function(state){
     return function(){
-      var first, arglen, I, fns, terminate, ref$, fname, data, validator, fin, ret, Jn, J, spans, F, ltype, lens, has, funs, Kn, K, def;
+      var first, arglen, I, fns, terminate, ref$, fname, data, validator, fin, F, spans, ret0, ret1, ret2, ret3, Jn, J, ret, funs, def;
       if (state.unary) {
         first = arguments[0];
         switch (R.type(first)) {
@@ -53,12 +53,78 @@
             return settle(fin, arguments);
           }
           break;
+        case 'whn':
+          validator = data[0], F = data[1];
+          if (!validator.apply(null, arguments)) {
+            return settle(F, arguments);
+          }
+          break;
+        case 'ar':
+          spans = data[0], F = data[1];
+          if (spans[arglen]) {
+            return settle(F, arguments);
+          }
+          break;
+        case 'arn':
+          spans = data[0], F = data[1];
+          if (!spans[arglen]) {
+            return settle(F, arguments);
+          }
+          break;
+        case 'arwh':
+          spans = data[0], validator = data[1], F = data[2];
+          if (spans[arglen] && validator.apply(null, arguments)) {
+            return settle(fin, arguments);
+          }
+          break;
         case 'ma':
           switch (data.length) {
           case 1:
-            ret = data[0].apply(data, arguments);
-            if (ret) {
-              return ret;
+            ret0 = data[0].apply(data, arguments);
+            if (ret0) {
+              return ret0;
+            }
+            break;
+          case 2:
+            ret0 = data[0].apply(data, arguments);
+            if (ret0) {
+              return ret0;
+            }
+            ret1 = data[1].apply(data, arguments);
+            if (ret1) {
+              return ret1;
+            }
+            break;
+          case 3:
+            ret0 = data[0].apply(data, arguments);
+            if (ret0) {
+              return ret0;
+            }
+            ret1 = data[1].apply(data, arguments);
+            if (ret1) {
+              return ret1;
+            }
+            ret2 = data[2].apply(data, arguments);
+            if (re2) {
+              return ret2;
+            }
+            break;
+          case 4:
+            ret0 = data[0].apply(data, arguments);
+            if (ret0) {
+              return ret0;
+            }
+            ret1 = data[1].apply(data, arguments);
+            if (ret1) {
+              return ret1;
+            }
+            ret2 = data[2].apply(data, arguments);
+            if (re2) {
+              return ret2;
+            }
+            ret3 = data[3].apply(data, arguments);
+            if (re3) {
+              return ret3;
             }
             break;
           default:
@@ -73,210 +139,87 @@
             } while (J < Jn);
           }
           break;
-        case 'whn':
-          validator = data[0], fin = data[1];
-          if (!validator.apply(null, arguments)) {
-            return settle(fin, arguments);
-          }
-          break;
-        case 'ar':
-          spans = data[0], F = data[1];
-          ltype = spans[0], lens = spans[1];
-          switch (ltype) {
-          case 'n':
-            if (lens === arglen) {
-              return settle(F, arguments);
-            }
-            break;
-          case 'a':
-            Jn = lens.length;
-            J = 0;
-            do {
-              if (lens[J] === arglen) {
-                return settle(F, arguments);
-              }
-              J += 1;
-            } while (J < Jn);
-          }
-          break;
-        case 'arn':
-          spans = data[0], fin = data[1];
-          ltype = spans[0], lens = spans[1];
-          switch (ltype) {
-          case 'n':
-            if (!(lens === arglen)) {
-              return settle(fin, arguments);
-            }
-            break;
-          case 'a':
-            Jn = lens.length;
-            J = 0;
-            has = false;
-            do {
-              if (lens[J] === arglen) {
-                has = true;
-              }
-              if (!has) {
-                return settle(fin, arguments);
-              }
-              J += 1;
-            } while (J < Jn);
-          }
-          break;
-        case 'arwh':
-          spans = data[0], validator = data[1], fin = data[2];
-          ltype = spans[0], lens = spans[1];
-          switch (ltype) {
-          case 'n':
-            if (lens === arglen) {
-              if (validator.apply(null, arguments)) {
-                return settle(fin, arguments);
-              }
-            }
-            break;
-          case 'a':
-            Jn = lens.length;
-            J = 0;
-            do {
-              if (lens[J] === arglen) {
-                if (validator.apply(null, arguments)) {
-                  return settle(fin, arguments);
-                }
-                J += 1;
-              }
-            } while (J < Jn);
-          }
-          break;
         case 'arma':
-          spans = data[0], funs = data[1];
-          ltype = spans[0], lens = spans[1];
-          switch (ltype) {
-          case 'n':
-            if (lens === arglen) {
-              if (funs.length === 1) {
-                ret = funs[0].apply(funs, arguments);
+          if (data[0][arglen]) {
+            funs = data[1];
+            switch (funs.length) {
+            case 2:
+              ret0 = funs[1].apply(funs, arguments);
+              if (ret0) {
+                return ret0;
+              }
+              break;
+            case 3:
+              ret0 = funs[1].apply(funs, arguments);
+              if (ret0) {
+                return ret0;
+              }
+              ret1 = funs[2].apply(funs, arguments);
+              if (ret1) {
+                return ret1;
+              }
+              break;
+            case 4:
+              ret0 = funs[1].apply(funs, arguments);
+              if (ret0) {
+                return ret0;
+              }
+              ret1 = funs[2].apply(funs, arguments);
+              if (ret1) {
+                return ret1;
+              }
+              ret2 = funs[3].apply(funs, arguments);
+              if (re2) {
+                return ret2;
+              }
+              break;
+            case 5:
+              ret0 = funs[1].apply(funs, arguments);
+              if (ret0) {
+                return ret0;
+              }
+              ret1 = funs[2].apply(funs, arguments);
+              if (ret1) {
+                return ret1;
+              }
+              ret2 = funs[3].apply(funs, arguments);
+              if (re2) {
+                return ret2;
+              }
+              ret3 = funs[4].apply(funs, arguments);
+              if (re3) {
+                return ret3;
+              }
+              break;
+            default:
+              Jn = data.length;
+              J = 1;
+              do {
+                ret = funs[J].apply(funs, arguments);
                 if (ret) {
                   return ret;
                 }
-              } else {
-                Jn = funs.length;
-                J = 0;
-                do {
-                  ret = funs[J].apply(funs, arguments);
-                  if (ret) {
-                    return ret;
-                    J += 1;
-                  }
-                } while (J < Jn);
-              }
+                J += 1;
+              } while (J < Jn);
             }
-            break;
-          case 'a':
-            spans = data[0], funs = data[1];
-            ltype = spans[0], lens = spans[1];
-            Jn = lens.length;
-            J = 0;
-            do {
-              if (lens[J] === arglen) {
-                if (funs.length === 1) {
-                  ret = funs[0].apply(funs, arguments);
-                  if (ret) {
-                    return ret;
-                  }
-                } else {
-                  Kn = funs.length;
-                  K = 0;
-                  do {
-                    ret = funs[K].apply(funs, arguments);
-                    if (ret) {
-                      return ret;
-                    }
-                    K += 1;
-                  } while (K < Kn);
-                }
-              }
-              J += 1;
-            } while (J < Jn);
           }
           break;
         case 'arwhn':
-          spans = data[0], validator = data[1], fin = data[2];
-          ltype = spans[0], lens = spans[1];
-          switch (ltype) {
-          case 'n':
-            if (lens === arglen) {
-              if (!validator.apply(null, arguments)) {
-                return settle(fin, arguments);
-              }
-            }
-            break;
-          case 'a':
-            Jn = lens.length;
-            J = 0;
-            do {
-              if (lens[J] === arglen) {
-                if (!validator.apply(null, arguments)) {
-                  return settle(fin, arguments);
-                }
-              }
-              J += 1;
-            } while (J < Jn);
+          spans = data[0], validator = data[1], F = data[2];
+          if (spans[arglen] && !validator.apply(null, arguments)) {
+            return settle(F, arguments);
           }
           break;
         case 'arnwh':
-          spans = data[0], validator = data[1], fin = data[2];
-          ltype = spans[0], lens = spans[1];
-          switch (ltype) {
-          case 'n':
-            if (!(lens === arglen)) {
-              if (settle(validator, arguments)) {
-                return settle(fin, arguments);
-              }
-            }
-            break;
-          case 'a':
-            Jn = lens.length;
-            J = 0;
-            has = false;
-            do {
-              if (lens[J] === arglen) {
-                has = true;
-              }
-              J += 1;
-            } while (J < Jn);
-            if (!has) {
-              if (settle(validator, arguments)) {
-                return settle(fin, arguments);
-              }
-            }
+          spans = data[0], validator = data[1], F = data[2];
+          if (!spans[arglen] && validator.apply(null, arguments)) {
+            return settle(F, arguments);
           }
           break;
         case 'arnwhn':
-          spans = data[0], validator = data[1], fin = data[2];
-          ltype = spans[0], lens = spans[1];
-          switch (ltype) {
-          case 'n':
-            if (!(lens === arglen)) {
-              if (!validator.apply(null, arguments)) {
-                return settle(fin, arguments);
-              }
-            }
-            break;
-          case 'a':
-            Jn = lens.length;
-            J = 0;
-            has = false;
-            do {
-              if (lens[J] === arglen) {
-                has = true;
-              }
-              J += 1;
-            } while (J < Jn);
-            if (!has) {
-              if (!validator.apply(null, arguments)) {
-                return settle(fin, arguments);
-              }
-            }
+          spans = data[0], validator = data[1], F = data[2];
+          if (!(spans[arglen] && validator.apply(null, arguments))) {
+            return settle(F, arguments);
           }
         }
         I += 1;

@@ -79,17 +79,108 @@ tightloop = (state) -> ->
 
     # --------------------------------------------
 
+    | \whn =>
+
+      [validator,F] = data
+
+      if not (validator ...arguments)
+
+        return settle F,arguments
+
+    # --------------------------------------------
+
+    | \ar =>
+
+      [spans,F] = data
+
+      if spans[arglen]
+
+        return settle F,arguments
+
+    # --------------------------------------------
+
+    | \arn =>
+
+      [spans,F] = data
+
+      if not spans[arglen]
+
+        return settle F,arguments
+
+    # --------------------------------------------
+
+    | \arwh     =>
+
+      [spans,validator,F] = data
+
+      if spans[arglen] and (validator ...arguments)
+
+        return settle fin,arguments
+
+
+    # --------------------------------------------
+
     | \ma =>
 
       switch data.length
 
       | 1 =>
 
-        ret = data[0] ...arguments
+        ret0 = data[0] ...arguments
 
-        if ret
-          return ret
+        if ret0
+          return ret0
 
+      | 2 =>
+
+        ret0 = data[0] ...arguments
+
+        if ret0
+          return ret0
+
+        ret1 = data[1] ...arguments
+
+        if ret1
+          return ret1
+
+      | 3 =>
+
+        ret0 = data[0] ...arguments
+
+        if ret0
+          return ret0
+
+        ret1 = data[1] ...arguments
+
+        if ret1
+          return ret1
+
+        ret2 = data[2] ...arguments
+
+        if re2
+          return ret2
+
+      | 4 =>
+
+        ret0 = data[0] ...arguments
+
+        if ret0
+          return ret0
+
+        ret1 = data[1] ...arguments
+
+        if ret1
+          return ret1
+
+        ret2 = data[2] ...arguments
+
+        if re2
+          return ret2
+
+        ret3 = data[3] ...arguments
+
+        if re3
+          return ret3
 
       | otherwise =>
 
@@ -109,312 +200,122 @@ tightloop = (state) -> ->
 
     # --------------------------------------------
 
-    | \whn =>
-
-      [validator,fin] = data
-
-      if not (validator ...arguments)
-
-        return settle fin,arguments
-
-    # --------------------------------------------
-
-    | \ar =>
-
-      [spans,F] = data
-
-      [ltype,lens] = spans
-
-      switch ltype
-
-      | \n =>
-
-        if (lens is arglen)
-
-          return settle F,arguments
-
-      | \a =>
-
-        Jn = lens.length
-
-        J = 0
-
-        do
-          if (lens[J] is arglen)
-
-            return settle F,arguments
-
-          J += 1
-
-        while J < Jn
-
-    # --------------------------------------------
-
-    | \arn =>
-
-      [spans,fin] = data
-
-      [ltype,lens] = spans
-
-      switch ltype
-
-      | \n =>
-
-        if not (lens is arglen)
-
-          return settle fin,arguments
-
-      | \a =>
-
-        Jn = lens.length
-
-        J = 0
-
-        has = false
-
-        do
-
-          if (lens[J] is arglen)
-
-            has = true
-
-          if not has
-
-            return settle fin,arguments
-
-          J += 1
-
-        while J < Jn
-
-
-
-    # --------------------------------------------
-
-    | \arwh     =>
-
-      [spans,validator,fin] = data
-
-      [ltype,lens] = spans
-
-      switch ltype
-
-      | \n =>
-
-        if (lens is arglen)
-          if validator ...arguments
-            return settle fin,arguments
-
-      | \a =>
-
-        Jn = lens.length
-
-        J = 0
-
-        do
-
-          if (lens[J] is arglen)
-            if validator ...arguments
-              return settle fin,arguments
-
-            J += 1
-        while J < Jn
-
-    # --------------------------------------------
-
     | \arma     =>
 
-      [spans,funs] = data
+      if data[0][arglen]
 
-      [ltype,lens] = spans
+        funs = data[1]
 
-      switch ltype
+        switch funs.length
+        | 2 =>
 
-      | \n =>
+          ret0 = funs[1] ...arguments
 
-        if (lens is arglen)
+          if ret0
+            return ret0
 
-          if (funs.length is 1)
+        | 3 =>
 
-            ret = funs[0] ...arguments
+          ret0 = funs[1] ...arguments
+
+          if ret0
+            return ret0
+
+          ret1 = funs[2] ...arguments
+
+          if ret1
+            return ret1
+
+        | 4 =>
+
+          ret0 = funs[1] ...arguments
+
+          if ret0
+            return ret0
+
+          ret1 = funs[2] ...arguments
+
+          if ret1
+            return ret1
+
+          ret2 = funs[3] ...arguments
+
+          if re2
+            return ret2
+
+        | 5 =>
+
+          ret0 = funs[1] ...arguments
+
+          if ret0
+            return ret0
+
+          ret1 = funs[2] ...arguments
+
+          if ret1
+            return ret1
+
+          ret2 = funs[3] ...arguments
+
+          if re2
+            return ret2
+
+          ret3 = funs[4] ...arguments
+
+          if re3
+            return ret3
+
+        | otherwise =>
+
+          Jn = data.length
+
+          J = 1
+
+          do
+
+            ret = funs[J] ...arguments
 
             if ret
-
               return ret
 
-          else
+            J += 1
+          while J < Jn
 
-            Jn = funs.length
-
-            J = 0
-
-            do
-
-              ret = funs[J] ...arguments
-
-              if ret
-
-                return ret
-
-                J += 1
-
-            while J < Jn
-
-      | \a =>
-
-
-        [spans,funs] = data
-
-        [ltype,lens] = spans
-
-        Jn = lens.length
-
-        J = 0
-
-        do
-
-          if (lens[J] is arglen)
-
-            if (funs.length is 1)
-
-              ret = funs[0] ...arguments
-
-              if ret
-                return ret
-
-            else
-
-              Kn = funs.length
-
-              K = 0
-
-              do
-
-                ret = funs[K] ...arguments
-
-                if ret
-                  return ret
-
-                K += 1
-              while K < Kn
-
-          J += 1
-        while J < Jn
 
     # --------------------------------------------
 
     | \arwhn    =>
 
-      [spans,validator,fin] = data
+      [spans,validator,F] = data
 
-      [ltype,lens] = spans
+      if spans[arglen] and not (validator ...arguments)
 
-      switch ltype
-
-      | \n =>
-
-        if (lens is arglen)
-
-          if not (validator ...arguments)
-            return settle fin,arguments
-
-      | \a =>
-
-        Jn = lens.length
-
-        J = 0
-
-        do
-
-          if (lens[J] is arglen)
-
-            if not (validator ...arguments)
-              return settle fin,arguments
-
-          J += 1
-        while J < Jn
+        return settle F,arguments
 
     # --------------------------------------------
 
     | \arnwh    =>
 
-      [spans,validator,fin] = data
+      [spans,validator,F] = data
 
-      [ltype,lens] = spans
+      if (not spans[arglen]) and (validator ...arguments)
 
-      switch ltype
+        return settle F,arguments
 
-      | \n =>
-
-        if not (lens is arglen)
-          if (settle validator,arguments)
-            return settle fin,arguments
-
-      | \a =>
-
-        Jn = lens.length
-
-        J = 0
-
-        has = false
-
-        do
-
-          if (lens[J] is arglen)
-
-            has = true
-
-          J += 1
-
-        while J < Jn
-
-        if not has
-          if (settle validator,arguments)
-            return settle fin,arguments
-
-
-
-    # --------------------------------------------
+  #   # --------------------------------------------
 
     | \arnwhn    =>
 
-      [spans,validator,fin] = data
+      [spans,validator,F] = data
 
-      [ltype,lens] = spans
+      if not ((spans[arglen]) and (validator ...arguments))
 
-      switch ltype
-
-      | \n =>
-
-        if not (lens is arglen)
-          if not (validator ...arguments)
-            return settle fin,arguments
-
-      | \a =>
-
-        Jn = lens.length
-
-        J = 0
-
-        has = false
-
-        do
-
-          if (lens[J] is arglen)
-
-            has = true
-
-          J += 1
-        while J < Jn
-
-        if not has
-          if not (validator ...arguments)
-            return settle fin,arguments
-
+        return settle F,arguments
 
     I += 1
   while I < terminate
 
-    # --------------------------------------------
+  # --------------------------------------------
 
   def = state.def
 
