@@ -143,57 +143,57 @@
           if (data[0][arglen]) {
             funs = data[1];
             switch (funs.length) {
-            case 2:
-              ret0 = funs[1].apply(funs, arguments);
+            case 1:
+              ret0 = funs[0].apply(funs, arguments);
               if (ret0) {
                 return ret0;
+              }
+              break;
+            case 2:
+              ret0 = funs[0].apply(funs, arguments);
+              if (ret0) {
+                return ret0;
+              }
+              ret1 = funs[1].apply(funs, arguments);
+              if (ret1) {
+                return ret1;
               }
               break;
             case 3:
-              ret0 = funs[1].apply(funs, arguments);
+              ret0 = funs[0].apply(funs, arguments);
               if (ret0) {
                 return ret0;
               }
-              ret1 = funs[2].apply(funs, arguments);
+              ret1 = funs[1].apply(funs, arguments);
               if (ret1) {
                 return ret1;
+              }
+              ret2 = funs[2].apply(funs, arguments);
+              if (re2) {
+                return ret2;
               }
               break;
             case 4:
-              ret0 = funs[1].apply(funs, arguments);
+              ret0 = funs[0].apply(funs, arguments);
               if (ret0) {
                 return ret0;
               }
-              ret1 = funs[2].apply(funs, arguments);
+              ret1 = funs[1].apply(funs, arguments);
               if (ret1) {
                 return ret1;
               }
-              ret2 = funs[3].apply(funs, arguments);
+              ret2 = funs[2].apply(funs, arguments);
               if (re2) {
                 return ret2;
               }
-              break;
-            case 5:
-              ret0 = funs[1].apply(funs, arguments);
-              if (ret0) {
-                return ret0;
-              }
-              ret1 = funs[2].apply(funs, arguments);
-              if (ret1) {
-                return ret1;
-              }
-              ret2 = funs[3].apply(funs, arguments);
-              if (re2) {
-                return ret2;
-              }
-              ret3 = funs[4].apply(funs, arguments);
+              ret3 = funs[3].apply(funs, arguments);
               if (re3) {
                 return ret3;
               }
               break;
             default:
               Jn = data.length;
-              J = 1;
+              J = 0;
               do {
                 ret = funs[J].apply(funs, arguments);
                 if (ret) {

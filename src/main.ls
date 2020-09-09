@@ -207,60 +207,60 @@ tightloop = (state) -> ->
         funs = data[1]
 
         switch funs.length
-        | 2 =>
+        | 1 =>
 
-          ret0 = funs[1] ...arguments
+          ret0 = funs[0] ...arguments
 
           if ret0
             return ret0
+
+        | 2 =>
+
+          ret0 = funs[0] ...arguments
+
+          if ret0
+            return ret0
+
+          ret1 = funs[1] ...arguments
+
+          if ret1
+            return ret1
 
         | 3 =>
 
-          ret0 = funs[1] ...arguments
+          ret0 = funs[0] ...arguments
 
           if ret0
             return ret0
 
-          ret1 = funs[2] ...arguments
+          ret1 = funs[1] ...arguments
 
           if ret1
             return ret1
+
+          ret2 = funs[2] ...arguments
+
+          if re2
+            return ret2
 
         | 4 =>
 
-          ret0 = funs[1] ...arguments
+          ret0 = funs[0] ...arguments
 
           if ret0
             return ret0
 
-          ret1 = funs[2] ...arguments
+          ret1 = funs[1] ...arguments
 
           if ret1
             return ret1
 
-          ret2 = funs[3] ...arguments
+          ret2 = funs[2] ...arguments
 
           if re2
             return ret2
 
-        | 5 =>
-
-          ret0 = funs[1] ...arguments
-
-          if ret0
-            return ret0
-
-          ret1 = funs[2] ...arguments
-
-          if ret1
-            return ret1
-
-          ret2 = funs[3] ...arguments
-
-          if re2
-            return ret2
-
-          ret3 = funs[4] ...arguments
+          ret3 = funs[3] ...arguments
 
           if re3
             return ret3
@@ -269,7 +269,7 @@ tightloop = (state) -> ->
 
           Jn = data.length
 
-          J = 1
+          J = 0
 
           do
 
