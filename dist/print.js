@@ -55,6 +55,17 @@
       return print.log.main(state);
     };
   };
+  print.log.prox = function(state){
+    var str;
+    if (state === null) {
+      return null;
+    }
+    if (state.lock) {
+      return c.ok("[Function]");
+    }
+    str = R.join("", ["[" + name, "|", state.vr.join("|"), "]"]);
+    return c.warn(str) + " [ ]";
+  };
   arrange = R.pipe(R.groupWith(R.equals), R.map(function(x){
     var name;
     name = x[0];
@@ -249,6 +260,23 @@
     l(lit(["unary namespace requires first argument to be array like.", "\n"], [c.black, 0]));
     return show_stack();
   };
+  print.setting = function(type, path){
+    var msg, vr, key;
+    msg = (function(){
+      switch (type) {
+      case 'path_locked':
+        return "all settings enabled.";
+      case 'already_in_path':
+        return "setting already enabled.";
+      case 'not_in_opts':
+        return "undefined option.";
+      }
+    }());
+    l(lit([name + "][configError]", " " + msg], [c.err, c.warn]));
+    vr = path[0], key = path[1];
+    l('\n', lit([vr.join("."), ".", key], [c.ok, c.ok, c.er]), '\n');
+    return show_stack();
+  };
   print.route = function(arg$){
     var Er, data, ECLASS, whichE, info, __, fname, arg_placement;
     Er = arg$[0], data = arg$[1];
@@ -261,8 +289,11 @@
     case 'not_array':
       print.not_array(data);
       break;
+    case 'setting':
+      print.setting(Er[1], data);
+      break;
     default:
-      l(Er);
+      l(Er, data);
     }
   };
 }).call(this);

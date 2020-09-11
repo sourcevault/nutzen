@@ -12,16 +12,17 @@ p = print.fail 'test3.js'
 
 # ------- ----------------------------------------------------------------------------------
 
-hop = hoplon
+hop = hoplon.debug
 
-V_inner = hop.wh -> true,->true
+V_inner = hop
+.wh -> true,->true
+.def!
 
 V_outer = hop
 .wh do
   -> true
   V_inner
 .def null
-
 
 
 ret = V_outer [1,2,4],[1,2,4]

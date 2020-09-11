@@ -6,12 +6,12 @@
   com = reg.com, print = reg.print, hoplon = reg.hoplon;
   z = com.z, l = com.l;
   p = print.fail('test3.js');
-  hop = hoplon;
+  hop = hoplon.debug;
   V_inner = hop.wh(function(){
     return true;
   }, function(){
     return true;
-  });
+  }).def();
   V_outer = hop.wh(function(){
     return true;
   }, V_inner).def(null);

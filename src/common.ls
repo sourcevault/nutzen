@@ -4,6 +4,8 @@ R             = require "ramda"
 
 chalk         = require "chalk"
 
+binapi        = require "binapi"
+
 pretty-error  = require "pretty-error"
 
 # --------------------------------------------------------------------------------------
@@ -36,6 +38,7 @@ main =
   l             : l
   noop          : noop
   chalk         : chalk
+  binapi        : binapi
   pretty-error  : pretty-error
   uic           : util_inspect_custom
 

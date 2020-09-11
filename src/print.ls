@@ -64,6 +64,17 @@ print.log.proto = ->
 
 print.log.wrap = (state) -> -> print.log.main state
 
+print.log.prox = (state) ->
+
+  if state is null
+    return null
+
+  if state.lock
+    return c.ok "[Function]"
+
+  str = R.join "",["[#{name}","|",(state.vr.join "|"),"]"]
+
+  (c.warn str) + " [ ]"
 
 arrange = R.pipe do
   R.groupWith R.equals
@@ -309,6 +320,28 @@ print.not_array = (data) ->
   show_stack!
 
 
+print.setting = (type,path) ->
+
+  msg = switch type
+  | \path_locked     => "all settings enabled."
+  | \already_in_path => "setting already enabled."
+  | \not_in_opts     => "undefined option."
+
+  l lit ["#{name}][configError]"," #{msg}"],[c.err,c.warn]
+
+
+  [vr,key] = path
+
+  l do
+    '\n'
+    lit [(vr.join "."),".",key],[c.ok,c.ok,c.er]
+    '\n'
+
+  # l lit ["unary namespace requires first argument to be array like.","\n"],[c.black,0]
+
+  show_stack!
+
+
 print.route = ([Er,data]) !->
 
   [ECLASS,whichE,info] = Er
@@ -325,6 +358,8 @@ print.route = ([Er,data]) !->
 
   | \not_array => print.not_array data
 
-  | otherwise => l Er
+  | \setting => print.setting Er[1],data
+
+  | otherwise => l Er,data
 
 

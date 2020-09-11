@@ -8,7 +8,7 @@ require "./verify" # [...load print.js...]
 
 #---------------------------------------------------
 
-{l,z,R,uic} = com
+{l,z,R,uic,binapi} = com
 
 #---------------------------------------------------
 
@@ -61,7 +61,8 @@ tightloop = (state) -> ->
 
   terminate = fns.length
 
-  do
+
+  while I < terminate
 
     {fname,data} = fns[I]
 
@@ -188,7 +189,7 @@ tightloop = (state) -> ->
 
         J = 0
 
-        do
+        while J < Jn
 
           ret = data[J] ...arguments
 
@@ -196,7 +197,6 @@ tightloop = (state) -> ->
             return ret
 
           J += 1
-        while J < Jn
 
     # --------------------------------------------
 
@@ -271,7 +271,7 @@ tightloop = (state) -> ->
 
           J = 0
 
-          do
+          while J < Jn
 
             ret = funs[J] ...arguments
 
@@ -279,7 +279,6 @@ tightloop = (state) -> ->
               return ret
 
             J += 1
-          while J < Jn
 
 
     # --------------------------------------------
@@ -313,7 +312,6 @@ tightloop = (state) -> ->
         return settle F,arguments
 
     I += 1
-  while I < terminate
 
   # --------------------------------------------
 
@@ -336,7 +334,9 @@ looper = (state) ->
 
   instance[modflag] = state
 
-  instance
+  frozen = Object.freeze instance
+
+  frozen
 
 handle = {}
 
@@ -354,6 +354,7 @@ handle.fault = (self,data,fname) ->
 
 
 handle.ok = (self,data,fname)->
+
 
   state = self[modflag]
 
@@ -395,7 +396,8 @@ handle.def.ok = (self,data) ->
 
   F  = tightloop neo
 
-  F[uic] = print.log.wrap neo
+  if state.debug
+    F[uic] = print.log.wrap neo
 
   F
 
@@ -442,36 +444,78 @@ R.reduce do
 
 #---------------------------------------------------
 
-hoplon = looper init
+cat = {}
 
-hoplon.immutable = looper Object.assign do
-  {}
-  init
-  {immutable:true}
+cat.opt = new Set [\unary,\immutable,\debug]
 
-hoplon.unary = looper Object.assign do
-  {}
-  init
-  {unary:true}
+cat.methods = new Set props
 
-hoplon.immutable.unary = looper Object.assign do
-  {}
-  init
-  {immutable:true,unary:true}
+getter = ({path,lock,str,vr},key) ->
 
-hoplon.unary.immutable = looper Object.assign do
-  {}
-  init
-  {immutable:true,unary:true}
+  if lock
 
-# ------------------------------------------------
+    print.route [[\setting,\path_locked],[vr,key]]
 
-Object.freeze hoplon
+    return null
 
-reg.hoplon = hoplon
+  if cat.opt.has key
 
-module.exports = hoplon
+    if (R.includes key,path)
+
+      print.route [[\setting,\already_in_path],[vr,key]]
+
+      null
+
+    else
+
+      npath = path.concat key
+
+      sorted = (R.clone npath).sort!
+
+      {path:sorted,lock:false,str:(sorted.join "."),vr:npath}
+
+  else if cat.methods.has key
+
+    {path:path,lock:true,str:str,vr:vr,key:key}
+
+  else
+
+    print.route [[\setting,\not_in_opts],[vr,key]]
+
+    null
+
+topcache = {}
+
+entry = (data,args) ->
+
+  str = data.str
+
+  has = topcache[str]
+
+  if has
+    return has[data.key] ...args
+
+  {path,lock,vr,key} = data
+
+  ob = {}
+
+  for ke in path
+    ob[ke] = true
+
+  put = looper Object.assign do
+    {}
+    init
+    ob
+
+  topcache[str] = put
+
+  put[key] ...args
 
 
+pkg = binapi do
+  entry,getter,{path:[],lock:false,vr:[],str:[],key:null}
+  print.log.prox
 
+reg.hoplon = pkg
 
+module.exports = pkg
