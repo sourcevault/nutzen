@@ -165,7 +165,8 @@ It's also possible to just provide a static value or object as default.
 
 ### Namespaces
 
-***Immutable***
+
+***immutable***
 
 In case immutable chain is needed, hoplon offers immutability through `hoplon.immutable` namespace.
 
@@ -182,7 +183,7 @@ var add3 = init.ar(3,(x,y,z)=> x + y + z)
 console.log (add2 == add3) // false
 ```
 
-***Unary***
+***unary***
 
 It's common enough to want to apply the `.ar` counting on a specific argument itself.
 
@@ -190,8 +191,15 @@ It's common enough to want to apply the `.ar` counting on a specific argument it
 
 The condition of course is that the first argument **has** to be **array like**.
 
+***debug***
+
+By default exit function doesn't have debug logging enabled.
+
+In case debug message is needed then `.debug` namespace can be used.
 
 #### Update and API change
+
+◾️ `0.0.28` - `.debug` namespace added, `binapi` is used to now expose namespaces using ES6 proxies.
 
 ◾️ `0.0.25` - `.unary` namespace added.
 
