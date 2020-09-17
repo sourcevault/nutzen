@@ -6,7 +6,7 @@ npm install hoplon
 npm install sourcevault/hoplon#dist
 ```
 
-[![Build Status](https://travis-ci.org/sourcevault/hoplon.svg?branch=unstable)](https://travis-ci.org/sourcevault/hoplon)
+[![Build Status](https://travis-ci.org/sourcevault/hoplon.svg?branch=dev)](https://travis-ci.org/sourcevault/hoplon)
 
 `hoplon` is a small utility function to provide extensive support for creation of immutable functional guards, similar to what exists in Haskell / Elixir / Erlang for graceful error handling.
 
@@ -205,14 +205,13 @@ In case debug message is needed then `.debug` namespace can be used.
 
 ◾️ `0.0.24` - `.arma` added as a new method.
 
-◾️ `0.0.20` - `.pipe` and `.wrap` removed and `.wrap` is done using `.def`. `.def` is compulsory for `hoplon`.
-
 ◾️ `0.0.18` - hoplon have been made mutable by default, immutability moved to `hoplon.immutable`. `mutelog` option added.
 
 ◾️ `0.0.17` - internal rewrite to improve performance.
 
 ## LICENCE
 
-- Code released under MIT License, see [LICENSE](https://github.com/sourcevault/hoplon/blob/dist/LICENCE) for details.
-
-- Documentation and image released under CC-BY-4.0 see [LICENSE](https://github.com/sourcevault/hoplon/blob/dev/LICENCE1) for details.
+- Code released under lgpl-3.0 Licence.
+- Documentation and images released under CC BY-NC-ND 4.0.
+- details can be found [here](https://github.com/sourcevault/hoplon/blob/dev/COPYING.txt).
+- Dual licence can be obtained by contacting copyright holder.
