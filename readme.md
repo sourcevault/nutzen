@@ -211,7 +211,6 @@ In case debug message is needed then `.debug` namespace can be used.
 
 ## LICENCE
 
-- Code released under lgpl-3.0 Licence.
+- Code released under BSD-3-Clause.
 - Documentation and images released under CC BY-NC-ND 4.0.
 - details can be found [here](https://github.com/sourcevault/hoplon/blob/dev/COPYING.txt).
-- Dual licence can be obtained by contacting copyright holder.

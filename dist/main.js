@@ -322,7 +322,7 @@
   }, main, props);
   cat = {};
   cat.opt = new Set(['unary', 'immutable', 'debug']);
-  cat.methods = new Set(props);
+  cat.methods = new Set(props.concat(["def"]));
   getter = function(arg$, key){
     var path, lock, str, vr, npath, sorted;
     path = arg$.path, lock = arg$.lock, str = arg$.str, vr = arg$.vr;
