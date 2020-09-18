@@ -2,11 +2,11 @@
 
 R             = require "ramda"
 
-chalk         = require "chalk"
-
 binapi        = require "binapi"
 
 pretty-error  = require "pretty-error"
+
+cc            = require "cli-color"
 
 # --------------------------------------------------------------------------------------
 
@@ -31,13 +31,12 @@ else
 
 #--------------------------------------------------------------------------------------
 
-
 main =
   z             : z
   R             : R
   l             : l
+  cc            : cc
   noop          : noop
-  chalk         : chalk
   binapi        : binapi
   pretty-error  : pretty-error
   uic           : util_inspect_custom

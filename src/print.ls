@@ -2,7 +2,7 @@ reg = require "./registry"
 
 {com,main} = reg
 
-{z,chalk,l,pretty-error,R} = com
+{z,l,pretty-error,R,cc} = com
 
 {modflag} = reg
 
@@ -11,11 +11,11 @@ print = reg.print
 packageJ = reg.packageJ
 
 c = {}
-  ..ok    = chalk.green.bold
-  ..er    = chalk.hex "FF0000"
-  ..warn  = chalk.hex "FFFFCD"
-  ..err   = chalk.red
-  ..black = chalk.rgb(128, 128, 128).bold
+  ..ok    = cc.greenBright
+  ..er    = cc.xterm 196
+  ..warn  = cc.xterm 209
+  ..err   = cc.redBright
+  ..black = cc.xterm 8
 
 help =
   c.black "[  docs] #{packageJ.homepage}"
@@ -28,7 +28,7 @@ pe.skipNodeFiles!
 
 pe.filterParsedError (Error) ->
 
-  Error._trace = R.takeLast 5,Error._trace
+  Error._trace = R.takeLast 3,Error._trace
 
   Error
 
@@ -72,9 +72,17 @@ print.log.prox = (state) ->
   if state.lock
     return c.ok "[Function]"
 
-  str = R.join "",["[#{name}","|",(state.vr.join "|"),"]"]
+  if (state.vr.length is 0)
 
-  (c.warn str) + " [ ]"
+    inner = ""
+
+  else
+
+    inner = "|" + state.vr.join "|"
+
+  str = R.join "",["[#{name}",inner,"]"]
+
+  (c.warn str) + " []"
 
 arrange = R.pipe do
   R.groupWith R.equals
@@ -109,7 +117,6 @@ print.log.main = (state) ->
 
   arr = arrange state.str
 
-
   str = put + " " + "[ " + arr + " ]"
 
   str
@@ -117,7 +124,6 @@ print.log.main = (state) ->
 
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
-
 
 show_stack = !->
 
@@ -218,12 +224,9 @@ StrEType = (fname,eType) ->
   switch eType
   | \many_args,\few_args => return StrArgLen fname,ctype,eType
 
-  parts = switch ctype
-  | \ma =>
+  init = switch ctype
+  | \ma => c.er 'function|[fun....]'
 
-      [
-        c.er 'function|[fun....]'
-      ]
 
   | \arma =>
 
@@ -278,11 +281,9 @@ StrEType = (fname,eType) ->
       lit ["number[num..],","function",",function|any"],[c.ok,c.er,c.ok]
 
 
-  parts[0] = lit ["(" parts[0] ")"],[c.ok,null,c.ok]
+  init = lit ["(",init,")"],[c.ok,null,c.ok]
 
-  parts.push 'One of the argument cannot be used by the function'
-
-  parts
+  [init,'One of the argument cannot be used by the function']
 
 
 print.typeError = (data,fname,attribute) ->
@@ -336,8 +337,6 @@ print.setting = (type,path) ->
     '\n'
     lit [(vr.join "."),".",key],[c.ok,c.ok,c.er]
     '\n'
-
-  # l lit ["unary namespace requires first argument to be array like.","\n"],[c.black,0]
 
   show_stack!
 

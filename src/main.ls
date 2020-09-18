@@ -355,7 +355,6 @@ handle.fault = (self,data,fname) ->
 
 handle.ok = (self,data,fname)->
 
-
   state = self[modflag]
 
   if (state.immutable) or (state.str.length is 0)
@@ -448,7 +447,7 @@ cat = {}
 
 cat.opt = new Set [\unary,\immutable,\debug]
 
-cat.methods = new Set props
+cat.methods = new Set (props.concat ["def"])
 
 getter = ({path,lock,str,vr},key) ->
 

@@ -8,6 +8,8 @@ wait = (t,f) -> setTimeout f,t
 
 {com,print,hoplon} = reg
 
+hop = hoplon
+
 {z,l,R} = com
 
 p = print.fail 'test.js'
@@ -22,18 +24,11 @@ typeE   = -> z "argument type has to be number"
 
 add = (x,y) -> x + y
 
-hop = hoplon
-
 
 F1 = hop
-
-.arma do
-	1
-	-> false
-	-> \hello-world
+# .ar null,-> "true"
 .def \fault
 
-F1 \foo
 
 
 
