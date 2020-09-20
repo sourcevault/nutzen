@@ -8,7 +8,7 @@ npm install sourcevault/hoplon#dist
 
 [![Build Status](https://travis-ci.org/sourcevault/hoplon.svg?branch=dev)](https://travis-ci.org/sourcevault/hoplon)
 
-`hoplon` is a small utility function to provide extensive support for creation of immutable functional guards, similar to what exists in Haskell / Elixir / Erlang for graceful error handling.
+`hoplon` is a tiny utility module to construct immutable functional guards, similar to what exists in Haskell / Elixir / Erlang for graceful error handling.
 
 .. **quick examples** ..
 
@@ -16,17 +16,17 @@ npm install sourcevault/hoplon#dist
 ```js
 var hoplon = require("hoplon")
 
-var add = (x,y)=> x + y
+var add = (x,y) => x + y
 
 var adder = hoplon
+.arn(2,() => console.log("Error: only accepts 2 arugument"))
 .ar(2,add)
-.arn(2,() => console.log("only accepts 2 arugument"))
-.def(null) // always provide a default when all match fails.
+.def(null) // always provide a default value when all match fails.
 
 adder(1,3) // 4
 ```
 
-If you notice we do not check if x, y are numbers, we can fix this by using `.when_not` in our error handling :
+If you notice we do not check if x, y are numbers, we can fix this by using `.whn` (when not ) in our error handling :
 
 ```js
 var bothNum = (x,y)=> (((typeof x) is "number") && ((typeof y) is "number"))
@@ -53,7 +53,7 @@ Guards are function wrappers that are commonly found in functional programming l
 
 They also encourage efficient use of pattern matching to structure code and external API.
 
-🟢 Table 1 - shorthands for method names and their types.
+🟢 Table 1 - method names and their types.
 
 ```
 METHOD NAME      EXPANDED            TYPES
@@ -73,8 +73,7 @@ def              default             (function|any)
 ----------------------------------------------------------------------------
 ```
 
-
-🟢 Table 2 - Types displayed with argument columns.
+🟢 Table 2 - method types displayed with argument columns.
 
 ```
 METHOD NAME   TYPES
@@ -99,7 +98,7 @@ arma    function|[function....]|f₁,f₂,f₃  ......... fₙ
 ```
 ### Method Descriptions
 
-The API surface is kept large to provide as much help when it comes to writing error-handling logic in large codebases.
+The API surface is purposefully kept large to cover all types of niche pattern matching usecases.
 
 ◾️ `ar` : `(number|[num...],function|any)`
 
@@ -164,7 +163,6 @@ It's also possible to just provide a static value or object as default.
 - all the methods also accept **non-functions** as their last value, functionality was added to make it possible to easily return static values for efficient and easy pattern matching.
 
 ### Namespaces
-
 
 ***immutable***
 
