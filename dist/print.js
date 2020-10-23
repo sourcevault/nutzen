@@ -185,9 +185,9 @@
     }());
     switch (eType) {
     case 'many_args':
-      return ["too many arguments", c.er("xx"), "only " + data[0] + " arguments accepted\n\ntype :: " + data[1]];
+      return ["too many arguments", c.er("  only " + data[0] + " arguments \n\n  accepted type :: " + data[1] + " ")];
     case 'few_args':
-      return ["too few arguments", c.er("xx"), "requires " + data[0] + " arguments\n\ntype : " + data[1]];
+      return ["too few arguments", c.er("  requires " + data[0] + " arguments \n\n  type : " + data[1] + " ")];
     }
   };
   lit = R.pipe(R.zipWith(function(x, f){
