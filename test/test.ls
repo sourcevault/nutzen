@@ -25,9 +25,9 @@ typeE   = -> z "argument type has to be number"
 add = (x,y) -> x + y
 
 
-F1 = hop
-# .ar null,-> "true"
-.def \fault
+# F1 = hop
+# .wh null
+# .def \fault
 
 
 

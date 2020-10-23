@@ -192,22 +192,12 @@ StrArgLen = (fname,ctype,eType)->
   | \many_args =>
     [
       "too many arguments"
-      c.er "xx"
-      """
-        only #{data[0]} arguments accepted
-
-        type :: #{data[1]}
-      """
+      c.er "  only #{data[0]} arguments \n\n  accepted type :: #{data[1]} "
     ]
   | \few_args  =>
     [
       "too few arguments"
-      c.er "xx"
-      """
-        requires #{data[0]} arguments
-
-        type : #{data[1]}
-      """
+      c.er "  requires #{data[0]} arguments \n\n  type : #{data[1]} "
     ]
 
 lit = R.pipe do
