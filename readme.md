@@ -61,9 +61,9 @@ METHOD NAME      EXPANDED            TYPES
 ar               args                number|[num...],function|any
 wh               when                function,function|any
 whn              when not            function,function|any
-ma               match               [f1,f2....]|f1,f2,...
+ma               match               function,function|any
 arn              args not            number|[num...],function|any
-arma             args match          number|[num...],[f1,f2....]|f1,f2,...
+arma             args match          number|[num...],function,function|any
 arwh             args when           number|[num...],function,function|any
 arnwh            args not when       number|[num...],function,function|any
 arwhn            args when not       number|[num...],function,function|any
@@ -82,20 +82,16 @@ METHOD NAME   TYPES
 ar            number|[num...]  function|any
 wh            function         function|any
 whn           function         function|any
+ma            function         function|any
 arn           number|[num...]  function|any
 arwh          number|[num...]  function        function|any
+arma          number|[num...]  function        function|any
 arnwh         number|[num...]  function        function|any
-
 arwhn         number|[num...]  function        function|any
 arnwhn        number|[num...]  function        function|any
 def           function|any
 ```
 
-```
-        ARG N
-ma      function|[function....]|f₁,f₂,f₃  ......... fₙ
-arma    function|[function....]|f₁,f₂,f₃  ......... fₙ
-```
 ### Method Descriptions
 
 The API surface is purposefully kept large to cover all types of niche pattern matching usecases.
@@ -134,21 +130,19 @@ Just like `arwh` but only runs if the arguments do not match.
 
 Just like `arwhn` but runs if either conditions fails ( argument or function ), ( since the method name is quite a mouthful, its better to use the shorthand `.arnwhn`).
 
-◾️ `ma` : `function|[f1,f2,...]|f1,f2,...`
+◾️ `ma` : `(function,function|any)`
 
 It's common in `.wh` operations to have **both** the validator and the return function be the same.
 
 Making it redundant to have them run twice.
 
-`ma` looks at the return value of the validator to find the return value itself.
+`ma` adds the return value of the validator to the action function ( second function ).
 
 If `.ma` returns `false` or `undefined` then `hoplon` jumps to the next validator, in *any other value type* `hoplon` returns and breaks.
 
-◾️ `arma` : `number|[num...],function|[f1,f2,...]|f1,f2,...`
+◾️ `arma` : `number|[num...],function,function|any`
 
 Combines `.ar` and `.ma`, first argument can be a number or a array of number just like in `.ar`.
-
-Subsequent arguments are validator functions just like in `.ma`.
 
 ◾️ `def` : `(function|any)`
 
@@ -196,6 +190,8 @@ By default exit function doesn't have debug logging enabled.
 In case debug message is needed then `.debug` namespace can be used.
 
 #### Update and API change
+
+◾️ `0.0.33` - `.ma` Nd `.arma` behavior modified to now do action functions.
 
 ◾️ `0.0.28` - `.debug` namespace added, `binapi` is used to now expose namespaces using ES6 proxies.
 
