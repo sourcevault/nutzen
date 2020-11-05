@@ -38,13 +38,14 @@ type_str = (x) ->
 V = hop.ar 1, do
   hop.ma do
     type_str
-    type_num
+    (x) -> x
   .def 4
 .def null
 
 # -------------------------------------------------
 
 A = [\integer,\boolean,\bill,\string,\obama,\arena]
+
 
 
 # <- wait 500

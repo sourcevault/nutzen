@@ -31,6 +31,8 @@
       return false;
     }
   };
-  V = hop.ar(1, hop.ma(type_str, type_num).def(4)).def(null);
+  V = hop.ar(1, hop.ma(type_str, function(x){
+    return x;
+  }).def(4)).def(null);
   A = ['integer', 'boolean', 'bill', 'string', 'obama', 'arena'];
 }).call(this);

@@ -33,6 +33,27 @@ settle = (F,A) ->
   | \f => f ...A
   | \s => f
 
+mod-settle = (F,init,A) ->
+
+  [ftype,f] = F
+
+  switch ftype
+  | \f =>
+    switch A.length
+    | 1 => f init,A[0]
+    | 2 => f init,A[0],A[1]
+    | 0 => f init
+    | 3 => f init,A[0],A[1],A[2]
+    | 4 => f init,A[0],A[1],A[2],A[3]
+    | 5 => f init,A[0],A[1],A[2],A[3],A[4]
+    | otherwise =>
+
+      mod-arg = [init,...A]
+
+      f ...mod-arg
+
+  | \s => f
+
 tightloop = (state) -> ->
 
   if state.unary
@@ -118,168 +139,27 @@ tightloop = (state) -> ->
 
         return settle fin,arguments
 
-
     # --------------------------------------------
 
     | \ma =>
 
-      switch data.length
+      [validator,fin] = data
 
-      | 1 =>
+      ret = validator ...arguments
 
-        ret0 = data[0] ...arguments
+      if ret
 
-        if ret0
-          return ret0
-
-      | 2 =>
-
-        ret0 = data[0] ...arguments
-
-        if ret0
-          return ret0
-
-        ret1 = data[1] ...arguments
-
-        if ret1
-          return ret1
-
-      | 3 =>
-
-        ret0 = data[0] ...arguments
-
-        if ret0
-          return ret0
-
-        ret1 = data[1] ...arguments
-
-        if ret1
-          return ret1
-
-        ret2 = data[2] ...arguments
-
-        if re2
-          return ret2
-
-      | 4 =>
-
-        ret0 = data[0] ...arguments
-
-        if ret0
-          return ret0
-
-        ret1 = data[1] ...arguments
-
-        if ret1
-          return ret1
-
-        ret2 = data[2] ...arguments
-
-        if re2
-          return ret2
-
-        ret3 = data[3] ...arguments
-
-        if re3
-          return ret3
-
-      | otherwise =>
-
-        Jn = data.length
-
-        J = 0
-
-        while J < Jn
-
-          ret = data[J] ...arguments
-
-          if ret
-            return ret
-
-          J += 1
-
-    # --------------------------------------------
+        return mod-settle fin,ret,arguments
 
     | \arma     =>
 
-      if data[0][arglen]
+      [spans,validator,fin] = data
 
-        funs = data[1]
+      ret = validator ...arguments
 
-        switch funs.length
-        | 1 =>
+      if ret
 
-          ret0 = funs[0] ...arguments
-
-          if ret0
-            return ret0
-
-        | 2 =>
-
-          ret0 = funs[0] ...arguments
-
-          if ret0
-            return ret0
-
-          ret1 = funs[1] ...arguments
-
-          if ret1
-            return ret1
-
-        | 3 =>
-
-          ret0 = funs[0] ...arguments
-
-          if ret0
-            return ret0
-
-          ret1 = funs[1] ...arguments
-
-          if ret1
-            return ret1
-
-          ret2 = funs[2] ...arguments
-
-          if re2
-            return ret2
-
-        | 4 =>
-
-          ret0 = funs[0] ...arguments
-
-          if ret0
-            return ret0
-
-          ret1 = funs[1] ...arguments
-
-          if ret1
-            return ret1
-
-          ret2 = funs[2] ...arguments
-
-          if re2
-            return ret2
-
-          ret3 = funs[3] ...arguments
-
-          if re3
-            return ret3
-
-        | otherwise =>
-
-          Jn = data.length
-
-          J = 0
-
-          while J < Jn
-
-            ret = funs[J] ...arguments
-
-            if ret
-              return ret
-
-            J += 1
-
+        return mod-settle fin,ret,arguments
 
     # --------------------------------------------
 

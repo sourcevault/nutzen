@@ -30,11 +30,13 @@ type_str = (x) ->
 
 
 V = hop.ar 1,
-  hop.ma type_str,type_num
+  hop.ma do
+    type_num
+    (x) -> x
   .def ["FROM UDEF"]
 .def null
 
-out = V "integer"
+out = V \integer
 
 if not (out is \int)
   p!

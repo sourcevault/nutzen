@@ -23,9 +23,9 @@
       return 'map';
     }
   };
-  V = hop.ma(dum1, dum2).def(null);
+  V = hop.ma(dum2, 'obj_or_map').def(null);
   out = V('obj');
-  if (!(out === 'object')) {
+  if (!(out === 'obj_or_map')) {
     p();
   }
 }).call(this);

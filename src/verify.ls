@@ -20,7 +20,6 @@ betterTypeof = (x) ->
   else
     return type
 
-
 reg.betterTypeof = betterTypeof
 
 V.def = (args) ->
@@ -102,59 +101,65 @@ V.wh = (args) ->
   [\ok,ret]
 
 
-V.ma = (arg-obj) ->
+# V.ma = (args) ->
 
-  args = [...arg-obj]
+#   if (args.length > 2)
+#     return [\fault,\many_args]
 
-  if (args.length is 0)
-    return [\fault,\few_args]
+#   if (args.length < 2)
+#     return [\fault,\few_args]
 
-  args = R.flatten args
+#   [validator,ap] = args
 
-  ret = []
+#   ret = []
 
-  for I in args
-    switch betterTypeof I
-    | \function => ret.push I
-    | otherwise => return [\fault,\typeError]
+#   switch betterTypeof validator
+#   | \function => ret.push validator
+#   | otherwise => return [\fault,\first]
 
-  [\ok,ret]
+#   switch betterTypeof ap
+#   | \function => ret.push [\f,ap]
+#   | otherwise => ret.push [\s,ap]
 
-V.arma = (arg-obj) ->
+#   [\ok,ret]
 
-  args = [...arg-obj]
 
-  if (args.length < 2)
 
-    return [\fault,\few_args]
+# V.arma = (arg-obj) ->
 
-  ret = []
+#   args = [...arg-obj]
 
-  num  = R.head args
+#   if (args.length < 2)
 
-  funs = R.tail args
+#     return [\fault,\few_args]
 
-  retF = []
+#   ret = []
 
-  switch V.num num
-  | \num          => ret.push tron [num]
-  | \array        => ret.push tron num
-  | \fault        => return [\fault,\first]
-  | \fault.array  => return [\fault,\array]
+#   num  = R.head args
 
-  funs = R.flatten funs
+#   funs = R.tail args
 
-  retF = []
+#   retF = []
 
-  for F in funs
+#   switch V.num num
+#   | \num          => ret.push tron [num]
+#   | \array        => ret.push tron num
+#   | \fault        => return [\fault,\first]
+#   | \fault.array  => return [\fault,\array]
 
-    switch betterTypeof F
-    | \function   => retF.push F
-    | otherwise   => return [\fault,\not_function]
+#   funs = R.flatten funs
 
-  ret.push retF
+#   retF = []
 
-  [\ok,ret]
+#   for F in funs
+
+#     switch betterTypeof F
+#     | \function   => retF.push F
+#     | otherwise   => return [\fault,\not_function]
+
+#   ret.push retF
+
+#   [\ok,ret]
 
 
 V.arwh = (args) ->
@@ -191,17 +196,13 @@ V.getvfun = (fname) ->
 
   switch fname
 
-  | \wh,\whn                    => V.wh
+  | \wh,\whn,\ma                      => V.wh
 
-  | \ar,\arn                    => V.ar
+  | \ar,\arn                          => V.ar
 
-  | \arma                       => V.arma
+  | \arwh,\arnwh,\arwhn,\arnwhn,\arma => V.arwh
 
-  | \arwh,\arnwh,\arwhn,\arnwhn => V.arwh
-
-  | \ma                         => V.ma
-
-  | \def                        => V.def
+  | \def                              => V.def
 
 
 

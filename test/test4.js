@@ -26,8 +26,10 @@
       return false;
     }
   };
-  V = hop.ar(1, hop.ma(type_str, type_num).def(["FROM UDEF"])).def(null);
-  out = V("integer");
+  V = hop.ar(1, hop.ma(type_num, function(x){
+    return x;
+  }).def(["FROM UDEF"])).def(null);
+  out = V('integer');
   if (!(out === 'int')) {
     p();
   }
