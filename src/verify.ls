@@ -100,68 +100,6 @@ V.wh = (args) ->
 
   [\ok,ret]
 
-
-# V.ma = (args) ->
-
-#   if (args.length > 2)
-#     return [\fault,\many_args]
-
-#   if (args.length < 2)
-#     return [\fault,\few_args]
-
-#   [validator,ap] = args
-
-#   ret = []
-
-#   switch betterTypeof validator
-#   | \function => ret.push validator
-#   | otherwise => return [\fault,\first]
-
-#   switch betterTypeof ap
-#   | \function => ret.push [\f,ap]
-#   | otherwise => ret.push [\s,ap]
-
-#   [\ok,ret]
-
-
-
-# V.arma = (arg-obj) ->
-
-#   args = [...arg-obj]
-
-#   if (args.length < 2)
-
-#     return [\fault,\few_args]
-
-#   ret = []
-
-#   num  = R.head args
-
-#   funs = R.tail args
-
-#   retF = []
-
-#   switch V.num num
-#   | \num          => ret.push tron [num]
-#   | \array        => ret.push tron num
-#   | \fault        => return [\fault,\first]
-#   | \fault.array  => return [\fault,\array]
-
-#   funs = R.flatten funs
-
-#   retF = []
-
-#   for F in funs
-
-#     switch betterTypeof F
-#     | \function   => retF.push F
-#     | otherwise   => return [\fault,\not_function]
-
-#   ret.push retF
-
-#   [\ok,ret]
-
-
 V.arwh = (args) ->
 
   if (args.length > 3)
