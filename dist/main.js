@@ -100,7 +100,7 @@
         case 'arwh':
           spans = data[0], validator = data[1], F = data[2];
           if (spans[arglen] && validator.apply(null, arguments)) {
-            return settle(fin, arguments);
+            return settle(F, arguments);
           }
           break;
         case 'ma':
@@ -211,6 +211,10 @@
     return function(){
       var state, ref$, zone, data;
       state = this[modflag];
+      if (state === undefined) {
+        print.route([['state_undef'], [fname]]);
+        return undefined;
+      }
       if (state.fault) {
         return this;
       }
@@ -222,6 +226,10 @@
   main.def = function(){
     var state, ref$, zone, data;
     state = this[modflag];
+    if (state === undefined) {
+      print.route([['state_undef'], ['def']]);
+      return undefined;
+    }
     if (state.fault) {
       return handle.def.fault;
     }

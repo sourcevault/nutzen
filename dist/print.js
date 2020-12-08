@@ -11,7 +11,7 @@
   pe = new prettyError();
   pe.skipNodeFiles();
   pe.filterParsedError(function(Error){
-    Error._trace = R.takeLast(3, Error._trace);
+    Error._trace = R.takeLast(5, Error._trace);
     return Error;
   });
   pe.skip(function(traceLine, lineNumber){
@@ -275,6 +275,12 @@
     l('\n', lit([vr.join("."), ".", key], [c.ok, c.ok, c.er]), '\n');
     return show_stack();
   };
+  print.state_undef = function(type){
+    l(lit(["[" + name + "][Error]"], [c.err]));
+    l(lit(["\n  ." + type], [c.warn]));
+    l(lit(["\n  Javascript does not allow referencing of .prototype function.\n"], [c.black]));
+    return show_stack();
+  };
   print.route = function(arg$){
     var Er, data, ECLASS, whichE, info, __, fname, arg_placement;
     Er = arg$[0], data = arg$[1];
@@ -289,6 +295,9 @@
       break;
     case 'setting':
       print.setting(Er[1], data);
+      break;
+    case 'state_undef':
+      print.state_undef(data);
       break;
     default:
       l(Er, data);
