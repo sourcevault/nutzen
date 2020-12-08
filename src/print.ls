@@ -2,20 +2,13 @@ reg = require "./registry"
 
 {com,main} = reg
 
-{z,l,pretty-error,R,cc} = com
+{z,l,pretty-error,R,c} = com
 
 {modflag} = reg
 
 print = reg.print
 
 packageJ = reg.packageJ
-
-c = {}
-  ..ok    = cc.greenBright
-  ..er    = cc.xterm 196
-  ..warn  = cc.xterm 209
-  ..err   = cc.redBright
-  ..black = cc.xterm 8
 
 help =
   c.black "[  docs] #{packageJ.homepage}"
@@ -120,8 +113,6 @@ print.log.main = (state) ->
   str = put + " " + "[ " + arr + " ]"
 
   str
-
-
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
 

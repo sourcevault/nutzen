@@ -13,8 +13,7 @@
   },
   "dependencies": {
     "ramda": "0.26.1",
-    "cli-color": "2.0.0",
-    "pretty-error": "2.1.1",
+    "pretty-error": "*",
     "binapi": "*"
   },
   "devDependencies": {

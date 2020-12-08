@@ -6,8 +6,6 @@ binapi        = require "binapi"
 
 pretty-error  = require "pretty-error"
 
-cc            = require "cli-color"
-
 # --------------------------------------------------------------------------------------
 
 l = console.log
@@ -31,11 +29,18 @@ else
 
 #--------------------------------------------------------------------------------------
 
+c = {}
+  ..ok    = (txt) -> "\x1B[38;5;2m#{txt}\x1B[39m"
+  ..er    = (txt) -> "\x1B[38;5;3m#{txt}\x1B[39m"
+  ..warn  = (txt) -> "\x1B[38;5;11m#{txt}\x1B[39m"
+  ..err   = (txt) -> "\x1B[38;5;13m#{txt}\x1B[39m"
+  ..black = (txt) -> "\x1B[38;5;8m#{txt}\x1B[39m"
+
 main =
   z             : z
   R             : R
   l             : l
-  cc            : cc
+  c             : c
   noop          : noop
   binapi        : binapi
   pretty-error  : pretty-error
