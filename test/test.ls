@@ -10,7 +10,7 @@ wait = (t,f) -> setTimeout f,t
 
 hop = hoplon
 
-{z,l,R} = com
+{z,l,R,c} = com
 
 p = print.fail 'test.js'
 
@@ -23,4 +23,3 @@ argE    = -> z "only accepts 2 arugument"
 typeE   = -> z "argument type has to be number"
 
 add = (x,y) -> x + y
-

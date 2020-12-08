@@ -211,6 +211,10 @@
     return function(){
       var state, ref$, zone, data;
       state = this[modflag];
+      if (state === undefined) {
+        print.route([['state_undef'], [fname]]);
+        return undefined;
+      }
       if (state.fault) {
         return this;
       }
@@ -222,6 +226,10 @@
   main.def = function(){
     var state, ref$, zone, data;
     state = this[modflag];
+    if (state === undefined) {
+      print.route([['state_undef'], ['def']]);
+      return undefined;
+    }
     if (state.fault) {
       return handle.def.fault;
     }

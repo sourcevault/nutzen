@@ -21,7 +21,7 @@ pe.skipNodeFiles!
 
 pe.filterParsedError (Error) ->
 
-  Error._trace = R.takeLast 3,Error._trace
+  Error._trace = R.takeLast 5,Error._trace
 
   Error
 
@@ -321,13 +321,29 @@ print.setting = (type,path) ->
 
   show_stack!
 
+print.state_undef = (type) ->
+
+  l lit do
+    ["[#{name}][Error]"]
+    [c.err]
+
+  l lit do
+    [("\n  ." + type)]
+    [c.warn]
+
+  l lit do
+    ["\n  Javascript does not allow referencing of .prototype function.\n"]
+    [c.black]
+
+
+  show_stack!
 
 print.route = ([Er,data]) !->
 
   [ECLASS,whichE,info] = Er
 
   switch ECLASS
-  | \input   =>
+  | \input       =>
 
     [ __, fname , arg_placement ] = Er
 
@@ -336,10 +352,12 @@ print.route = ([Er,data]) !->
       fname
       arg_placement
 
-  | \not_array => print.not_array data
+  | \not_array   => print.not_array data
 
-  | \setting => print.setting Er[1],data
+  | \setting     => print.setting Er[1],data
 
-  | otherwise => l Er,data
+  | \state_undef => print.state_undef data
+
+  | otherwise    => l Er,data
 
 

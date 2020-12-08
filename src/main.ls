@@ -284,6 +284,12 @@ genfun = (vfun,fname) -> ->
 
   state = @[modflag]
 
+  if state is undefined
+
+    print.route [[\state_undef],[fname]]
+
+    return undefined
+
   if state.fault then return @
 
   [zone,data] = vfun arguments
@@ -300,6 +306,12 @@ main[uic] = print.log.proto
 main.def =  ->
 
   state = @[modflag]
+
+  if state is undefined
+
+    print.route [[\state_undef],[\def]]
+
+    return undefined
 
   if state.fault then return handle.def.fault
 

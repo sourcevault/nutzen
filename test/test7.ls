@@ -29,7 +29,12 @@ add = hop
 	add2
 .def!
 
-z add 1,2
+ret = add 1,2
+
+if not (ret is 3)
+	p!
+
+
 
 
 
