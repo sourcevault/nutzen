@@ -137,7 +137,7 @@ tightloop = (state) -> ->
 
       if spans[arglen] and (validator ...arguments)
 
-        return settle fin,arguments
+        return settle F,arguments
 
     # --------------------------------------------
 

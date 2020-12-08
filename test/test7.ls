@@ -18,9 +18,18 @@ argE    = -> z "only accepts 2 arugument"
 
 typeE   = -> z "argument type has to be number"
 
-add = (x,y) -> x + y
+add2 = (x,y) -> x + y
 
 hop = hoplon
+
+add = hop
+.arwh do
+	2
+	-> true
+	add2
+.def!
+
+z add 1,2
 
 
 

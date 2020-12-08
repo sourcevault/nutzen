@@ -100,7 +100,7 @@
         case 'arwh':
           spans = data[0], validator = data[1], F = data[2];
           if (spans[arglen] && validator.apply(null, arguments)) {
-            return settle(fin, arguments);
+            return settle(F, arguments);
           }
           break;
         case 'ma':
