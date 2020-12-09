@@ -6,6 +6,8 @@ binapi        = require "binapi"
 
 pretty-error  = require "pretty-error"
 
+esp           = require "error-stack-parser"
+
 # --------------------------------------------------------------------------------------
 
 l = console.log
@@ -27,6 +29,7 @@ else
 
   util_inspect_custom = Symbol.for "nodejs.util.inspect.custom"
 
+
 #--------------------------------------------------------------------------------------
 
 c = {}
@@ -36,11 +39,13 @@ c = {}
   ..err   = (txt) -> "\x1B[38;5;13m#{txt}\x1B[39m"
   ..black = (txt) -> "\x1B[38;5;8m#{txt}\x1B[39m"
 
+
 main =
   z             : z
   R             : R
   l             : l
   c             : c
+  esp           : esp
   noop          : noop
   binapi        : binapi
   pretty-error  : pretty-error

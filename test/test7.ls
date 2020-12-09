@@ -32,10 +32,8 @@ add = hop
 ret = add 1,2
 
 if not (ret is 3)
+
 	p!
-
-
-
 
 
 

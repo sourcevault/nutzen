@@ -5,14 +5,14 @@ homepage: https://github.com/sourcevault/hoplon#readme.md
 license: BSD-3-Clause
 description: Erlang/Elixir type guards for javascript, but with every imaginable method.
 repository: https://github.com/sourcevault/hoplon.git
-version: 0.0.37
+version: 0.0.38
 main: dist/main.js
 scripts:
   "test": "make travis"
 dependencies:
-  ramda: 0.26.1
-  pretty-error: "*"
+  ramda: "*"
   binapi: "*"
+  error-stack-parser: "*"
 keywords:
   - pattern matching
   - guards

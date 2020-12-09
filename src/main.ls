@@ -181,7 +181,7 @@ tightloop = (state) -> ->
 
         return settle F,arguments
 
-  #   # --------------------------------------------
+    # --------------------------------------------
 
     | \arnwhn    =>
 
@@ -324,6 +324,7 @@ props = [\ma \arma \wh \ar \whn \arn \arwh \arnwh \arwhn \arnwhn]
 #---------------------------------------------------
 
 R.reduce do
+
   (ob,prop) ->
 
     ob[prop] = genfun (verify.getvfun prop),prop

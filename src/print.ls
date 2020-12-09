@@ -2,7 +2,7 @@ reg = require "./registry"
 
 {com,main} = reg
 
-{z,l,pretty-error,R,c} = com
+{z,l,pretty-error,R,c,esp} = com
 
 {modflag} = reg
 
@@ -15,27 +15,12 @@ help =
 
 # -------------------------------------------------------------------------------------------------------
 
-pe = (new prettyError!)
-
-pe.skipNodeFiles!
-
-pe.filterParsedError (Error) ->
-
-  Error._trace = R.takeLast 5,Error._trace
-
-  Error
-
-pe.skip (traceLine,lineNumber) ->
-
-  if traceLine.dir is "internal/modules/cjs" then return true
-
-  return false
-
-
-pe.appendStyle do
-  "pretty-error > header > title > kind":(display: "none")
-  "pretty-error > header > colon":(display: "none")
-  "pretty-error > header > message":(display:"none")
+lit = R.pipe do
+  R.zipWith (x,f) ->
+    switch R.type f
+    | \Function => f x
+    | otherwise => x
+  R.join ""
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -88,7 +73,6 @@ arrange = R.pipe do
   (x) -> c.ok (x.join " ")
 
 
-
 print.log.main = (state) ->
 
   if state.fault
@@ -116,14 +100,42 @@ print.log.main = (state) ->
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
 
-show_stack = !->
+show_stack = ->
 
-  l help
+  l help + "\n"
 
-  E = pe.render new Error!
+  E = esp.parse new Error!
 
-  l E
+  E = R.drop 3,E
 
+  for I in E
+
+    {lineNumber,fileName,functionName,columnNumber} = I
+
+    path = fileName.split "/"
+
+    [first,second] = path
+
+    if ((first is \internal) and (second is \modules)) then continue
+
+    if (functionName is \Object.<anonymous>)
+
+      functionName = ""
+
+    l lit do
+      [
+        "  - "
+        R.last path
+        ":"
+        lineNumber
+        " "
+        functionName
+        "\n    "
+        fileName + ":"
+        lineNumber
+        ":" + columnNumber + "\n"
+      ]
+      [0,c.warn,0,c.er,0,0,0,c.black,c.er,c.black]
 
 print.fail = (filename) -> !->
 
@@ -191,13 +203,6 @@ StrArgLen = (fname,ctype,eType)->
       c.er "  requires #{data[0]} arguments \n\n  type : #{data[1]} "
     ]
 
-lit = R.pipe do
-  R.zipWith (x,f) ->
-    switch R.type f
-    | \Function => f x
-    | otherwise => x
-  R.join ""
-
 StrEType = (fname,eType) ->
 
   ctype = map_fname_to_ctypes fname
@@ -207,7 +212,6 @@ StrEType = (fname,eType) ->
 
   init = switch ctype
   | \ma => c.er 'function|[fun....]'
-
 
   | \arma =>
 
@@ -359,5 +363,3 @@ print.route = ([Er,data]) !->
   | \state_undef => print.state_undef data
 
   | otherwise    => l Er,data
-
-
