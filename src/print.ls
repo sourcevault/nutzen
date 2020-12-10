@@ -2,7 +2,7 @@ reg = require "./registry"
 
 {com,main} = reg
 
-{z,l,pretty-error,R,c,esp} = com
+{z,l,R,c,esp} = com
 
 {modflag} = reg
 

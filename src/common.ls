@@ -4,8 +4,6 @@ R             = require "ramda"
 
 binapi        = require "binapi"
 
-pretty-error  = require "pretty-error"
-
 esp           = require "error-stack-parser"
 
 # --------------------------------------------------------------------------------------
@@ -48,7 +46,6 @@ main =
   esp           : esp
   noop          : noop
   binapi        : binapi
-  pretty-error  : pretty-error
   uic           : util_inspect_custom
 
 
