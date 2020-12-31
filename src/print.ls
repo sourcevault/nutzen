@@ -100,13 +100,13 @@ print.log.main = (state) ->
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
 
+rm-paths = R.find (x) -> (x in [\hoplon,\node_modules])
+
 show_stack = ->
 
   l help + "\n"
 
   E = esp.parse new Error!
-
-  E = R.drop 3,E
 
   for I in E
 
@@ -115,6 +115,8 @@ show_stack = ->
     path = fileName.split "/"
 
     [first,second] = path
+
+    if (rm-paths path) then continue
 
     if ((first is \internal) and (second is \modules)) then continue
 
@@ -176,18 +178,16 @@ show_chain = (input-str,path = [],show-args = true)->
 map_fname_to_ctypes = (fname)->
 
   switch fname
-  | \ma                  => \ma
-  | \ar,\arn             => \ar
-  | \wh,\whn             => \wh
-  | \arwh,\arwhn,\arnwhn => \arwh
-  | \arma                => \arma
+  | \ma                        => \ma
+  | \ar,\arn                   => \ar
+  | \wh,\whn                   => \wh
+  | \arwh,\arwhn,\arnwhn,\arma => \arwh
 
 StrArgLen = (fname,ctype,eType)->
 
   data = switch ctype
   | \ma   => [1,'function|[fun....]']
   | \wh   => [2,'(function,function|any)']
-  | \arma => [2,'(number|[num...],[fun....]']
   | \ar   => [2,'(number|[num...],function|any)']
   | \arwh => [3,'(number|[num...],function,function|any)']
 

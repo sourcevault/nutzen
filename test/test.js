@@ -22,4 +22,5 @@
   add = function(x, y){
     return x + y;
   };
+  hop.arma(1, function(){}, function(){}, 2);
 }).call(this);
