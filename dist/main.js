@@ -52,7 +52,7 @@
   };
   tightloop = function(state){
     return function(){
-      var first, arglen, I, fns, terminate, ref$, fname, data, validator, fin, F, spans, ret, def;
+      var first, arglen, I, fns, terminate, ref$, fname, data, vtype, validatorF, exec, cont, vd, spans, msg, lastview, ret, def;
       if (state.unary) {
         first = arguments[0];
         switch (R.type(first)) {
@@ -61,7 +61,7 @@
           arglen = first.length;
           break;
         default:
-          print.route([['not_array'], state]);
+          print.route(['unary_not_array', state]);
           return undefined;
         }
       } else {
@@ -74,65 +74,184 @@
         ref$ = fns[I], fname = ref$.fname, data = ref$.data;
         switch (fname) {
         case 'wh':
-          validator = data[0], fin = data[1];
-          if (validator.apply(null, arguments)) {
-            return settle(fin, arguments);
+          ref$ = data[0], vtype = ref$[0], validatorF = ref$[1], exec = data[1];
+          switch (vtype) {
+          case 'f':
+            cont = validatorF.apply(null, arguments);
+            if (cont) {
+              return settle(exec, arguments);
+            }
+            break;
+          case 'v':
+            vd = validatorF.auth(arguments);
+            if (vd['continue']) {
+              return settle(exec, vd.value);
+            }
           }
           break;
         case 'whn':
-          validator = data[0], F = data[1];
-          if (!validator.apply(null, arguments)) {
-            return settle(F, arguments);
+          ref$ = data[0], vtype = ref$[0], validatorF = ref$[1], exec = data[1];
+          switch (vtype) {
+          case 'f':
+            cont = validatorF.apply(null, arguments);
+            if (!cont) {
+              return settle(exec, arguments);
+            }
+            break;
+          case 'v':
+            vd = validatorF.auth(arguments);
+            if (vd.error) {
+              return settle(exec, vd.value);
+            }
           }
           break;
         case 'ar':
-          spans = data[0], F = data[1];
+          spans = data[0], exec = data[1];
           if (spans[arglen]) {
-            return settle(F, arguments);
+            return settle(exec, arguments);
           }
           break;
         case 'arn':
-          spans = data[0], F = data[1];
+          spans = data[0], exec = data[1];
           if (!spans[arglen]) {
-            return settle(F, arguments);
+            return settle(exec, arguments);
           }
           break;
         case 'arwh':
-          spans = data[0], validator = data[1], F = data[2];
-          if (spans[arglen] && validator.apply(null, arguments)) {
-            return settle(F, arguments);
+          spans = data[0], ref$ = data[1], vtype = ref$[0], validatorF = ref$[1], exec = data[2];
+          if (spans[arglen]) {
+            switch (vtype) {
+            case 'f':
+              cont = validatorF.apply(null, arguments);
+              if (cont) {
+                return settle(exec, arguments);
+              }
+              break;
+            case 'v':
+              vd = validatorF.auth(arguments);
+              if (vd['continue']) {
+                return settle(exec, vd.value);
+              }
+            }
           }
           break;
         case 'ma':
-          validator = data[0], fin = data[1];
-          ret = validator.apply(null, arguments);
-          if (ret) {
-            return modSettle(fin, ret, arguments);
+          ref$ = data[0], vtype = ref$[0], validatorF = ref$[1], exec = data[1];
+          switch (vtype) {
+          case 'f':
+            msg = validatorF.apply(null, arguments);
+            if (msg) {
+              return modSettle(exec, msg, arguments);
+            }
+            break;
+          case 'v':
+            vd = validatorF.auth(arguments);
+            if (vd['continue']) {
+              return modSettle(exec, vd.value, arguments);
+            }
           }
           break;
         case 'arma':
-          spans = data[0], validator = data[1], fin = data[2];
-          ret = validator.apply(null, arguments);
-          if (ret) {
-            return modSettle(fin, ret, arguments);
+          spans = data[0], ref$ = data[1], vtype = ref$[0], validatorF = ref$[1], exec = data[2];
+          if (spans[arglen]) {
+            switch (vtype) {
+            case 'f':
+              msg = validatorF.apply(null, arguments);
+              if (msg) {
+                return modSettle(exec, msg, arguments);
+              }
+              break;
+            case 'v':
+              vd = validatorF.auth(arguments);
+              if (vd['continue']) {
+                return modSettle(exec, vd.value, arguments);
+              }
+            }
+          }
+          break;
+        case 'arpar':
+          spans = data[0], ref$ = data[1], vtype = ref$[0], validatorF = ref$[1], exec = data[2], lastview = data[3];
+          switch (vtype) {
+          case 'f':
+            ret = validatorF.apply(null, arguments);
+            if (!Array.isArray(ret)) {
+              print.route(['arpar_not_array', state]);
+              return;
+            }
+            cont = ret[0], msg = ret[1];
+            if (cont) {
+              return modSettle(exec, msg, arguments);
+            } else {
+              ret = lastview(msg);
+              if (ret) {
+                return;
+              }
+            }
+            break;
+          case 'v':
+            vd = validatorF.auth(arguments);
+            if (vd['continue']) {
+              return modSettle(exec, vd.value, arguments);
+            } else {
+              ret = lastview(vd.message, vd.path);
+              if (ret) {
+                return;
+              }
+            }
           }
           break;
         case 'arwhn':
-          spans = data[0], validator = data[1], F = data[2];
-          if (spans[arglen] && !validator.apply(null, arguments)) {
-            return settle(F, arguments);
+          spans = data[0], ref$ = data[1], vtype = ref$[0], validatorF = ref$[1], exec = data[2];
+          if (spans[arglen]) {
+            switch (vtype) {
+            case 'f':
+              cont = validatorF.apply(null, arguments);
+              if (!cont) {
+                return settle(exec, arguments);
+              }
+              break;
+            case 'v':
+              vd = validatorF.auth(arguments);
+              if (vd.error) {
+                return settle(exec, vd.value);
+              }
+            }
           }
           break;
         case 'arnwh':
-          spans = data[0], validator = data[1], F = data[2];
-          if (!spans[arglen] && validator.apply(null, arguments)) {
-            return settle(F, arguments);
+          spans = data[0], ref$ = data[1], vtype = ref$[0], validatorF = ref$[1], exec = data[2];
+          if (!spans[arglen]) {
+            switch (vtype) {
+            case 'f':
+              cont = validatorF.apply(null, arguments);
+              if (cont) {
+                return settle(exec, arguments);
+              }
+              break;
+            case 'v':
+              vd = validatorF.auth(arguments);
+              if (vd['continue']) {
+                return settle(exec, vd.value);
+              }
+            }
           }
           break;
         case 'arnwhn':
-          spans = data[0], validator = data[1], F = data[2];
-          if (!(spans[arglen] && validator.apply(null, arguments))) {
-            return settle(F, arguments);
+          spans = data[0], ref$ = data[1], vtype = ref$[0], validatorF = ref$[1], exec = data[2];
+          if (!spans[arglen]) {
+            switch (vtype) {
+            case 'f':
+              cont = validatorF.apply(null, arguments);
+              if (!cont) {
+                return settle(exec, arguments);
+              }
+              break;
+            case 'v':
+              vd = validatorF.auth(arguments);
+              if (vd.error) {
+                return settle(exec, vd.value);
+              }
+            }
           }
         }
         I += 1;
@@ -157,12 +276,11 @@
   };
   handle = {};
   handle.fault = function(self, data, fname){
-    var state, FT, neo;
+    var state, neo;
     state = self[modflag];
-    FT = ['input', fname, data];
-    print.route([FT, state]);
+    print.route(['input', [fname, data, state]]);
     neo = Object.assign({}, state, {
-      fault: FT
+      fault: ['input', fname, data]
     });
     return looper(neo);
   };
@@ -212,7 +330,7 @@
       var state, ref$, zone, data;
       state = this[modflag];
       if (state === undefined) {
-        print.route([['state_undef'], [fname]]);
+        print.route(['state_undef', [fname]]);
         return undefined;
       }
       if (state.fault) {
@@ -227,7 +345,7 @@
     var state, ref$, zone, data;
     state = this[modflag];
     if (state === undefined) {
-      print.route([['state_undef'], ['def']]);
+      print.route(['state_undef', ['def']]);
       return undefined;
     }
     if (state.fault) {
@@ -236,7 +354,7 @@
     ref$ = verify.def(arguments), zone = ref$[0], data = ref$[1];
     return handle.def.ok(this, data);
   };
-  props = ['ma', 'arma', 'wh', 'ar', 'whn', 'arn', 'arwh', 'arnwh', 'arwhn', 'arnwhn'];
+  props = ['ma', 'arma', 'wh', 'ar', 'whn', 'arn', 'arwh', 'arnwh', 'arwhn', 'arnwhn', 'arpar'];
   R.reduce(function(ob, prop){
     ob[prop] = genfun(verify.getvfun(prop), prop);
     return ob;
@@ -248,12 +366,12 @@
     var path, lock, str, vr, npath, sorted;
     path = arg$.path, lock = arg$.lock, str = arg$.str, vr = arg$.vr;
     if (lock) {
-      print.route([['setting', 'path_locked'], [vr, key]]);
+      print.route(['setting', ['path_locked', vr, key]]);
       return null;
     }
     if (cat.opt.has(key)) {
       if (R.includes(key, path)) {
-        print.route([['setting', 'already_in_path'], [vr, key]]);
+        print.route(['setting', ['already_in_path', vr, key]]);
         return null;
       } else {
         npath = path.concat(key);
@@ -274,7 +392,7 @@
         key: key
       };
     } else {
-      print.route([['setting', 'not_in_opts'], [vr, key]]);
+      print.route(['setting', ['not_in_opts', vr, key]]);
       return null;
     }
   };
