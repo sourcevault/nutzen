@@ -6,11 +6,9 @@ require "../dist/main" # [..load main.js ..]
 
 {com,print,hoplon} = reg
 
-{z,l} = com
+{z,l,print_fail,R} = com
 
-betterTypeof = reg.betterTypeof
-
-p = print.fail 'test4.js'
+p = print_fail 'test4.js'
 
 hop = hoplon
 
@@ -43,7 +41,7 @@ if not (out is \int)
 
 out = V null
 
-if not ((betterTypeof out) is \array)
+if not ((R.type out) is \Array)
   p!
 
 if not (out[0] is "FROM UDEF")

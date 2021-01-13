@@ -19,6 +19,12 @@ compile:
 	lsc -c test
 	node ${file}
 
+compile.time:
+	make pkg
+	lsc -co dist src
+	lsc -c test
+	time node ${file}
+
 w.compile:
 	make pkg
 	nodemon  --exec "make compile || exit 1" ${SRC_FILES} ${TEST_FILES}
@@ -42,3 +48,7 @@ testy:
 
 w.testy:
 	nodemon --exec "make testy" ${TEST_FILES} ${SRC_FILES}
+
+w.compile.time:
+	make pkg
+	nodemon  --exec "make compile.time || exit 1" ${SRC_FILES} ${TEST_FILES}

@@ -1,34 +1,22 @@
 reg = require "./registry"
 
-{com,main} = reg
+{com,main,modflag,print} = reg
 
-{z,l,R,c,esp} = com
-
-{modflag} = reg
-
-print = reg.print
+{z,l,R,c,esp,create_stack,lit} = com
 
 packageJ = reg.packageJ
 
-help =
-  c.black "[  docs] #{packageJ.homepage}"
+# -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  --  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
-# -------------------------------------------------------------------------------------------------------
+help = c.grey "[  docs] #{packageJ.homepage}\n"
 
-lit = R.pipe do
-  R.zipWith (x,f) ->
-    switch R.type f
-    | \Function => f x
-    | otherwise => x
-  R.join ""
+show_stack = create_stack 3,[],help
 
-# -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
-
-name = packageJ.name
+pkgname = packageJ.name
 
 print.log = {}
 
-print.log.def_fault = -> c.err "[error.#{name}]"
+print.log.def_fault = -> c.er2 "[error.#{pkgname}]"
 
 print.log.proto = ->
 
@@ -36,7 +24,7 @@ print.log.proto = ->
 
   if state is undefined
 
-    return (c.er "[#{name}]") + (c.err "[state undefined]")
+    return (c.er1 "[#{pkgname}]") + (c.er2 "[state undefined]")
 
   print.log.main state
 
@@ -58,7 +46,7 @@ print.log.prox = (state) ->
 
     inner = "|" + state.vr.join "|"
 
-  str = R.join "",["[#{name}",inner,"]"]
+  str = R.join "",["[#{pkgname}",inner,"]"]
 
   (c.warn str) + " []"
 
@@ -76,7 +64,7 @@ arrange = R.pipe do
 print.log.main = (state) ->
 
   if state.fault
-      return c.err "[#{name}|error]"
+      return c.er2 "[#{pkgname}|error]"
 
   str = ""
 
@@ -90,7 +78,7 @@ print.log.main = (state) ->
   if state.apply
     str += "|apply"
 
-  put = clr ("[#{name}" + str + "]")
+  put = clr ("[#{pkgname}" + str + "]")
 
   arr = arrange state.str
 
@@ -99,55 +87,6 @@ print.log.main = (state) ->
   str
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
-
-rm-paths = R.find (x) -> (x in [\hoplon,\node_modules])
-
-show_stack = ->
-
-  l help + "\n"
-
-  E = esp.parse new Error!
-
-  for I in E
-
-    {lineNumber,fileName,functionName,columnNumber} = I
-
-    path = fileName.split "/"
-
-    [first,second] = path
-
-    if (rm-paths path) then continue
-
-    if ((first is \internal) and (second is \modules)) then continue
-
-    if (functionName is \Object.<anonymous>)
-
-      functionName = ""
-
-    l lit do
-      [
-        "  - "
-        R.last path
-        ":"
-        lineNumber
-        " "
-        functionName
-        "\n    "
-        fileName + ":"
-        lineNumber
-        ":" + columnNumber + "\n"
-      ]
-      [0,c.warn,0,c.er,0,0,0,c.black,c.er,c.black]
-
-print.fail = (filename) -> !->
-
-  l do
-    "[TEST ERROR] originating from module"
-    "[#{packageJ.name}]"
-
-    "\n\n- 'npm test' failed at #{filename}:"
-
-  process.exitCode = 1
 
 
 show_chain = (input-str,path = [],show-args = true)->
@@ -164,13 +103,13 @@ show_chain = (input-str,path = [],show-args = true)->
 
     str += [ c.warn ".#{I}" for I in path].join ""
 
-    str += c.er "(xx) <-- error within argument"
+    str += lit ["(xx)"," <-- error within argument"],[c.er3,c.er1]
 
   else
 
-    str += c.err([".#{I}" for I in path].join "")
+    str += c.er2 ([".#{I}" for I in path].join "")
 
-    str += c.er " <-- error here."
+    str += c.er1 " <-- error here."
 
   str
 
@@ -182,25 +121,32 @@ map_fname_to_ctypes = (fname)->
   | \ar,\arn                   => \ar
   | \wh,\whn                   => \wh
   | \arwh,\arwhn,\arnwhn,\arma => \arwh
+  | \arpar                     => \arpar
+
 
 StrArgLen = (fname,ctype,eType)->
 
   data = switch ctype
-  | \ma   => [1,'function|[fun....]']
-  | \wh   => [2,'(function,function|any)']
-  | \ar   => [2,'(number|[num...],function|any)']
-  | \arwh => [3,'(number|[num...],function,function|any)']
+  | \ma    => [1,'(function|[fun....])']
+  | \wh    => [2,'(function,function|any)']
+  | \ar    => [2,'(number|[num...],function|any)']
+  | \arwh  => [3,'(number|[num...],function,function|any)']
+  | \arpar => [4,'(number|[num...],function,function|any,function)']
 
   switch eType
   | \many_args =>
     [
       "too many arguments"
-      c.er "  only #{data[0]} arguments \n\n  accepted type :: #{data[1]} "
+      lit do
+        ["  only #{data[0]} arguments \n\n  accepted type :: #{data[1]} "]
+        [c.pink]
     ]
   | \few_args  =>
     [
       "too few arguments"
-      c.er "  requires #{data[0]} arguments \n\n  type : #{data[1]} "
+      lit do
+        ["  requires #{data[0]} arguments \n\n  type : #{data[1]} "]
+        [c.pink]
     ]
 
 StrEType = (fname,eType) ->
@@ -211,7 +157,7 @@ StrEType = (fname,eType) ->
   | \many_args,\few_args => return StrArgLen fname,ctype,eType
 
   init = switch ctype
-  | \ma => c.er 'function|[fun....]'
+  | \ma => lit ["function|[fun....],function|any"],[c.er2,c.ok]
 
   | \arma =>
 
@@ -219,92 +165,123 @@ StrEType = (fname,eType) ->
 
     | \first =>
 
-      lit ["number" "|[num...],[fun....]"],[c.er,c.ok]
+      lit ["number" "|[num...],[fun....]"],[c.er2,c.ok]
 
     | \array =>
 
-      lit ["number" "|[num..]" ",[fun....]"],[c.ok,c.er,c.ok]
+      lit ["number" "|[num..]" ",[fun....]"],[c.ok,c.er2,c.ok]
 
     | \not_function =>
 
-      lit ["number|[num..]",",[fun....]"],[c.ok,c.er]
+      lit ["number|[num..]",",[fun....]"],[c.ok,c.er2]
 
   | \ar =>
 
     switch eType
     | \first =>
 
-      lit ["number" "|[num...],function|any"],[c.er,c.ok]
+      lit ["number" "|[num...],function|any"],[c.er2,c.ok]
 
     | \array =>
 
-      lit ["number" "|[num..]" ",function|any"],[c.ok,c.er,c.ok]
+      lit ["number" "|[num..]" ",function|any"],[c.ok,c.er2,c.ok]
 
   | \wh =>
     switch eType
     | \first =>
 
-      lit ["function",",function|any"],[c.er,c.ok]
+      lit ["function",",function|any"],[c.er2,c.ok]
 
     | \second =>
 
-      lit ["function","function|any"],[c.ok,c.er]
+      lit ["function","function|any"],[c.ok,c.er2]
 
   | \arwh =>
+
     switch eType
     | \num =>
 
-      lit ["number" "|[num..],function,function|any"],[c.er,c.ok]
+      lit ["number","|[num..],function,function|any"],[c.er2,c.ok]
 
     | \array =>
 
-      lit ["number|" "[num..]" ",function,function|any"],[c.ok,c.er,c.ok]
-
+      lit ["number|","[num..]" ",function,function|any"],[c.ok,c.er2,c.ok]
 
     | \second =>
 
-      lit ["number[num..],","function",",function|any"],[c.ok,c.er,c.ok]
+      lit ["number[num..],","function",",function|any"],[c.ok,c.er2,c.ok]
+
+  | \arpar =>
+
+    switch eType
+    | \num =>
+
+      lit ["number" "|[num..],function,function|any,function"],[c.er2,c.ok]
+
+    | \array =>
+
+      lit do
+        ["number|","[num..]",",function,function|any,function"]
+        [c.ok,c.er2,c.ok]
+
+    | \second =>
+
+      lit do
+        ["number[num..],","function",",function|any,function"]
+        [c.ok,c.er2,c.ok]
+
+    | \fourth =>
+
+      lit do
+        ["number[num..],function,function|any,","function"]
+        [c.ok,c.er2]
 
 
-  init = lit ["(",init,")"],[c.ok,null,c.ok]
+  init = lit ["(",init,")"],[c.ok,0,c.ok]
 
-  [init,'One of the argument cannot be used by the function']
+  [init,(c.pink 'One of the argument is of the wrong type.')]
 
 
-print.typeError = (data,fname,attribute) ->
+print.typeError = (data) ->
 
-  [long,type] = StrEType fname,attribute
+  [fname,attribute,data] = data
 
-  l c.err """
-    [#{packageJ.name}][typeError] #{long}
-    """
+  [type_signature,comment] = StrEType fname,attribute
+
+  l lit do
+    ["[#{packageJ.name}]","[typeError]"," .#{fname}(","...",")"]
+    [c.er1,c.er2,c.grey,c.er3,c.grey]
 
   l do
     '\n'
-    (show_chain data,[fname])
+    (show_chain data.str,[fname])
+    '\n\n'
+    type_signature
+    '\n\n'
+    comment
     '\n'
-
-  l ((c.black type) + "\n")
 
   show_stack!
 
+print.unary_not_array = (data) ->
 
-print.not_array = (data) ->
+  l lit do
+    ["[#{packageJ.name}]","[typeError]"]
+    [c.er1,c.er2]
 
-
-  l c.err """
-    [#{packageJ.name}][typeError] first argument is not array like.
-    """
 
   l do
     '\n'
-    lit [\unary,(show_chain [...data.str,\def],[])],[c.warn,0]
+    lit do
+      [\unary,(show_chain [...data.str,\def],[])]
+      [c.warn,0]
     '\n'
 
-  l lit ["unary namespace requires first argument to be array like.","\n"],[c.black,0]
+  l lit do
+    [" unary namespace requires first argument to be array like.","\n"]
+    [c.pink,0]
 
   show_stack!
-
 
 print.setting = (type,path) ->
 
@@ -313,8 +290,7 @@ print.setting = (type,path) ->
   | \already_in_path => "setting already enabled."
   | \not_in_opts     => "undefined option."
 
-  l lit ["#{name}][configError]"," #{msg}"],[c.err,c.warn]
-
+  l lit ["#{pkgname}][configError]"," #{msg}"],[c.er2,c.warn]
 
   [vr,key] = path
 
@@ -328,8 +304,8 @@ print.setting = (type,path) ->
 print.state_undef = (type) ->
 
   l lit do
-    ["[#{name}][Error]"]
-    [c.err]
+    ["[#{pkgname}][Error]"]
+    [c.er2]
 
   l lit do
     [("\n  ." + type)]
@@ -337,29 +313,41 @@ print.state_undef = (type) ->
 
   l lit do
     ["\n  Javascript does not allow referencing of .prototype function.\n"]
-    [c.black]
-
+    [c.pink]
 
   show_stack!
 
-print.route = ([Er,data]) !->
+print.arpar_not_array = (data) ->
 
-  [ECLASS,whichE,info] = Er
+  [type_signature] = StrEType 'arpar',"second"
+
+  l lit do
+    ["[#{packageJ.name}]","[typeError]"," .arpar(","...",")"]
+    [c.er1,c.er2,c.grey,c.er3,c.grey]
+
+  l do
+    '\n'
+    show_chain data.str,[\arpar]
+    '\n\n'
+    type_signature
+    '\n\n'
+    c.pink ".arpar validator function requires return value to be array like."
+    '\n'
+
+  show_stack!
+
+print.route = ([ECLASS,data]) !->
+
 
   switch ECLASS
-  | \input       =>
+  | \input             => print.typeError data
 
-    [ __, fname , arg_placement ] = Er
+  | \unary_not_array   => print.unary_not_array data
 
-    print.typeError do
-      data
-      fname
-      arg_placement
+  | \setting           => print.setting data
 
-  | \not_array   => print.not_array data
+  | \arpar_not_array   => print.arpar_not_array data
 
-  | \setting     => print.setting Er[1],data
+  | \state_undef       => print.state_undef data
 
-  | \state_undef => print.state_undef data
-
-  | otherwise    => l Er,data
+  | otherwise          => l "print.route\n\n",Er,data

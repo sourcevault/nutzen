@@ -6,9 +6,9 @@ require "../dist/main" # [..load main.js ..]
 
 {com,print,hoplon} = reg
 
-{z,l} = com
+{z,l,print_fail} = com
 
-p = print.fail 'test3.js'
+p = print_fail 'test3.js'
 
 # ------- ----------------------------------------------------------------------------------
 

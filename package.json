@@ -12,9 +12,7 @@
     "test": "make travis"
   },
   "dependencies": {
-    "ramda": "*",
-    "binapi": "*",
-    "error-stack-parser": "*"
+    "@sourcevault/utils.common": "*"
   },
   "keywords": [
     "pattern matching",

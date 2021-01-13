@@ -6,11 +6,11 @@ require "./verify" # [...load print.js...]
 
 {com,already_created,verify,modflag,print,main} = reg
 
-#---------------------------------------------------
+# #---------------------------------------------------
 
 {l,z,R,uic,binapi} = com
 
-#---------------------------------------------------
+# #---------------------------------------------------
 
 init =
   str      :[]
@@ -54,6 +54,7 @@ mod-settle = (F,init,A) ->
 
   | \s => f
 
+
 tightloop = (state) -> ->
 
   if state.unary
@@ -68,7 +69,7 @@ tightloop = (state) -> ->
 
     | otherwise =>
 
-      print.route [[\not_array],state]
+      print.route [\unary_not_array,state]
 
       return undefined
 
@@ -93,103 +94,267 @@ tightloop = (state) -> ->
 
     | \wh =>
 
-      [validator,fin] = data
+      [[vtype,validatorF],exec] = data
 
-      if (validator ...arguments)
+      switch vtype
 
-        return (settle fin,arguments)
+      | \f =>
+
+        cont = validatorF ...arguments
+
+        if cont
+
+          return settle exec,arguments
+
+      | \v =>
+
+        vd = validatorF.auth arguments
+
+        if vd.continue
+
+          return (settle exec,vd.value)
 
     # --------------------------------------------
 
     | \whn =>
 
-      [validator,F] = data
 
-      if not (validator ...arguments)
+      [[vtype,validatorF],exec] = data
 
-        return settle F,arguments
+      switch vtype
+
+      | \f =>
+
+        cont = validatorF ...arguments
+
+        if not cont
+
+          return settle exec,arguments
+
+      | \v =>
+
+        vd = validatorF.auth arguments
+
+        if vd.error
+
+          return (settle exec,vd.value)
 
     # --------------------------------------------
 
     | \ar =>
 
-      [spans,F] = data
+      [spans,exec] = data
 
       if spans[arglen]
 
-        return settle F,arguments
+        return settle exec,arguments
 
     # --------------------------------------------
 
     | \arn =>
 
-      [spans,F] = data
+      [spans,exec] = data
 
       if not spans[arglen]
 
-        return settle F,arguments
+        return settle exec,arguments
 
     # --------------------------------------------
 
     | \arwh     =>
 
-      [spans,validator,F] = data
+      [spans,[vtype,validatorF],exec] = data
 
-      if spans[arglen] and (validator ...arguments)
+      if spans[arglen]
 
-        return settle F,arguments
+        switch vtype
+
+        | \f =>
+
+          cont = validatorF ...arguments
+
+          if cont
+
+            return settle exec,arguments
+
+        | \v =>
+
+          vd = validatorF.auth arguments
+
+          if vd.continue
+
+            return (settle exec,vd.value)
 
     # --------------------------------------------
 
     | \ma =>
 
-      [validator,fin] = data
+      [[vtype,validatorF],exec] = data
 
-      ret = validator ...arguments
+      switch vtype
 
-      if ret
+      | \f =>
 
-        return mod-settle fin,ret,arguments
+        msg = validatorF ...arguments
+
+        if msg
+
+          return mod-settle exec,msg,arguments
+
+      | \v =>
+
+        vd = validatorF.auth arguments
+
+        if vd.continue
+
+          return mod-settle exec,vd.value,arguments
 
     | \arma     =>
 
-      [spans,validator,fin] = data
+      [spans,[vtype,validatorF],exec] = data
 
-      ret = validator ...arguments
+      if spans[arglen]
 
-      if ret
+        switch vtype
 
-        return mod-settle fin,ret,arguments
+        | \f =>
+
+          msg = validatorF ...arguments
+
+          if msg
+
+            return mod-settle exec,msg,arguments
+
+        | \v =>
+
+          vd = validatorF.auth arguments
+
+          if vd.continue
+
+            return mod-settle exec,vd.value,arguments
+
+    # --------------------------------------------
+
+    | \arpar    =>
+
+      [spans,[vtype,validatorF],exec,lastview] = data
+
+      switch vtype
+
+      | \f =>
+
+        ret = validatorF ...arguments
+
+        if not (Array.isArray ret)
+
+          print.route [\arpar_not_array,state]
+
+          return void
+
+        [cont,msg] = ret
+
+        if cont
+
+          return mod-settle exec,msg,arguments
+
+        else
+
+          ret = lastview msg
+
+          if ret then return void
+
+      | \v =>
+
+        vd = validatorF.auth arguments
+
+        if vd.continue
+
+          return mod-settle exec,vd.value,arguments
+
+        else
+
+          ret = lastview vd.message,vd.path
+
+          if ret then return void
+
 
     # --------------------------------------------
 
     | \arwhn    =>
 
-      [spans,validator,F] = data
+      [spans,[vtype,validatorF],exec] = data
 
-      if spans[arglen] and not (validator ...arguments)
+      if spans[arglen]
 
-        return settle F,arguments
+        switch vtype
+
+        | \f =>
+
+          cont = validatorF ...arguments
+
+          if not cont
+
+            return settle exec,arguments
+
+        | \v =>
+
+          vd = validatorF.auth arguments
+
+          if vd.error
+
+            return (settle exec,vd.value)
 
     # --------------------------------------------
 
     | \arnwh    =>
 
-      [spans,validator,F] = data
+      [spans,[vtype,validatorF],exec] = data
 
-      if (not spans[arglen]) and (validator ...arguments)
+      if not spans[arglen]
 
-        return settle F,arguments
+        switch vtype
+
+        | \f =>
+
+          cont = validatorF ...arguments
+
+          if cont
+
+            return settle exec,arguments
+
+        | \v =>
+
+          vd = validatorF.auth arguments
+
+          if vd.continue
+
+            return (settle exec,vd.value)
 
     # --------------------------------------------
 
     | \arnwhn    =>
 
-      [spans,validator,F] = data
+      [spans,[vtype,validatorF],exec] = data
 
-      if not ((spans[arglen]) and (validator ...arguments))
+      if not spans[arglen]
 
-        return settle F,arguments
+        switch vtype
+
+        | \f =>
+
+          cont = validatorF ...arguments
+
+          if not cont
+
+            return settle exec,arguments
+
+        | \v =>
+
+          vd = validatorF.auth arguments
+
+          if vd.error
+
+            return (settle exec,vd.value)
 
     I += 1
 
@@ -224,11 +389,9 @@ handle.fault = (self,data,fname) ->
 
   state = self[modflag]
 
-  FT = [\input,fname,data]
+  print.route [\input,[fname,data,state]]
 
-  print.route [FT,state]
-
-  neo = Object.assign {},state,{fault:FT}
+  neo = Object.assign {},state,{fault:[\input,fname,data]}
 
   looper neo
 
@@ -286,13 +449,14 @@ genfun = (vfun,fname) -> ->
 
   if state is undefined
 
-    print.route [[\state_undef],[fname]]
+    print.route [\state_undef,[fname]]
 
     return undefined
 
   if state.fault then return @
 
   [zone,data] = vfun arguments
+
 
   handle[zone] @,data,fname
 
@@ -309,7 +473,7 @@ main.def =  ->
 
   if state is undefined
 
-    print.route [[\state_undef],[\def]]
+    print.route [\state_undef,[\def]]
 
     return undefined
 
@@ -319,7 +483,7 @@ main.def =  ->
 
   handle.def.ok @,data
 
-props = [\ma \arma \wh \ar \whn \arn \arwh \arnwh \arwhn \arnwhn]
+props = [\ma \arma \wh \ar \whn \arn \arwh \arnwh \arwhn \arnwhn \arpar]
 
 #---------------------------------------------------
 
@@ -346,7 +510,7 @@ getter = ({path,lock,str,vr},key) ->
 
   if lock
 
-    print.route [[\setting,\path_locked],[vr,key]]
+    print.route [\setting,[\path_locked,vr,key]]
 
     return null
 
@@ -354,7 +518,7 @@ getter = ({path,lock,str,vr},key) ->
 
     if (R.includes key,path)
 
-      print.route [[\setting,\already_in_path],[vr,key]]
+      print.route [\setting,[\already_in_path,vr,key]]
 
       null
 
@@ -372,7 +536,7 @@ getter = ({path,lock,str,vr},key) ->
 
   else
 
-    print.route [[\setting,\not_in_opts],[vr,key]]
+    print.route [\setting,[\not_in_opts,vr,key]]
 
     null
 

@@ -2,7 +2,7 @@ reg = require "../dist/registry"
 
 require "../dist/main" # [..load main.js ..]
 
-# ------- ----------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 wait = (t,f) -> setTimeout f,t
 
@@ -10,16 +10,14 @@ wait = (t,f) -> setTimeout f,t
 
 hop = hoplon
 
-{z,l,R,c} = com
+{z,l,R,c,print_fail} = com
 
-p = print.fail 'test.js'
+#-------------------------------------------------------------------------------
 
-# ------- ----------------------------------------------------------------------------------
+# bothNum = (x,y) -> (((typeof x) is "number") and ((typeof y) is "number"))
 
-bothNum = (x,y) -> (((typeof x) is "number") and ((typeof y) is "number"))
+# argE    = -> z "only accepts 2 arugument"
 
-argE    = -> z "only accepts 2 arugument"
+# typeE   = -> z "argument type has to be number"
 
-typeE   = -> z "argument type has to be number"
-
-add = (x,y) -> x + y
+# add = (x,y) -> x + y

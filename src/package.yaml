@@ -10,9 +10,7 @@ main: dist/main.js
 scripts:
   "test": "make travis"
 dependencies:
-  ramda: "*"
-  binapi: "*"
-  error-stack-parser: "*"
+  '@sourcevault/utils.common': '*'
 keywords:
   - pattern matching
   - guards

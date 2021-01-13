@@ -1,5 +1,5 @@
 
-com = require "./common"
+com = require "@sourcevault/utils.common"
 
 reg = {}
 
@@ -11,14 +11,9 @@ reg = {}
 
   ..already_created = new Set!
 
-  ..modflag = Symbol "modflag"
+  ..modflag = Symbol "self"
 
   ..print = {}
-    ..fail = null
-    ..route = null
-
-
-  ..betterTypeof = null
 
   ..verify = {}
 

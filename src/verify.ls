@@ -2,48 +2,47 @@ reg = require "./registry"
 
 {com,verify,print,sig} = reg
 
-{z,R} = com
+{z,R,common_symbols,zj} = com
 
 V = verify
 
-betterTypeof = (x) ->
-
-  type = typeof x
-
-  if (type is \object)
-    if (Array.isArray x)
-      return \array
-    else if (x is null)
-      return \null
-    else
-      return \object
-  else
-    return type
-
-reg.betterTypeof = betterTypeof
+valleydate = common_symbols.valleydate
 
 V.def = (args) ->
 
   [f] = args
 
-  switch betterTypeof f
-  | \function => [\ok,[\f,f]]
+  switch R.type f
+  | \Function => [\ok,[\f,f]]
   | otherwise => [\ok,[\s,f]] # static
+
+customTypeoOf = (unknown) ->
+
+  type = R.type unknown
+
+  switch type
+
+  | \Object,\Function =>
+
+    if unknown[valleydate] then return \valleydate
+
+    return type
+
+  | otherwise => return type
+
 
 V.num = (num) ->
 
-  if (typeof num is \number)
-    return \num
-  else if Array.isArray num
+  switch R.type num
+  | \Number => return \num
+  | \Array  =>
     for v in num
-      if not ((typeof v) is \number)
+      if not ((typeof v) is \Number)
         return \fault.array
     return \array
-  else
-    return \fault
+  | otherwise => return \fault
 
-
-tron = (arr)->
+array2obj = (arr)->
 
   ob = {}
 
@@ -52,7 +51,6 @@ tron = (arr)->
     ob[I] = true
 
   ob
-
 
 V.ar = (args) ->
 
@@ -67,13 +65,13 @@ V.ar = (args) ->
   ret = []
 
   switch V.num num
-  | \num          => ret.push tron [num]
-  | \array        => ret.push tron num
+  | \num          => ret.push array2obj [num]
+  | \array        => ret.push array2obj num
   | \fault        => return [\fault,\first]
   | \fault.array  => return [\fault,\array]
 
-  switch betterTypeof fun
-  | \function     => ret.push [\f,fun]
+  switch R.type fun
+  | \Function     => ret.push [\f,fun]
   | otherwise     => ret.push [\s,fun]
 
   [\ok,ret]
@@ -90,13 +88,39 @@ V.wh = (args) ->
 
   ret = []
 
-  switch betterTypeof validator
-  | \function => ret.push validator
-  | otherwise => return [\fault,\first]
+  switch customTypeoOf validator
+  | \Function   => ret.push [\f,validator]
+  | \valleydate => ret.push [\v,validator]
+  | otherwise   => return [\fault,\first]
 
-  switch betterTypeof ap
-  | \function => ret.push [\f,ap]
+  switch R.type ap
+  | \Function => ret.push [\f,ap]
   | otherwise => ret.push [\s,ap]
+
+  [\ok,ret]
+
+numfunfun = (args) ->
+
+  [num,validator,ap] = args
+
+  ret = []
+
+  switch V.num num
+  | \num          => ret.push array2obj [num]
+  | \array        => ret.push array2obj num
+  | \fault        => return [\fault,\first]
+  | \fault.array  => return [\fault,\array]
+
+  switch R.type validator
+  | \Function     => ret.push [\f,validator]
+  | \valleydate   => ret.push [\v,validator]
+  | otherwise     => return [\fault,\second]
+
+  type = R.type ap
+
+  switch type
+  | \Function     => ret.push [\f,ap]
+  | otherwise     => ret.push [\s,ap]
 
   [\ok,ret]
 
@@ -108,27 +132,35 @@ V.arwh = (args) ->
   if (args.length < 3)
     return [\fault,\few_args]
 
-  [num,validator,ap] = args
+  numfunfun args
 
-  ret = []
+identity = -> false
 
-  switch V.num num
-  | \num          => ret.push tron [num]
-  | \array        => ret.push tron num
-  | \fault        => return [\fault,\first]
-  | \fault.array  => return [\fault,\array]
+V.arpar = (args) ->
 
-  switch betterTypeof validator
-  | \function     => ret.push validator
-  | otherwise     => return [\fault,\second]
+  if (args.length < 3)
+    return [\fault,\few_args]
 
-  type = betterTypeof ap
+  if (args.length > 4)
+    return [\fault,\many_args]
 
-  switch type
-  | \function     => ret.push [\f,ap]
-  | otherwise     => ret.push [\s,ap]
+  [cont,data] = numfunfun args
 
-  [\ok,ret]
+  if (cont is \fault) then return ret
+
+  ret = data
+
+  arg4 = args[3]
+
+  switch R.type arg4
+  | \Function        => ret.push arg4
+  | \Undefined,\Null => ret.push identity
+  | otherwise        => return [\fault,\fourth]
+
+  fin = [\ok,ret]
+
+  fin
+
 
 V.getvfun = (fname) ->
 
@@ -138,10 +170,11 @@ V.getvfun = (fname) ->
 
   | \ar,\arn                          => V.ar
 
-  | \arwh,\arnwh,\arwhn,\arnwhn,\arma => V.arwh
-
   | \def                              => V.def
 
+  | \arpar                            => V.arpar
+
+  | \arwh,\arnwh,\arwhn,\arnwhn,\arma => V.arwh
 
 
 

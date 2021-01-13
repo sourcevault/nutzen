@@ -53,108 +53,148 @@ Guards are function wrappers that are commonly found in functional programming l
 
 They also encourage efficient use of pattern matching to structure code and external API.
 
+```
+[ LEGENDS ]
+
+arglen      👉🏼       number | [num...]
+validator   👉🏼  ( -> bool ) | { valledate object }
+exec        👉🏼    function  | any
+
 🟢 Table 1 - method names and their types.
 
-```
-METHOD NAME      EXPANDED            TYPES
-----------------------------------------------------------------------------
-ar               args                number|[num...],function|any
-wh               when                function,function|any
-whn              when not            function,function|any
-ma               match               function,function|any
-arn              args not            number|[num...],function|any
-arma             args match          number|[num...],function,function|any
-arwh             args when           number|[num...],function,function|any
-arnwh            args not when       number|[num...],function,function|any
-arwhn            args when not       number|[num...],function,function|any
-arnwhn           args not when not   number|[num...],function,function|any
-----------------------------------------------------------------------------
-def              default             (function|any)
-----------------------------------------------------------------------------
+METHOD NAME  EXPANDED            TYPES
+----------------------------------------------------------------
+ar           args                arglen,exec
+wh           when                validator,exec
+whn          when not            validator,exec
+ma           match               validator,exec
+arn          args not            arglen,exec
+arma         args match          arglen,validator,exec
+arwh         args when           arglen,validator,exec
+arnwh        args not when       arglen,validator,exec
+arwhn        args when not       arglen,validator,exec
+arnwhn       args not when not   arglen,validator,exec
+arpar        args par            arglen,validator,exec,function
+----------------------------------------------------------------
+def          default             (function|any)
+----------------------------------------------------------------
 ```
 
+```
 🟢 Table 2 - method types displayed with argument columns.
 
-```
-METHOD NAME   TYPES
-              ARG 1             ARG 2          ARG 3
------------------------------------------------------------
-ar            number|[num...]  function|any
-wh            function         function|any
-whn           function         function|any
-ma            function         function|any
-arn           number|[num...]  function|any
-arwh          number|[num...]  function        function|any
-arma          number|[num...]  function        function|any
-arnwh         number|[num...]  function        function|any
-arwhn         number|[num...]  function        function|any
-arnwhn        number|[num...]  function        function|any
-def           function|any
+METHOD NAME  TYPES
+             ARG 1       ARG 2       ARG 3       ARG 4
+---------------------------------------------------------
+ar           arglen      exec
+wh           validator   exec
+whn          validator   exec
+ma           validator   exec
+arn          arglen      exec
+arwh         arglen      validator   exec
+arma         arglen      validator   exec
+arnwh        arglen      validator   exec
+arwhn        arglen      validator   exec
+arnwhn       arglen      validator   exec
+arpar        arglen      validator   exec        function
+def          function|any
 ```
 
 ### Method Descriptions
 
 The API surface is purposefully kept large to cover all types of niche pattern matching usecases.
 
-◾️ `ar` : `(number|[num...],function|any)`
+🟣 `ar :: (number|[num...],function|any)`
 
 First argument can be an any of number or just a number, which describes how many arguments are acceptable before running the function in the second argument.
 
 Second argument can also just be an any, in which case, we just return an any.
 
-◾️ `wh` : `(function,function|any)`
+🟣 `wh :: (function,function|any)`
 
 first function should return a boolean, which determines if second function is run or not.
 
-◾️ `whn`: `(function,function|any)`
+🟣 `ma :: (function,function|any)`
 
-Same as above but if the first function return `true` then the second function is **not** run.
+```
+.ma :: { validator } -> { execution }
 
-◾️ `arn` : `(number|[num...],function|any)`
+// 🔻 [ .. expanded .. ] 🔻
 
-Same as `ar` but the functions added is only run if the argument.length **doesn't match** the values provided in the first argument to `arn`.
+.ma ::      function -> function|any
 
-◾️ `arwh` : `(number|[num...],function,function|any)`
+// 🔻 [ .. expanded .. ] 🔻
 
-A combination of `ar` and `wh` operators, first argument is number of argument we are ready to accept, first function is a validator just like what we would use with `.wh` and last function is what would run if the first two conditions are met.
+.ma ::   ( -> bool ) -> function|any
+```
 
-◾️ `arwhn` : `(number|[num...],function,function|any)`
+There are times when the validator itself does some side-effects ( eg. finding a file in a directory ).
 
-Just like `arwh` but only runs if the validator function return false.
+In situations like that we may need to ensure two things :
 
-◾️ `arnwh` : `(number|[num...],function,function|any)`
+- validator is run only **once**,
 
-Just like `arwh` but only runs if the arguments do not match.
+-  provide some value created to our validator function to the execution function ( second function ).
 
-◾️ `arnwhn` : `(number|[num...],function,function|any)`
+`.ma` is just like `.wh` but gives us the option of ensuring both these conditions are met.
 
-Just like `arwhn` but runs if either conditions fails ( argument or function ), ( since the method name is quite a mouthful, its better to use the shorthand `.arnwhn`).
+-  return value of the validator function is sent to the execution function, as the first **argument**.
 
-◾️ `ma` : `(function,function|any)`
+If the validator function in `.ma` returns `false` or `undefined` then `hoplon` jumps to the next validator, in *any other value type including true* `hoplon` adds the value to the argument object to be provided to the execution function.
 
-It's common in `.wh` operations to have **both** the validator and the return function be the same.
-
-Making it redundant to have them run twice.
-
-`ma` adds the return value of the validator to the action function ( second function ).
-
-If `.ma` returns `false` or `undefined` then `hoplon` jumps to the next validator, in *any other value type* `hoplon` returns and breaks.
-
-◾️ `arma` : `number|[num...],function,function|any`
+🟣 `arma :: {spans} -> { validator } -> { execution }`
 
 Combines `.ar` and `.ma`, first argument can be a number or a array of number just like in `.ar`.
 
-◾️ `def` : `(function|any)`
+🟣 `arpar :: {spans} -> { validator } -> { execution } -> {handleError}`
+
+
+`.arpar` is exactly like `.arma` but accepts a final error handling function and **only accepts** a tuple as return value for the validator.
+
+In the trivial case, validator functions return just `true` or `false`, but as we have to deal with more involved situations, a better return signature would be a tuple where, the second value is relevant metadata (in case of error) or just data :
+
+```
+[true,...]
+[false,...]
+```
+
+🟣 `whn :: (function,function|any)`
+
+Same as above but if the first function return `true` then the second function is **not** run.
+
+🟣 `arn :: (number|[num...],function|any)`
+
+Same as `ar` but the functions added is only run if the argument.length **doesn't match** the values provided in the first argument to `arn`.
+
+🟣 `arwh :: (number|[num...],function,function|any)`
+
+A combination of `ar` and `wh` operators, first argument is number of argument we are ready to accept, first function is a validator just like what we would use with `.wh` and last function is what would run if the first two conditions are met.
+
+🟣 `arwhn :: (number|[num...],function,function|any)`
+
+Just like `arwh` but only runs if the validator function return false.
+
+🟣 `arnwh :: (number|[num...],function,function|any)`
+
+Just like `arwh` but only runs if the arguments do not match.
+
+🟣 `arnwhn :: (number|[num...],function,function|any)`
+
+Just like `arwhn` but runs if either conditions fails ( argument or function ), ( since the method name is quite a mouthful, its better to use the shorthand `.arnwhn`).
+
+🟣 `def :: (function|any)`
 
 In case `hoplon` is unable to match anything, the return value of the function added to `.def`  is used.
 
 It's also possible to just provide a static value or object as default.
 
-`⛔️ Note ⛔️`
+#### `⛔️ Notes ⛔️`
 
 - Each hoplon object **always** has to end with a `.def`.
 
 - all the methods also accept **non-functions** as their last value, functionality was added to make it possible to easily return static values for efficient and easy pattern matching.
+
+- `hoplon` also accepts [valleydate](https://github.com/sourcevault/valleydate) validators.
 
 ### Namespaces
 
@@ -190,6 +230,8 @@ By default exit function doesn't have debug logging enabled.
 In case debug message is needed then `.debug` namespace can be used.
 
 #### Update and API change
+
+◾️ `0.0.41` - `.arpar` added and validators can now be `valleydate` objects.
 
 ◾️ `0.0.33` - `.ma` Nd `.arma` behavior modified to now do action functions.
 
