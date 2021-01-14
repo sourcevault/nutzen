@@ -37,7 +37,7 @@ V.num = (num) ->
   | \Number => return \num
   | \Array  =>
     for v in num
-      if not ((typeof v) is \Number)
+      if not ((typeof v) is \number)
         return \fault.array
     return \array
   | otherwise => return \fault

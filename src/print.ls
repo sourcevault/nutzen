@@ -136,17 +136,17 @@ StrArgLen = (fname,ctype,eType)->
   switch eType
   | \many_args =>
     [
-      "too many arguments"
+      c.pink "too many arguments"
       lit do
-        ["  only #{data[0]} arguments \n\n  accepted type :: #{data[1]} "]
-        [c.pink]
+        ["only #{data[0]} arguments ","\n\n #{fname}"," :: #{data[1]} "]
+        [c.blue,c.ok,c.ok]
     ]
   | \few_args  =>
     [
-      "too few arguments"
+      c.pink "too few arguments"
       lit do
-        ["  requires #{data[0]} arguments \n\n  type : #{data[1]} "]
-        [c.pink]
+        ["requires #{data[0]} arguments ","\n\n #{fname}"," :: #{data[1]} "]
+        [c.blue,c.ok,c.ok]
     ]
 
 StrEType = (fname,eType) ->
@@ -244,7 +244,7 @@ StrEType = (fname,eType) ->
 
 print.typeError = (data) ->
 
-  [fname,attribute,data] = data
+  [E,fname,attribute,data] = data
 
   [type_signature,comment] = StrEType fname,attribute
 
@@ -261,9 +261,9 @@ print.typeError = (data) ->
     comment
     '\n'
 
-  show_stack!
+  show_stack E
 
-print.unary_not_array = (data) ->
+print.unary_not_array = ([E,data]) ->
 
   l lit do
     ["[#{packageJ.name}]","[typeError]"]
@@ -281,9 +281,9 @@ print.unary_not_array = (data) ->
     [" unary namespace requires first argument to be array like.","\n"]
     [c.pink,0]
 
-  show_stack!
+  show_stack E
 
-print.setting = (type,path) ->
+print.setting = ([E,type,vr,key]) ->
 
   msg = switch type
   | \path_locked     => "all settings enabled."
@@ -292,32 +292,30 @@ print.setting = (type,path) ->
 
   l lit ["#{pkgname}][configError]"," #{msg}"],[c.er2,c.warn]
 
-  [vr,key] = path
-
   l do
     '\n'
     lit [(vr.join "."),".",key],[c.ok,c.ok,c.er]
     '\n'
 
-  show_stack!
+  show_stack E
 
-print.state_undef = (type) ->
+print.state_undef = ([E,fname]) ->
 
   l lit do
     ["[#{pkgname}][Error]"]
     [c.er2]
 
   l lit do
-    [("\n  ." + type)]
+    [("\n  ." + fname)]
     [c.warn]
 
   l lit do
     ["\n  Javascript does not allow referencing of .prototype function.\n"]
     [c.pink]
 
-  show_stack!
+  show_stack E
 
-print.arpar_not_array = (data) ->
+print.arpar_not_array = ([E,data]) ->
 
   [type_signature] = StrEType 'arpar',"second"
 
@@ -334,7 +332,7 @@ print.arpar_not_array = (data) ->
     c.pink ".arpar validator function requires return value to be array like."
     '\n'
 
-  show_stack!
+  show_stack E
 
 print.route = ([ECLASS,data]) !->
 

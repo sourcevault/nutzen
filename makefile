@@ -15,8 +15,8 @@ pkg:
 
 compile:
 	make pkg
-	lsc -co dist src
-	lsc -c test
+	lsc -bco dist src
+	lsc -bc test
 	node ${file}
 
 compile.time:
@@ -41,8 +41,8 @@ travis:
 	done
 
 testy:
-	lsc -co dist src
-	lsc -c test/*.ls
+	lsc -bco dist src
+	lsc -bc test/*.ls
 	make pkg
 	make travis
 

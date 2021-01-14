@@ -69,7 +69,7 @@ tightloop = (state) -> ->
 
     | otherwise =>
 
-      print.route [\unary_not_array,state]
+      print.route [\unary_not_array,[(new Error!),state]]
 
       return undefined
 
@@ -247,7 +247,7 @@ tightloop = (state) -> ->
 
         if not (Array.isArray ret)
 
-          print.route [\arpar_not_array,state]
+          print.route [\arpar_not_array,[(new Error!),state]]
 
           return void
 
@@ -389,7 +389,7 @@ handle.fault = (self,data,fname) ->
 
   state = self[modflag]
 
-  print.route [\input,[fname,data,state]]
+  print.route [\input,[(new Error!),fname,data,state]]
 
   neo = Object.assign {},state,{fault:[\input,fname,data]}
 
@@ -449,7 +449,7 @@ genfun = (vfun,fname) -> ->
 
   if state is undefined
 
-    print.route [\state_undef,[fname]]
+    print.route [\state_undef,[(new Error!),fname]]
 
     return undefined
 
@@ -473,7 +473,7 @@ main.def =  ->
 
   if state is undefined
 
-    print.route [\state_undef,[\def]]
+    print.route [\state_undef,[(new Error!),\def]]
 
     return undefined
 
@@ -510,7 +510,7 @@ getter = ({path,lock,str,vr},key) ->
 
   if lock
 
-    print.route [\setting,[\path_locked,vr,key]]
+    print.route [\setting,[(new Error!),\path_locked,vr,key]]
 
     return null
 
@@ -518,7 +518,7 @@ getter = ({path,lock,str,vr},key) ->
 
     if (R.includes key,path)
 
-      print.route [\setting,[\already_in_path,vr,key]]
+      print.route [\setting,[(new Error!),\already_in_path,vr,key]]
 
       null
 
@@ -536,7 +536,7 @@ getter = ({path,lock,str,vr},key) ->
 
   else
 
-    print.route [\setting,[\not_in_opts,vr,key]]
+    print.route [\setting,[(new Error!),\not_in_opts,vr,key]]
 
     null
 

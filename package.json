@@ -6,7 +6,7 @@
   "license": "BSD-3-Clause",
   "description": "Erlang/Elixir type guards for javascript, but with every imaginable method.",
   "repository": "https://github.com/sourcevault/hoplon.git",
-  "version": "0.0.38",
+  "version": "0.0.42",
   "main": "dist/main.js",
   "scripts": {
     "test": "make travis"
