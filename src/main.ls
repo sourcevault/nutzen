@@ -239,6 +239,7 @@ tightloop = (state) -> ->
 
       [spans,[vtype,validatorF],exec,lastview] = data
 
+
       switch vtype
 
       | \f =>
@@ -258,6 +259,11 @@ tightloop = (state) -> ->
           return mod-settle exec,msg,arguments
 
         else
+
+          msg = switch R.type msg
+          | \Array    => msg
+          | \Undefined,\Null => []
+          | otherwise => msg
 
           ret = lastview msg
 

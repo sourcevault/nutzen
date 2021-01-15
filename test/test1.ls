@@ -27,3 +27,18 @@ if not (retorn is "foobar")
   pf ".arpar / normal validator function"
 
 
+# check if default empty array is provided.
+
+V2 = hop
+.arpar 1,
+  -> [false]
+  ->
+  -> arguments[0]
+.def!
+
+empty_array = V2 1
+
+if not ((R.type empty_array) is \Array)
+
+  pf ".arpar error handling not being done correctly"
+
