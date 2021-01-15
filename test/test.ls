@@ -21,3 +21,7 @@ hop = hoplon
 # typeE   = -> z "argument type has to be number"
 
 # add = (x,y) -> x + y
+
+# find the area of circle / square
+
+# z area.square 2 # 6

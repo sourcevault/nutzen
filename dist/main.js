@@ -181,6 +181,7 @@ tightloop = function(state){
           if (cont) {
             return modSettle(exec, msg, arguments);
           } else {
+            msg = (fn$());
             ret = lastview(msg);
             if (!(ret === void 8 || ret === false || ret === null)) {
               return ret;
@@ -262,6 +263,17 @@ tightloop = function(state){
         return def[1].apply(def, arguments);
       case 's':
         return def[1];
+      }
+    }
+    function fn$(){
+      switch (R.type(msg)) {
+      case 'Array':
+        return msg;
+      case 'Undefined':
+      case 'Null':
+        return [];
+      default:
+        return msg;
       }
     }
   };
