@@ -182,8 +182,8 @@ tightloop = function(state){
             return modSettle(exec, msg, arguments);
           } else {
             ret = lastview(msg);
-            if (ret) {
-              return;
+            if (!(ret === void 8 || ret === false || ret === null)) {
+              return ret;
             }
           }
           break;
@@ -193,8 +193,8 @@ tightloop = function(state){
             return modSettle(exec, vd.value, arguments);
           } else {
             ret = lastview(vd.message, vd.path);
-            if (ret) {
-              return;
+            if (!(ret === void 8 || ret === false || ret === null)) {
+              return ret;
             }
           }
         }

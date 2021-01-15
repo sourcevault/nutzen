@@ -261,7 +261,7 @@ tightloop = (state) -> ->
 
           ret = lastview msg
 
-          if ret then return void
+          if not (ret in [void,false,null]) then return ret
 
       | \v =>
 
@@ -275,7 +275,7 @@ tightloop = (state) -> ->
 
           ret = lastview vd.message,vd.path
 
-          if ret then return void
+          if not (ret in [void,false,null]) then return ret
 
 
     # --------------------------------------------
