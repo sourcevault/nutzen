@@ -6,7 +6,7 @@ npm install hoplon
 npm install sourcevault/hoplon#dist
 ```
 
-[![Build Status](https://travis-ci.org/sourcevault/hoplon.svg?branch=dev)](https://travis-ci.org/sourcevault/hoplon)
+[![Build Status](https://travis-ci.org/sourcevault/hoplon.svg?branch=dev)](https://travis-ci.org/sourcevault/hoplon) [![Join the chat at https://gitter.im/sourcevault/hoplon](https://badges.gitter.im/sourcevault/hoplon.svg)](https://gitter.im/sourcevault/hoplon?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 `hoplon` is a tiny utility module to construct immutable functional guards, similar to what exists in Haskell / Elixir / Erlang for graceful error handling.
 
