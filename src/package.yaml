@@ -1,22 +1,40 @@
-name: hoplon
+name: valleydate
 author: sourcevault
 email: joykrishnamondal@gmail.com
-homepage: https://github.com/sourcevault/hoplon#readme.md
+homepage: https://github.com/sourcevault/valleydate#readme.md
 license: BSD-3-Clause
-description: Erlang/Elixir type guards for javascript, but with every imaginable method.
-repository: https://github.com/sourcevault/hoplon.git
-version: 0.0.42
+description: immutable object validator
+repository: https://github.com/sourcevault/valleydate.git
+version: 0.1.20
 main: dist/main.js
 scripts:
   "test": "make travis"
 dependencies:
-  '@sourcevault/utils.common': '*'
+  ramda: "*"
+  error-stack-parser: "*"
+devDependencies:
+  "gulp-livescript": "*"
+  "gulp-rename": "*"
+  "gulp-yaml": "*"
+  livescript: "*"
+  "gulp-tap": "*"
+  gulp: "*"
 keywords:
-  - pattern matching
-  - guards
-  - guard-js
-  - functional
-  - immutable
-  - simple
-  - utils
-  - livescript
+  - "json-schema-validator"
+  - "schema-validator"
+  - "error-messages"
+  - "type-check"
+  - "functional"
+  - "validator"
+  - "chainable"
+  - "immutable"
+  - "validate"
+  - "objects"
+  - "monadic"
+  - "mostjs"
+  - "simple"
+  - "schema"
+  - "types"
+  - "Array"
+  - "monad"
+  - "JSON"
