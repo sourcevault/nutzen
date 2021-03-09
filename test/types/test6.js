@@ -1,9 +1,8 @@
-var reg, be, com, print, z, l, hop, print_fail, p, T, F, V, ret;
-reg = require("../dist/registry");
-be = require("../dist/main");
-com = reg.com, print = reg.print;
-z = com.z, l = com.l, hop = com.hop, print_fail = com.print_fail;
-p = print_fail("test/test6.js");
+var com, z, l, R, j, zj, print_fail, be, p, T, F, V, ret;
+com = require('../../dist/utils/main');
+z = com.z, l = com.l, R = com.R, j = com.j, zj = com.zj, print_fail = com.print_fail;
+be = require('../../dist/types/main');
+p = print_fail("test/types/test6.js");
 T = function(x){
   return true;
 };

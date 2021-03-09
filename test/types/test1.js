@@ -1,8 +1,8 @@
-var reg, ref$, z, noops, print_fail, be, p, address, V, sample, ret;
-reg = require("../dist/registry");
-ref$ = reg.com, z = ref$.z, noops = ref$.noops, print_fail = ref$.print_fail;
-be = require("../dist/main");
-p = print_fail("test/test1.js");
+var com, z, l, R, j, zj, print_fail, be, p, address, V, sample, ret;
+com = require('../../dist/utils/main');
+z = com.z, l = com.l, R = com.R, j = com.j, zj = com.zj, print_fail = com.print_fail;
+be = require('../../dist/types/main');
+p = print_fail("test/types/test1.js");
 address = be.required('city').on('city', be.str).on('country', be.str.fix('France'));
 V = be.required('name', 'age', 'address').on('address', address).on('name', be.str).on('age', be.num);
 sample = {

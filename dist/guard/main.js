@@ -1,4 +1,4 @@
-var ext, com, verify, modflag, print, l, z, R, uic, binapi, init, settle, modSettle, tightloop, looper, handle, genfun, props, cat, getter, topcache, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);}, out$ = typeof exports != 'undefined' && exports || this;
+var ext, com, verify, modflag, print, l, z, R, uic, binapi, init, settle, modSettle, tightloop, main, looper, handle, genfun, props, cat, getter, topcache, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ext = require("./verify.print.common");
 com = ext.com, verify = ext.verify, modflag = ext.modflag, print = ext.print;
 l = com.l, z = com.z, R = com.R, uic = com.uic, binapi = com.binapi;
@@ -275,6 +275,7 @@ tightloop = function(state){
     }
   };
 };
+main = {};
 looper = function(state){
   var instance, frozen;
   instance = Object.create(main);
@@ -429,4 +430,4 @@ pkg = binapi(entry, getter, {
   str: [],
   key: null
 }, print.log.prox);
-out$.pkg = pkg;
+module.exports = pkg;

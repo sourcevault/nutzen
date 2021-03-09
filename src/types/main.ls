@@ -1,437 +1,476 @@
-reg = require "./registry"
-
-require "./print" # [....]
-
-require "./tightloop" # [....]
+{com,print} = require \./print.common
 
 # ------------------------------------------------------------------
 
-{com,print,tightloop,sig,cache} = reg
+{z,l,R,j,deep_freeze,uic,loopError} = com
 
-{z,l,R,hop,j,uic,deep_freeze,loopError} = com
+oxo = require \../guard/main
 
-# ------------------------------------------------------------------
+int = require \./internal
 
-assort = (F) ->
+{custom,define,cache} = int
 
-  if (cache.def.has F)
+be = custom
 
-    [\d,F]
+#-------------------------------------------------------------------
 
-  else if (cache.ins.has F)
+props =
+  [\obj \Object]
+  [\arr \Array]
+  [\undef \Undefined]
+  [\null \Null]
+  [\num \Number]
+  [\str \String]
+  [\fun \Function]
+  [\bool \Boolean]
 
-    [\i,F]
+nonmap = R.map do
+  ([name]) -> name
+  R.drop 2,props
+
+base = (type) -> (UFO) ->
+
+  if ((R.type UFO) is type)
+
+    {continue:true,error:false,value:UFO}
 
   else
 
-    [\f,F]
+    str = R.toLower "not #{type}"
 
-
-cato = (arg) ->
-
-  switch R.type arg
-
-  | \Function,\Object => assort arg
-
-  | \Arguments =>
-
-    fun = []
-
-    for I from 0 til arg.length
-
-      F = arg[I]
-
-      block = assort F
-
-      fun.push block
-
-    fun
-
-# -------------------------------------------------------
-
-wrap      = {}
-  ..on    = null
-  ..rest  = null
-
-guard     = {}
-  ..on    = null
-  ..rest  = null
-
-define = {}
-  ..and    = null
-
-  ..or     = null
-  ..proto  = null
-  ..on     = null
-  ..basis  = null
-
-validate   = {}
-  ..on     = null
-  ..rest   = null
-
-#---------------------------------------------------------
-
-props = [\and \or \alt \cont \edit \err \jam \fix]
-
-init-state =
-  all  :[]
-  type :null
-  str  :[]
-
-wrap.rest  = (type) -> ->  guard.rest arguments,@[sig],type
-
-wrap.on    = -> guard.on arguments,@[sig]
-
-proto       = {}
-  ..normal  = {}
-  ..functor = null
-
-for key,val of props
-
-  F = wrap.rest val
-
-  proto.normal[val]  = F
-
-
-proto.normal.auth    = tightloop
-
-proto.normal[uic]    = print.log
-
-proto.functor        = {...proto.normal}
-
-proto.functor.map    = wrap.rest \map
-
-proto.functor.on     = wrap.on
-
-proto.functor[uic]   = print.log
-
-#---------------------------------------------------------
-
-
-handleError = (info) ->
-
-  print.route info
-
-  loopError!
-
-custom = hop
-
-.arn 1, -> handleError [(new Error!),\input.fault,[\custom [\arg_count]]]
-
-.whn do
-
-  (f) ->
-
-    ((R.type f) is \Function) or (f[sig])
-
-  -> handleError [(new Error!),\input.fault,[\custom [\not_function]]]
-
-.def (F) ->
-
-  G = cato F
-
-  data = {
-      type  : \custom
-      all   : [[G]]
-      str   : ["{..}"]
-  }
-
-  define.proto data
-
-custom[uic] = print.inner
-
-#--------------------------------------------------------------------------
-
-define.on = (type,args,state) ->
-
-  switch type[0]
-  | \array =>
-
-    [props,F] = args
-
-    put = [\on,[\array,[(R.uniq props),...(cato F)]]]
-
-  | \string =>
-
-    [key,F] = args
-
-    put = [\on,[\string,[key,...(cato F)]]]
-
-    put
-
-  | \object =>
-
-    [ob] = args
-
-    fun   = [[key,...(cato val)] for key,val of ob]
-
-    put = [\on,[\object,fun]]
-
-  block = define.and state,[put]
-
-  data = {
-    ...state
-    ...{
-      phase :\chain
-      all   :block
-      str   :state.str.concat \on
-    }
-  }
-
-  define.proto data
-
-#-----------------------------------------------------------------------
-
-guard.on = hop.unary
-
-.arn [1,2],
-
-  (args,state) -> handleError [(new Error!),\input.fault,[\on [\arg_count,[state.str,\on]]]]
-
-.arpar 1,
-
-  ([maybe-object],state) ->
-
-    if ((R.type maybe-object) is \Object)
-
-      for I,val of maybe-object
-
-        if not (((R.type val) is \Function) or (cache.ins.has val))
-
-          return [false,[(new Error!),\input.fault,[\on [\object,[state.str,\on]]]]]
-
-      return [true,\object]
-
-    else
-
-      return [false]
-
-  define.on
-  (data)->
-
-    if (data[1] is \input.fault) then return handleError data
-
-    false
-
-.arma 2,
-
-  ([first,second],state)->
-
-    switch R.type first
-
-    | \Array =>
-
-      for I in first
-
-        if not ((R.type I) is \String)
-
-          return [(new Error!),\input.fault,[\on [\array,[state.str,\on]]]]
-
-      if not (((R.type second) is \Function) or (cache.ins.has second))
-
-        return [(new Error!),\input.fault,[\on [\array,[state.str,\on]]]]
-
-      return [\array]
-
-    | \String,\Number =>
-
-      if not (((R.type second) is \Function) or (cache.ins.has second))
-
-        return [(new Error!),\input.fault,[\on [\string,[state.str,\on]]]]
-
-      return [\string]
-
-    | otherwise => return false
-
-  define.on
-
-.def (args,state) ->
-
-  handleError [(new Error!),\input.fault,[\on [\typeError,[state.str,\on]]]]
-
-
-#-----------------------------------------------------------------------
-
-validate.rest = (funs,state,type) ->
-
-  switch type
-
-  | \and,\or,\alt  =>
-
-    if (funs.length is 0)
-
-      print.route [(new Error!),\input.fault,[type,[\arg_count,[state.str,type]]]]
-
-      return false
-
-    for F in funs
-
-      if not (((R.type F) is \Function) or (cache.ins.has F))
-
-        print.route [(new Error!),\input.fault,[type,[\not_function,[state.str,type]]]]
-
-        return false
-
-    return true
-
-  | \map      =>
-
-    if not (funs.length is 1)
-
-      print.route [(new Error!),\input.fault,[type,[\arg_count,[state.str,type]]]]
-
-      return false
-
-    return true
-
-    [f] = funs
-
-    if not (((R.type f) is \Function) or (cache.ins.has F))
-
-      print.route [(new Error!),\input.fault,[type,[\not_function,[state.str,type]]]]
-
-      return false
-
-    return true
-
-  | \err,\fix,\cont,\jam,\edit  =>
-
-    return true
-
-  | otherwise => return false
-
-#-----------------------------------------------------------------------
-
-guard.rest = hop
-.wh do
-  validate.rest
-  (args,state,type) ->
-
-    #----------------------------------
-
-    funs = cato args
-
-    block = switch type
-    | \and                        => define.and state,funs
-    | \or                         => define.or state,funs
-    | \alt                        => define.or state,[[\alt,funs]]
-    | \map                        => define.and state,[[\map,funs[0]]]
-    | \err,\fix,\cont,\jam,\edit  => define.and state,[[type,args[0]]]
-
-    data = {
-      ...state
-      ...{
-        all   :block
-        str   :state.str.concat type
-      }
-    }
-
-    define.proto data
-
-.def loopError
-
-#-----------------------------------------------------------------------
-
-define.copy = (F,data,type = data.type) ->
-
-  switch type
-  | \obj,\arr,\arg =>
-
-    Object.assign F,proto.functor
-
-  | otherwise =>
-
-    Object.assign F,proto.normal
-
-  F[sig] = data
-
-  cache.ins.add F
-
-
-
-define.proto = (data,type = data.type) ->
-
-  switch type
-  | \obj,\arr,\arg =>
-    put = Object.create proto.functor
-  | otherwise =>
-    put = Object.create proto.normal
-
-  put[sig] = data
-
-  cache.ins.add put
-
-  put
-
-
-define.basis = (name,F) ->
-
-  cache.def.add F
-
-  data = {
-    ...init-state
-    ...{
-      type  :name
-      str   :[name]
-      all   :[[[\d,F]]]
-    }
-  }
-
-  define.copy F,data
-
-  void
+    {error:true,continue:false,message:str,value:UFO}
 
 # ------------------------------------------------------------------
 
-define.and = (state,funs) ->
+not_base = (type) -> (UFO) ->
 
-  all = state.all
+  if ((R.type UFO) is type)
 
-  switch (all.length%2)
-  | 0 =>
+    str = R.toLower "is #{type}"
 
-    all.concat [funs]
+    {error:true,continue:false,message:str,value:UFO}
 
-  | 1 =>
+  else
 
-    last = R.last all
+    {continue:true,error:false,value:UFO}
 
-    init = R.init all
+# ------------------------------------------------------
 
-    nlast = [...last,...funs]
+undefnull = (UFO) ->
 
-    block = [...init,nlast]
+  if ((R.type UFO) in [\Undefined \Null])
 
-    block
+    return {continue:true,error:false,value:UFO}
+  else
+
+    return {continue:false,error:true,message:"not undefined or null",value:UFO}
+
+cache.def.add undefnull
+
+#--------------------------------------------------------
+
+be.undefnull = be undefnull
+
+#--------------------------------------------------------
+
+F = base "Arguments"
+
+define.basis "arg",F
+
+be.arg = F
+
+#-----------------------------
+
+pop = (msg) -> msg.pop! ; msg
+
+#-----------------------------
+
+be.not = (F) -> be (x) -> not (F x).continue
+
+be.maybe = (F) -> ((be F).or be.undef).err pop
+
+#-----------------------------
+
+be.list  = (F) -> be.arr.map F
+
+be.not[uic]    = print.inner
+
+be.list[uic]   = print.inner
+
+be.maybe[uic]  = print.inner
+
+#-----------------------------
+
+be.known = {}
+
+for [name,type] in props
+
+  A = base type
+
+  base name,A
+
+  define.basis name,A
+
+  be[name] = A
+
+  #----------------------------
+
+  B = not_base type
+
+  define.basis name,B
+
+  be.not[name] = B
+
+  #----------------------------
+
+  C = {}
+
+  define.basis name,C
+
+  be.known[name] = C
+
+for name in nonmap
+
+  be.maybe[name] = be.maybe be[name]
+
+# ------------------------------------------------------------------
+
+be.maybe.obj = be.obj.or be.undef
+
+be.maybe.arr = be.arr.or be.undef
+
+# ------------------------------------------------------------------
+
+not-arrayof-str-or-num = (type) -> ->
+
+  args = R.flatten [...arguments]
+
+  for key in args
+
+    if not ((R.type key) in [\String \Number])
+
+      print.route [(new Error!),\resreq,[type]]
+
+      return true
+
+  return false
+
+reqError = oxo.wh do
+  not-arrayof-str-or-num \req
+  loopError
+
+resError = oxo.wh do
+  not-arrayof-str-or-num \res
+  loopError
+
+reqresError = oxo.wh do
+  (req,res) ->
+
+    if not (((R.type req) is "Array") and (((R.type res) is "Array")))
+
+      print.route [(new Error!),\resreq,[\resreq,\prime]]
+
+      return true
+
+    for I in req
+
+      if not ((R.type I) in [\String \Number])
+
+        print.route [(new Error!),\resreq,[\resreq,\res]]
+
+        return true
+
+    for I in res
+
+      if not ((R.type I) in [\String \Number])
+
+        print.route [(new Error!),\resreq,[\resreq,\req]]
+
+        return true
 
 
-define.or = (state,funs) ->
+  loopError
 
-  all = state.all
+#------------------------------------------------------
 
-  switch (all.length%2)
-  | 0 =>
+objarr = (be.obj.alt be.arr).err "not object or array"
 
-    last = R.last all
+be.required = reqError.def ->
 
-    init = R.init all
+  props = R.flatten [...arguments]
 
-    nlast = [...last,...funs]
+  ret = objarr.on props, be.not.undef.err [\:req,props]
 
-    block = [...init,nlast]
+  ret
 
-    block
+#-------------------------------------------------------------------------------------
 
-  | 1 =>
+restricted = (props,po) -> (obj) ->
 
-    all.concat [funs]
+  keys = Object.keys obj
 
-#-----------------------------------------------------------------------
+  for I in keys
 
-reg.internal = {custom,define}
+    if not po[I]
 
-pkg = require "./init" # [....]
+      return [false,[\:res,props],I]
 
-deep_freeze pkg
+  true
 
-module.exports = pkg
+be.restricted = resError.def ->
+
+  props = R.flatten [...arguments]
+
+  po = {}
+
+  for I in props
+
+    po[I] = true
+
+  objarr.and restricted props,po
+
+be.reqres = reqresError.def (req,res) ->
+
+  po = {}
+
+  for I in res
+
+    po[I] = true
+
+  objarr.on req, be.not.undef.err [\:req,req]
+  .and restricted res,po
+
+#-------------------------------------------------------------------------------------
+
+integer = (UFO) ->
+
+  if not ((R.type UFO) is \Number)
+
+    return {continue:false,error:true,message:"not an integer ( or number )",value:UFO}
+
+  residue = Math.abs (UFO - Math.round(UFO))
+
+  if (residue > 0)
+
+    return {continue:false,error:true,message:"not an integer",value:UFO}
+
+  else
+
+    return {continue:true,error:false,value:UFO}
+
+
+cache.def.add integer
+
+#-------------------------------------------------------------------------------------
+
+boolnum = (UFO) ->
+
+  if ((R.type UFO) in [\Boolean \Number])
+
+    return {continue:true,error:false,value:UFO}
+
+  else
+
+    return {continue:false,error:true,message:"not a number or boolean",value:UFO}
+
+cache.def.add boolnum
+
+#-------------------------------------------------------------------------------------
+
+
+maybe_boolnum = (UFO) ->
+
+  if ((R.type UFO) in [\Undefined \Boolean \Number])
+
+    return {continue:true,error:false,value:UFO}
+
+  else
+
+    return {continue:false,error:true,message:"not a number or boolean",value:UFO}
+
+
+cache.def.add maybe_boolnum
+
+#-------------------------------------------------------
+
+be.int     = be integer
+
+be.boolnum = be boolnum
+
+#--------------------------------------------------------
+
+be.int.neg  = be.int.and do
+    (x) ->
+      if (x <= 0)
+        return true
+      else
+        return [false,"not a negative integer"]
+
+be.int.pos  = be.int.and do
+    (x) ->
+      if (x >= 0)
+        return true
+      else
+        return [false,"not a positive integer"]
+
+#--------------------------------------------------------
+
+maybe          = be.maybe
+
+maybe.int      = be.int.or be.undef
+
+maybe.int.pos  = maybe be.int.pos
+
+maybe.int.neg  = maybe be.int.neg
+
+maybe.boolnum  = be maybe_boolnum
+
+#--------------------------------------------------------
+
+list = be.list
+
+list.ofstr = list be.str
+.err (msg,key)->
+
+  switch R.type key
+  | \Undefined => "not a list of string."
+  | otherwise  => [\:list ,[key[0],"not string type"]]
+
+list.ofnum = list be.num
+.err (msg,key) ->
+
+  switch R.type key
+  | \Undefined =>  "not a list of number."
+  | otherwise  => [\:list,[key[0],"not number type"]]
+
+list.ofint = list be.int
+.err (msg,key) ->
+
+  switch R.type key
+  | \Undefined => "not a list of integer."
+  | otherwise  => [\:list,[key[0],"not integer type"]]
+
+maybe.list = {}
+
+maybe.list.ofstr = maybe list.ofstr
+
+maybe.list.ofnum = maybe list.ofnum
+
+maybe.list.ofint = maybe list.ofint
+
+# -----------------------------------
+
+handleE = {}
+
+handleE.rm_num = ([txt,msg]) ->
+
+  name = (txt.split ":")[1]
+
+  if msg is void then [name]
+  else then [name,msg]
+
+
+handleE.sort = ([txt1],[txt2]) ->
+
+  [__,name1,number1] = txt1.split ":"
+
+  if (number1 is void)
+
+    number1 = 0
+
+  else
+
+    number1 = parseInt number1
+
+  [__,name2,number2] = txt2.split ":"
+
+  if (number2 is void)
+
+    number2 = 0
+
+  else
+
+    number2 = parseInt number2
+
+  if number1 > number2 then return -1
+
+  if number1 < number2 then return 1
+
+  else then return 0
+
+is_special_str = (str) ->
+
+  if (((R.type str) is \String) and (str[0] is ":"))
+
+    return true
+
+  else return false
+
+handleE.array = (msg,fin) ->
+
+  for I in msg
+
+    switch R.type I
+
+    | \String,\Number =>
+
+      fin.push I
+
+    | \Array  =>
+
+      uno = I[0]
+
+      if is_special_str uno
+
+        fin.push I
+
+      else
+
+        handleE.array I,fin
+
+
+rm-obj = R.filter (x) -> ((typeof x) is \object)
+
+handleE.entry = (msg) ->
+
+  out = switch R.type msg
+
+  | \String   => [msg]
+
+  | \Array    =>
+
+      fin = []
+
+      if is_special_str msg[0]
+
+        msg = [msg]
+
+      handleE.array msg,fin
+
+      fin
+
+
+  onlyob = rm-obj out
+
+  if onlyob.length is 0
+
+    return out
+
+  else
+
+    sorted = onlyob.sort handleE.sort
+
+    sorted
+
+# -----------------------------------
+
+be.flatato = handleE.entry
+
+# -----------------------------------
+
+be = deep_freeze be
+
+# -----------------------------------
+
+module.exports = be
+

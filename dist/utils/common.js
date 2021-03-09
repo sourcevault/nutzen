@@ -1,4 +1,4 @@
-var vendor, z, l, flat, advanced_pad, jspc, deep_freeze, alpha_sort, R, esp, util, util_inspect_custom, noop, j, zj, loopfault, x$, c, lit, rm_paths, create_stack, print_fail;
+var vendor, z, l, flat, advanced_pad, jspc, deep_freeze, alpha_sort, R, esp, util, util_inspect_custom, noop, j, zj, loopfault, x$, c, lit, rm_paths, create_stack, print_fail, ext;
 vendor = require("./vendor");
 z = console.log;
 l = console.log;
@@ -141,11 +141,10 @@ print_fail = function(filename){
     process.exitCode = 1;
   };
 };
-module.exports = {
+ext = {
   z: z,
   j: j,
   l: l,
-  R: R,
   c: c,
   zj: zj,
   esp: esp,
@@ -153,6 +152,7 @@ module.exports = {
   flat: flat,
   noop: noop,
   pad: advanced_pad,
+  R: Object.freeze(R),
   loopError: loopfault,
   print_fail: print_fail,
   alpha_sort: alpha_sort,
@@ -160,6 +160,7 @@ module.exports = {
   deep_freeze: deep_freeze,
   create_stack: create_stack
 };
+module.exports = ext;
 function in$(x, xs){
   var i = -1, l = xs.length >>> 0;
   while (++i < l) if (x === xs[i]) return true;

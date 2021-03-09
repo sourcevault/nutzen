@@ -1,10 +1,12 @@
-reg                  = require "../dist/registry"
+com = require \../../dist/utils/main
 
-{z,noops,print_fail} = reg.com
+{z,l,R,j,zj,print_fail} = com
 
-be = require "../dist/main"
+be = require \../../dist/types/main
 
-p = print_fail "test/test3.js"
+p = print_fail "test/types/test3.js"
+
+# ----------------------------------
 
 SA = be.str.or be.arr.or be.num
 

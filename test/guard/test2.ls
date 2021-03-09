@@ -1,38 +1,41 @@
-# reg = require "../dist/registry"
+proj  = \guard
 
-# require "../dist/main" # [..load main.js ..]
+name  = \test2
 
-# # ------- ----------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-# {com,print,hoplon} = reg
+# BOILER PLATE
 
-# {z,l,print_fail} = com
+path = (name) -> "../../dist/#{name}/main"
 
-# p = print_fail 'test2.js'
+guard = require path \guard
 
-# hop = hoplon
+com   = require path \utils
 
-# # -----------------------------------------------------------------------------------------
+{l,zj,z,c,binapi,print_fail,create_stack,R} = com
 
-# dum1 = (str)->
+pf = print_fail "test/#{proj}/#{name}.js"
 
-#   switch str
-#   | \int => \intger
-#   | \str => \string
+#-------------------------------------------------------------------------------
 
-# dum2 = (str) ->
+dum1 = (str)->
 
-#   switch str
-#   | \obj => \object
-#   | \map => \map
+  switch str
+  | \int => \intger
+  | \str => \string
 
-# V = hop
-# .ma do
-#   dum2,\obj_or_map
-# .def null
+dum2 = (str) ->
 
-# out = V \obj
+  switch str
+  | \obj => \object
+  | \map => \map
 
-# if not (out is \obj_or_map)
-#   p!
+V = guard
+.ma do
+  dum2,\obj_or_map
+.def null
 
+out = V \obj
+
+if not (out is \obj_or_map)
+  p!

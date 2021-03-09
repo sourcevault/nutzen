@@ -9,6 +9,6 @@ com.common_symbols        = {}
 
 com.common_symbols.htypes = Symbol \hoplon.types
 
-com                       = com.deep_freeze com
+com = Object.freeze com
 
 module.exports = com

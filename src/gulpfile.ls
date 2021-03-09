@@ -30,6 +30,14 @@ gulp.task \compile, (done) ->
 
   # ------------------------------
 
+  gulp.src "./src/main.ls"
+
+  .pipe gulp-livescript bare:true
+
+  .pipe gulp.dest "./dist"
+
+  # ------------------------------
+
   gulp.src "./src/*/*.ls"
 
   .pipe gulp-livescript bare:true

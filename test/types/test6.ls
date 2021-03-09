@@ -1,12 +1,12 @@
-reg = require "../dist/registry"
+com = require \../../dist/utils/main
 
-be = require "../dist/main"
+{z,l,R,j,zj,print_fail} = com
 
-{com,print} = reg
+be = require \../../dist/types/main
 
-{z,l,hop,print_fail} = com
+p = print_fail "test/types/test6.js"
 
-p = print_fail "test/test6.js"
+# ----------------------------------
 
 T = (x) -> true
 

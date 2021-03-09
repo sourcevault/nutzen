@@ -77,7 +77,6 @@ tightloop = (state) -> ->
 
   terminate = fns.length
 
-
   while I < terminate
 
     {fname,data} = fns[I]
@@ -373,6 +372,8 @@ tightloop = (state) -> ->
 #---------------------------------------------------
 #---------------------------------------------------
 
+main = {}
+
 looper = (state) ->
 
   instance = Object.create main
@@ -567,9 +568,8 @@ entry = (data,args) ->
 
   put[key] ...args
 
-
 pkg = binapi do
   entry,getter,{path:[],lock:false,vr:[],str:[],key:null}
   print.log.prox
 
-export pkg
+module.exports = pkg

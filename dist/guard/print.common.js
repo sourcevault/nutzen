@@ -8,7 +8,7 @@ z = com.z, l = com.l, R = com.R, c = com.c, esp = com.esp, create_stack = com.cr
 print.log = {};
 help = c.grey("[  docs] " + com.homepage + "\n");
 show_stack = create_stack(3, [], help);
-pkgname = 'hoplon.types';
+pkgname = 'hoplon.guard';
 print.log.def_fault = function(){
   return c.er2("[error." + pkgname + "]");
 };

@@ -19,7 +19,7 @@ help       = c.grey "[  docs] #{com.homepage}\n"
 
 show_stack = create_stack 3,[],help
 
-pkgname     = \hoplon.types
+pkgname     = \hoplon.guard
 
 print.log.def_fault = -> c.er2 "[error.#{pkgname}]"
 

@@ -1,48 +1,52 @@
-# reg = require "../dist/registry"
+proj  = \guard
 
-# require "../dist/main" # [..load main.js ..]
+name  = \test4
 
-# # ------- ----------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-# {com,print,hoplon} = reg
+# BOILER PLATE
 
-# {z,l,print_fail,R} = com
+path = (name) -> "../../dist/#{name}/main"
 
-# p = print_fail 'test4.js'
+oxo   = require path \guard
 
-# hop = hoplon
+com   = require path \utils
 
-# # ------- ----------------------------------------------------------------------------------
+{l,zj,z,c,binapi,print_fail,create_stack,R} = com
 
-# type_num = (x) ->
-#   switch x
-#   |  \integer => \int
-#   |  \boolean => \bool
-#   |  otherwise => false
+pf = print_fail "test/#{proj}/#{name}.js"
 
+#-------------------------------------------------------------------------------
 
-# type_str = (x) ->
-#   switch x
-#   |  \string => \str
-#   |  otherwise => false
+type_num = (x) ->
+  switch x
+  |  \integer => \int
+  |  \boolean => \bool
+  |  otherwise => false
 
 
-# V = hop.ar 1,
-#   hop.ma do
-#     type_num
-#     (x) -> x
-#   .def ["FROM UDEF"]
-# .def null
+type_str = (x) ->
+  switch x
+  |  \string => \str
+  |  otherwise => false
 
-# out = V \integer
 
-# if not (out is \int)
-#   p!
+V = oxo.ar 1,
+  oxo.ma do
+    type_num
+    (x) -> x
+  .def ["FROM UDEF"]
+.def null
 
-# out = V null
+out = V \integer
 
-# if not ((R.type out) is \Array)
-#   p!
+if not (out is \int)
+  p!
 
-# if not (out[0] is "FROM UDEF")
-#   p!
+out = V null
+
+if not ((R.type out) is \Array)
+  p!
+
+if not (out[0] is "FROM UDEF")
+  p!

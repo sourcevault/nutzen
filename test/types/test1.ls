@@ -1,10 +1,10 @@
-reg                  = require "../dist/registry"
+com = require \../../dist/utils/main
 
-{z,noops,print_fail} = reg.com
+{z,l,R,j,zj,print_fail} = com
 
-be                   = require "../dist/main"
+be = require \../../dist/types/main
 
-p                    = print_fail "test/test1.js"
+p = print_fail "test/types/test1.js"
 
 address = be.required \city
 .on \city,be.str
@@ -17,18 +17,18 @@ V = be.required \name,\age
 .on \age,be.num
 
 sample =
-	*name:"Fred"
-		age:30
-		address:
-			*city:"foocity"
-				country:null
+  *name:"Fred"
+   age:30
+   address:
+     *city:"foocity"
+      country:null
 
 
 ret = V.auth sample
 
 if not (ret.value.address.country is \France)
 
-	p!
+  p!
 
 
 

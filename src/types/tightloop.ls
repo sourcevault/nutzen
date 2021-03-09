@@ -1,10 +1,12 @@
-reg = require "./registry"
+pc = require "./print.common"
 
-{com,already_created,pkgname,sig} = reg
+# -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
-{z,l,R,j} = com
+{com,pkgname,sig} = pc
 
-main = {}
+{l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack} = com
+
+# -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
 sanatize = (x,UFO) ->
 
@@ -104,7 +106,6 @@ apply.normal.key = (F,val,args,key) ->
     list = Array.prototype.slice.call args
 
     A = list.splice 1,0,key
-
 
     F ...A
 
@@ -372,7 +373,14 @@ resolve = (fun,put,dtype,args) ->
 
     put
 
+  | \tap         =>
+
+    apply.normal.top F,value,args
+
+    put
+
   | \jam       =>
+
 
     put.message  = switch typeof F
     | \function  => apply.normal.top F,value,args
@@ -408,7 +416,7 @@ resolve = (fun,put,dtype,args) ->
   | otherwise => put
 
 
-reg.tightloop = (x) !->
+tightloop = (x) !->
 
   state      = @[sig]
 
@@ -420,7 +428,8 @@ reg.tightloop = (x) !->
 
   nI         = all.length
 
-  do
+
+  while I < nI
 
     each = all[I]
 
@@ -493,6 +502,11 @@ reg.tightloop = (x) !->
 
       I += 1
 
-  while I < nI
-
   return put
+
+
+module.exports = tightloop
+
+
+
+

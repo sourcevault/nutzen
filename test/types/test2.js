@@ -1,8 +1,8 @@
-var reg, ref$, z, noops, print_fail, be, p, G7, valG7, isG7, ret1, ret2;
-reg = require("../dist/registry");
-ref$ = reg.com, z = ref$.z, noops = ref$.noops, print_fail = ref$.print_fail;
-be = require("../dist/main");
-p = print_fail("test/test2.js");
+var com, z, l, R, j, zj, print_fail, be, p, G7, valG7, isG7, ret1, ret2;
+com = require('../../dist/utils/main');
+z = com.z, l = com.l, R = com.R, j = com.j, zj = com.zj, print_fail = com.print_fail;
+be = require('../../dist/types/main');
+p = print_fail("test/types/test2.js");
 G7 = new Set(["USA", "EU", "UK", "Japan", "Italy", "Germany", "France"]);
 valG7 = function(s){
   if (G7.has(s)) {

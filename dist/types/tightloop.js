@@ -1,8 +1,7 @@
-var reg, com, already_created, pkgname, sig, z, l, R, j, main, sanatize, x$, apply, y$, z$, blunder, difKey, difTop, map, upon, resolve, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-reg = require("./registry");
-com = reg.com, already_created = reg.already_created, pkgname = reg.pkgname, sig = reg.sig;
-z = com.z, l = com.l, R = com.R, j = com.j;
-main = {};
+var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, difKey, difTop, map, upon, resolve, tightloop, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+pc = require("./print.common");
+com = pc.com, pkgname = pc.pkgname, sig = pc.sig;
+l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
 sanatize = function(x, UFO){
   var cont, unknown, path, npath;
   switch (R.type(UFO)) {
@@ -387,6 +386,9 @@ resolve = function(fun, put, dtype, args){
       }
     }());
     return put;
+  case 'tap':
+    apply.normal.top(F, value, args);
+    return put;
   case 'jam':
     put.message = (function(){
       switch (typeof F) {
@@ -415,7 +417,7 @@ resolve = function(fun, put, dtype, args){
     return put;
   }
 };
-reg.tightloop = function(x){
+tightloop = function(x){
   var state, all, type, I, put, nI, each, J, nJ, fun, patt, nput;
   state = this[sig];
   all = state.all, type = state.type;
@@ -426,7 +428,7 @@ reg.tightloop = function(x){
     value: x
   };
   nI = all.length;
-  do {
+  while (I < nI) {
     each = all[I];
     switch (I % 2) {
     case 0:
@@ -474,6 +476,7 @@ reg.tightloop = function(x){
       } while (J < nJ);
       I += 1;
     }
-  } while (I < nI);
+  }
   return put;
 };
+module.exports = tightloop;

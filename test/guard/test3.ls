@@ -1,33 +1,39 @@
-# reg = require "../dist/registry"
+proj  = \guard
 
-# require "../dist/main" # [..load main.js ..]
+name  = \test3
 
-# # ------- ----------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-# {com,print,hoplon} = reg
+# BOILER PLATE
 
-# {z,l,print_fail} = com
+path = (name) -> "../../dist/#{name}/main"
 
-# p = print_fail 'test3.js'
+guard = require path \guard
 
-# # ------- ----------------------------------------------------------------------------------
+com   = require path \utils
 
-# hop = hoplon.debug
+{l,zj,z,c,binapi,print_fail,create_stack,R} = com
 
-# V_inner = hop
-# .wh -> true,->true
-# .def!
+pf = print_fail "test/#{proj}/#{name}.js"
 
-# V_outer = hop
-# .wh do
-#   -> true
-#   V_inner
-# .def null
+#-------------------------------------------------------------------------------
+
+oxo = guard.debug
+
+V_inner = oxo
+.wh -> true,->true
+.def!
+
+V_outer = oxo
+.wh do
+  -> true
+  V_inner
+.def null
 
 
-# ret = V_outer [1,2,4],[1,2,4]
+ret = V_outer [1,2,4],[1,2,4]
 
-# if not ret
-#   p!
+if not ret
+  p!
 
 
