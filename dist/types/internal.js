@@ -47,7 +47,7 @@ z1$.basis = null;
 z2$ = validate = {};
 z2$.on = null;
 z2$.rest = null;
-props = ['and', 'or', 'alt', 'cont', 'edit', 'err', 'jam', 'fix'];
+props = ['and', 'or', 'alt', 'cont', 'tap', 'edit', 'err', 'jam', 'fix'];
 initState = {
   all: [],
   type: null,
@@ -189,6 +189,7 @@ validate.rest = function(funs, state, type){
     }
     return true;
   case 'map':
+  case 'tap':
     if (!(funs.length === 1)) {
       print.route([new Error(), 'input.fault', [type, ['arg_count', [state.str, type]]]]);
       return false;
@@ -228,6 +229,7 @@ guard.rest = oxo.wh(validate.rest, function(args, state, type){
     case 'cont':
     case 'jam':
     case 'edit':
+    case 'tap':
       return define.and(state, [[type, args[0]]]);
     }
   }());

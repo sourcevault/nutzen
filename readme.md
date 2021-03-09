@@ -412,7 +412,7 @@ console.log(ret) // ["127.0.0.1"]
 
 - `tap` is a operation specifically made for debugging / side effect.
 
-- for example we want to see what values are moving through our chain.
+- for example, lets say we want to see what values are moving through our chain.
 
 - we could use `cont` from above, but we need to make sure our return values are set correctly.
 

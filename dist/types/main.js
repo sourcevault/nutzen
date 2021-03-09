@@ -1,4 +1,4 @@
-var ref$, com, print, z, l, R, j, deep_freeze, uic, loopError, oxo, int, custom, define, cache, be, props, nonmap, base, not_base, undefnull, F, pop, i$, len$, name, type, A, B, C, V, notArrayofStrOrNum, reqError, resError, reqresError, objarr, restricted, integer, boolnum, maybe_boolnum, maybe, list, handleE, is_special_str, rmObj, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ref$, com, print, z, l, R, j, deep_freeze, uic, loopError, oxo, int, custom, define, cache, be, props, nonmap, base, not_base, undefnull, F, pop, i$, len$, name, type, A, B, C, notArrayofStrOrNum, reqError, resError, reqresError, objarr, restricted, integer, boolnum, maybe_boolnum, maybe, list, handleE, is_special_str, rmObj, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ref$ = require('./print.common'), com = ref$.com, print = ref$.print;
 z = com.z, l = com.l, R = com.R, j = com.j, deep_freeze = com.deep_freeze, uic = com.uic, loopError = com.loopError;
 oxo = require('../guard/main');
@@ -105,8 +105,6 @@ for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
   define.basis(name, C);
   be.known[name] = C;
 }
-V = be.known.arr;
-z(V.auth(1));
 for (i$ = 0, len$ = nonmap.length; i$ < len$; ++i$) {
   name = nonmap[i$];
   be.maybe[name] = be.maybe(be[name]);

@@ -386,6 +386,9 @@ resolve = function(fun, put, dtype, args){
       }
     }());
     return put;
+  case 'tap':
+    apply.normal.top(F, value, args);
+    return put;
   case 'jam':
     put.message = (function(){
       switch (typeof F) {
