@@ -1,19 +1,34 @@
-reg = require "./registry"
+com = require \../utils/main
 
-{com,print,sig} = reg
+oxo = require \../guard/main
 
-{l,z,R,j,hop,flat,pad,alpha_sort,esp,c,lit,create_stack} = com
+print      = {}
 
-pkgname = reg.pkgname
+# -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
 
-help =
-  c.grey "[  docs] #{reg.homepage}\n"
+{l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack} = com
 
-# -------------------------------------------------------------------------------------------------------
+pkgname    = \hoplon.types
+
+# -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
+
+export
+  com             = com
+  print           = print
+  pkgname         = pkgname
+  sig             = com.common_symbols.htypes
+
+# -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -----------------
+
+print.log  = {}
+
+help       = c.grey "[  docs] #{com.homepage}\n"
+
+# -------------------------------------------------------------------
 
 show_stack = create_stack 2,[],help
 
-# -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
+# -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - -
 
 print.resreq = ([cat,type]) ->
 
@@ -224,7 +239,7 @@ sort = (x) -> x.sort(alpha_sort.ascending)
 
 same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit']
 
-myflat = hop
+myflat = oxo
 .wh do
   (ob) ->
     switch (R.type ob)
@@ -281,5 +296,3 @@ print.inner = ->
   str += c.blue table
 
   str
-
-module.exports = print

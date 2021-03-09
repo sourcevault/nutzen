@@ -27,7 +27,7 @@ hoplon.utils
 
 ◾️ [`hoplon.guard`](#hoplonguard) - functional guards (mutable & immutable), similar to what exists in Elixir / Erlang for graceful error handling.
 
-◾️ [`hoplon.utils`](#hoplonutils) - exposes `hoplon`'s internal utils, like [`Ramda`](https://github.com/ramda/ramda)  and [`error-stack-parser`](https://github.com/stacktracejs/error-stack-parser), but also others.
+◾️ [`hoplon.utils`](#hoplonutils) - exposes `hoplon`'s internal utils, like [`Ramda`](https://github.com/ramda/ramda)  and [`error-stack-parser`](https://github.com/stacktracejs/error-stack-parser), ( it's done so that I have fewer direct dependencies upstream, you do not have to use them if you do not want to 😀 ).
 
 1. [hoplon.types](#hoplontypes)
     1. [Introduction](#-why-another-schema-validator-)
@@ -50,7 +50,7 @@ hoplon.utils
         - [maybe\*](#maybe)
     1. [.flatato](#flatato)
     1. [common pitfall](#common-pitfall)
-    1. [hoplon.types.arp](#hoplontypesarp)
+    1. [hoplon.types.known](#hoplontypesknown)
 
 1. [hoplon.guard](#hoplonguard)
     1. [Quick Example](#quick-examples-to-get-started)
@@ -609,12 +609,11 @@ console.log torn #{foo:undefined} 🡐 ( wont change, can't change )
 It's one of the trade off of having hidden **mutability**, it's easy to avoid such "bugs" by restricting the use of the chainable functions for their stated purpose ( e.g don't use `.and` to edit variables, use `.edit` instead ).
 
 
-#### `hoplon.types.arp`
+#### `hoplon.types.known`
 
-Using `hoplon.types` as validators for `hoplon.gaurd` is quite common, it's why `hoplon.types.arg` was introduced.
+Using `hoplon.types` as validators for `hoplon.gaurd` is quite common, it's why `hoplon.types.known` was introduced as a namespace.
 
-however, `hoplon.types.arg` makes an argument type check, if you want to avoid the extra step knowing that the provided value is an argument you can use `hoplon.types.arp`, it inherits all the methods like `map` and `on`, but doen't do any type check.
-
+`hoplon.types.known.*` avoids making the **first** type check, but **does do** the subsequent type check. At first glance the namespace does not seem useful, but as it turns out, algebraic unit functions are really good at describing control flow logic - again use the right tool for the job 👀.
 
 ### `hoplon.guard`
 
@@ -623,7 +622,6 @@ however, `hoplon.types.arg` makes an argument type check, if you want to avoid t
 🟡 Handling argument errror for adder function :
 ```js
 var hoplon = require("hoplon")
-
 
 var add = (x,y) => x + y
 
@@ -638,7 +636,7 @@ adder(1,3) // 4
 If you notice we do not check if x, y are numbers, we can fix this by using `.whn` (when not ) in our error handling :
 
 ```js
-var bothNum = (x,y)=> (((typeof x) is "number") && ((typeof y) is "number"))
+var bothNum = (x,y) => (((typeof x) is "number") && ((typeof y) is "number"))
 
 var argE = () => console.log("only accepts 2 arugument")
 
@@ -861,23 +859,23 @@ In case debug message is needed then `.debug` namespace can be used.
 
 ### `hoplon.utils`
 
-- `z` - `console.log`
-- `j` - [json-stringify-pretty-compact](https://github.com/AitoDotAI/json-stringify-pretty-compact#readme)
-- `l` - `console.log`
-- `R` - [Ramda](https://github.com/ramda/ramda)
-- `c` - 8 bit color pallate
-- `zj`- `console.log(j(...))`
-- `esp` - [error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
-- `lit` - zip printer for color output
 - `flat` - [flat](https://github.com/hughsk/flat)
+- `R` - [Ramda](https://github.com/ramda/ramda)
+- `l` - `console.log`
+- `z` - `console.log`
 - `noop` - `noop` function
-- `loopfault` - a proxy object that acts as a dummy return object to prevent throwing errors.
-- `print_fail` - used in test files to show file location for test failure.
+- `c` - 8 bit color palette
+- `esp` - [error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
 - `alpha_sort` - [alpha-sort](https://github.com/sindresorhus/alpha-sort)
+- `zj`- `console.log(j(...))`
 - `deep_freeze` - [deep-freeze](https://github.com/substack/deep-freeze)
 - `advanced_pad` - [advanced-pad](https://github.com/tylerdevs/advanced-pad)
-- `create_stack` - wrapper for `error-stack-parser` that accepts Error object.
+- `lit` - zip printer for color output
+- `j` - [json-stringify-pretty-compact](https://github.com/AitoDotAI/json-stringify-pretty-compact#readme)
+- `print_fail` - used in test files to show file location for test failure.
+- `create_stack` - wrapper for `error-stack-parser` that accepts error object.
 - `common_symbols` - Symbols used to identify different objects, like `hoplon.type`.
+- `loopfault` - a proxy object that acts as a dummy return object to prevent throwing errors.
 - `util_inspect_custom` - wrapper for `node.js`'s `util_inspect_custom`  that does not throw error if used in browser.
 
 

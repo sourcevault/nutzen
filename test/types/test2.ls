@@ -1,18 +1,20 @@
-reg                  = require "../dist/registry"
+com = require \../../dist/utils/main
 
-{z,noops,print_fail} = reg.com
+{z,l,R,j,zj,print_fail} = com
 
-be = require "../dist/main"
+be = require \../../dist/types/main
 
-p = print_fail "test/test2.js"
+p = print_fail "test/types/test2.js"
+
+# ----------------------------------
 
 G7 = new Set ["USA","EU","UK","Japan","Italy","Germany","France"]
 
 valG7 = (s)->
 
-	if (G7.has s) then return true
+  if (G7.has s) then return true
 
-	else return [false,"not in G7"]
+  else return [false,"not in G7"]
 
 isG7 = be.str.and valG7
 
@@ -23,17 +25,17 @@ ret2 = isG7.auth "Spain"
 
 if not (ret1.value is \UK)
 
-	p!
+  p!
 
 
 
 if not (ret2.message is "not in G7")
 
-	p!
+  p!
 
 if (ret2.value is undefined)
 
-	p ".value has not been passed to {..error:true..}."
+  p ".value has not been passed to {..error:true..}."
 
 
 

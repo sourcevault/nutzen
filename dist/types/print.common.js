@@ -1,9 +1,15 @@
-var reg, com, print, sig, l, z, R, j, hop, flat, pad, alpha_sort, esp, c, lit, create_stack, pkgname, help, show_stack, show_chain, show_name, x$, on_dtype, getprop, includes, sort, same, myflat, split, find_len, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-reg = require("./registry");
-com = reg.com, print = reg.print, sig = reg.sig;
-l = com.l, z = com.z, R = com.R, j = com.j, hop = com.hop, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
-pkgname = reg.pkgname;
-help = c.grey("[  docs] " + reg.homepage + "\n");
+var com, oxo, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, pkgname, sig, help, show_stack, show_chain, show_name, x$, on_dtype, getprop, includes, sort, same, myflat, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+com = require('../utils/main');
+oxo = require('../guard/main');
+print = {};
+l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
+pkgname = 'hoplon.types';
+out$.com = com = com;
+out$.print = print = print;
+out$.pkgname = pkgname = pkgname;
+out$.sig = sig = com.common_symbols.htypes;
+print.log = {};
+help = c.grey("[  docs] " + com.homepage + "\n");
 show_stack = create_stack(2, [], help);
 print.resreq = function(arg$){
   var cat, type, methodname, txt;
@@ -191,7 +197,7 @@ sort = function(x){
   return x.sort(alpha_sort.ascending);
 };
 same = includes(['and', 'or', 'cont', 'jam', 'fix', 'err', 'map', 'on', 'alt', 'auth', 'edit']);
-myflat = hop.wh(function(ob){
+myflat = oxo.wh(function(ob){
   switch (R.type(ob)) {
   case 'Function':
   case 'Object':
@@ -260,4 +266,3 @@ print.inner = function(){
   str += c.blue(table);
   return str;
 };
-module.exports = print;

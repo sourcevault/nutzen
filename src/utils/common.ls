@@ -32,9 +32,13 @@ else
 
 # --------------------------------------------------------------------------------------
 
-noop = !->
+
+noop                      = !->
 
 noop[util_inspect_custom] = -> @[util_inspect_custom]
+
+# --------------------------------------------------------------------------------------
+
 
 j = (x) -> jspc do
   x
@@ -157,11 +161,10 @@ print_fail = (filename) -> (message) !->
   process.exitCode = 1
 
 
-module.exports =
+ext =
   *z:z
    j:j
    l:l
-   R:R
    c:c
    zj:zj
    esp:esp
@@ -169,9 +172,14 @@ module.exports =
    flat:flat
    noop:noop
    pad:advanced_pad
+   R:Object.freeze R
    loopError:loopfault
    print_fail:print_fail
    alpha_sort:alpha_sort
    uic:util_inspect_custom
    deep_freeze:deep_freeze
    create_stack:create_stack
+
+module.exports = ext
+
+

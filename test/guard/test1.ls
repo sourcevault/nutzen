@@ -1,44 +1,49 @@
-# reg = require "../dist/registry"
+proj  = \guard
 
-# require "../dist/main" # [..load main.js ..]
+name  = \test1
 
-# #------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-# {com,print,hoplon}   = reg
+# BOILER PLATE
 
-# {z,l,R,c,print_fail} = com
+path = (name) -> "../../dist/#{name}/main"
 
-# pf = print_fail "test1.js"
+guard = require path \guard
 
-# hop = hoplon
+com   = require path \utils
 
-# V1 = hop
-# .arpar 1,
-#   -> [false,"hello"]
-#   -> "world"
-#   -> false
+{l,zj,z,c,binapi,print_fail,create_stack,R} = com
 
-# .def "foobar"
+pf = print_fail "test/#{proj}/#{name}.js"
 
-# retorn = V1 1
+#-------------------------------------------------------------------------------
 
-# if not (retorn is "foobar")
+V1 = guard
+.arpar 1,
+  -> [false,"hello"]
+  -> "world"
+  -> false
 
-#   pf ".arpar / normal validator function"
+.def "foobar"
 
+retorn = V1 1
 
-# # check if default empty array is provided.
+if not (retorn is "foobar")
 
-# V2 = hop
-# .arpar 1,
-#   -> [false]
-#   ->
-#   -> arguments[0]
-# .def!
+  pf ".arpar / normal validator function"
 
-# empty_array = V2 1
+# check if default empty array is provided.
 
-# if not ((R.type empty_array) is \Array)
+V2 = guard
+.arpar 1,
+  -> [false]
+  ->
+  -> arguments[0]
+.def!
 
-#   pf ".arpar error handling not being done correctly"
+empty_array = V2 1
+
+if not ((R.type empty_array) is \Array)
+
+  pf ".arpar error handling not being done correctly"
 

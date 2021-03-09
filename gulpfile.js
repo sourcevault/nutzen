@@ -13,6 +13,9 @@ gulp.task('compile', function(done){
   gulp.src("./src/gulpfile.ls").pipe(gulpLivescript({
     bare: true
   })).pipe(gulp.dest("."));
+  gulp.src("./src/main.ls").pipe(gulpLivescript({
+    bare: true
+  })).pipe(gulp.dest("./dist"));
   gulp.src("./src/*/*.ls").pipe(gulpLivescript({
     bare: true
   })).pipe(gulp.dest("./dist"));

@@ -1,6 +1,6 @@
 proj  = \guard
 
-name  = \test6
+name  = \test5
 
 #-------------------------------------------------------------------------------
 
@@ -18,26 +18,16 @@ pf = print_fail "test/#{proj}/#{name}.js"
 
 #-------------------------------------------------------------------------------
 
-bothNum = (x,y) -> (((typeof x) is "number") and ((typeof y) is "number"))
+# bothNum = (x,y) -> (((typeof x) is "number") and ((typeof y) is "number"))
 
-argE    = -> z "only accepts 2 arugument"
+# argE    = -> z "only accepts 2 arugument"
 
-typeE   = -> z "argument type has to be number"
+# typeE   = -> z "argument type has to be number"
 
-add2 = (x,y) -> x + y
+# add = (x,y) -> x + y
 
-add = oxo
-.arwh do
-	2
-	-> true
-	add2
-.def!
+# hop = hoplon
 
-ret = add 1,2
-
-if not (ret is 3)
-
-	p!
 
 
 

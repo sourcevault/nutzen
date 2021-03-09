@@ -2,31 +2,27 @@ proj  = \guard
 
 name  = \test
 
-# com = require "../../dist/utils/main.js"
+#-------------------------------------------------------------------------------
 
-require "../../dist/guard/main.js"
+# BOILER PLATE
 
+path = (name) -> "../../dist/#{name}/main"
 
-# {l,zj,z,c,binapi,print_fail,create_stack} = com
+guard = require path \guard
 
-# fail = print_fail "test/#{proj}/#{name}.js"
+com   = require path \utils
 
-# z "hello world"
+{l,zj,z,c,binapi,print_fail,create_stack} = com
 
-# {com,print,hoplon} = reg
-
-# hop = hoplon
+fail = print_fail "test/#{proj}/#{name}.js"
 
 #-------------------------------------------------------------------------------
 
-# bothNum = (x,y) -> (((typeof x) is "number") and ((typeof y) is "number"))
 
-# argE    = -> z "only accepts 2 arugument"
+bothNum = (x,y) -> (((typeof x) is "number") and ((typeof y) is "number"))
 
-# typeE   = -> z "argument type has to be number"
+argE    = -> z "only accepts 2 arugument"
 
-# add = (x,y) -> x + y
+typeE   = -> z "argument type has to be number"
 
-# find the area of circle / square
-
-# z area.square 2 # 6
+add = (x,y) -> x + y
