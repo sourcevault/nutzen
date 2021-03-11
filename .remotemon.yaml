@@ -10,11 +10,6 @@ rm-dist: rm -rf dist/*/*
 
 rm-src-js: rm src/*/*.js
 
-main:
-  - gulp compile
-  - node {{global.file}}
-
-
 test.all:
   - gulp compile
   - |-
@@ -22,7 +17,6 @@ test.all:
     do
       node $i || exit 1
     done
-
 
 test.proj:
   - gulp compile 1>/dev/null
@@ -52,3 +46,5 @@ dev.install:
   - npm install gulp-rename
   - npm install gulp-yaml
 
+version.update:
+  update-version src/package.yaml remotemon

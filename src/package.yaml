@@ -5,10 +5,10 @@ homepage: https://github.com/sourcevault/hoplon#readme.md
 license: BSD-3-Clause
 description: utility module, immutable type validator for typscript antagonist & Erlang/Elixir type guards , but with every imaginable method.
 repository: https://github.com/sourcevault/hoplon.git
-version: 0.1.20
+version: 0.1.21
 main: dist/main.js
 scripts:
-  "test": "make travis"
+  test: ./testall.sh
 dependencies:
   ramda: "*"
   error-stack-parser: "*"
