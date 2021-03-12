@@ -6,3 +6,5 @@ test
 .travis.yml
 yarn.lock
 package-lock.json
+.remotemon.yaml
+.editorconfig
