@@ -46,5 +46,4 @@ dev.install:
   - npm install gulp-rename
   - npm install gulp-yaml
 
-version.update:
-  update-version src/package.yaml remotemon
+version.update: update-version src/package.yaml hoplon
