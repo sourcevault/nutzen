@@ -125,7 +125,7 @@ print.input_fault.custom = ([patt,loc]) ->
 
   | \not_function =>
 
-    l c.er1 "  first argument has to be a function / valleydate object ."
+    l c.er1 "  first argument has to be a function / hoplon.types object ."
 
   l ""
 

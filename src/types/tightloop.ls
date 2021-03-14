@@ -169,7 +169,7 @@ apply.auth.key = (F,val,args,key) ->
 
     F.auth ...A
 
-dif-key = (type,F,val,args,key) ->
+exec-key = (type,F,val,args,key) ->
 
   switch type
   | \d => apply.normal.key F,val,args,key
@@ -178,7 +178,7 @@ dif-key = (type,F,val,args,key) ->
     val
     apply.normal.key F,val,args,key
 
-dif-top = (type,F,val,args) ->
+exec-top = (type,F,val,args) ->
 
   switch type
   | \d => apply.normal.top F,val,args
@@ -192,6 +192,7 @@ map = (dtype,fun,value,args) ->
   [type,F] = fun
 
   switch dtype
+
   | \arr =>
 
     I = 0
@@ -204,14 +205,15 @@ map = (dtype,fun,value,args) ->
 
     while I < In
 
-      put = dif-key type,F,value[I],args,I
-
-      if put.path
-        path = put.path
-      else
-        path = []
+      put = exec-key type,F,value[I],args,I
 
       if put.error
+
+        if put.path
+          path = put.path
+        else
+          path = []
+
         return {
           continue:false
           error:true
@@ -234,14 +236,15 @@ map = (dtype,fun,value,args) ->
 
     for key,val of value
 
-      put = dif-key type,F,val,args,key
-
-      if put.path
-        path = put.path
-      else
-        path = []
+      put = exec-key type,F,val,args,key
 
       if put.error
+
+        if put.path
+          path = put.path
+        else
+          path = []
+
         return {
           continue:false
           error:true
@@ -254,6 +257,39 @@ map = (dtype,fun,value,args) ->
 
     {continue:true,error:false,value:ob}
 
+
+forEach = (dtype,fun,value,args) ->
+
+  [type,F] = fun
+
+  switch dtype
+
+  | \arr =>
+
+    I = 0
+
+    In = value.length
+
+    while I < In
+
+      exec-key type,F,value[I],args,I
+
+      I += 1
+
+    return {continue:true,error:false,value:value}
+
+  | \obj =>
+
+    for key,val of value
+
+      exec-key type,F,val,args,key
+
+    {continue:true,error:false,value:value}
+
+
+
+
+
 upon = ([type,fun],value,args) ->
 
   switch type
@@ -261,7 +297,7 @@ upon = ([type,fun],value,args) ->
 
     [key,shape,G] = fun
 
-    put = dif-key shape,G,value[key],args,key
+    put = exec-key shape,G,value[key],args,key
 
     if put.path
       path = put.path
@@ -293,7 +329,7 @@ upon = ([type,fun],value,args) ->
 
       key = arr[I]
 
-      put = dif-key shape,G,value[key],args,key
+      put = exec-key shape,G,value[key],args,key
 
       if put.path
         path = put.path
@@ -325,7 +361,7 @@ upon = ([type,fun],value,args) ->
 
       [key,shape,G] = fun[I]
 
-      dif-key shape,G,value[key],args,key
+      exec-key shape,G,value[key],args,key
 
       if put.path
         path = put.path
@@ -363,9 +399,13 @@ resolve = (fun,put,dtype,args) ->
 
   # ------------------------------------------------------
 
-  | \map         => map dtype,F,value,args
-  | \on          => upon F,value,args
-  | \cont,\edit  =>
+  | \map           => map dtype,F,value,args
+
+  | \forEach       => forEach dtype,F,value,args
+
+  | \on            => upon F,value,args
+
+  | \cont,\edit    =>
 
     put.value   = switch typeof F
     | \function => apply.normal.top F,value,args
@@ -402,7 +442,7 @@ resolve = (fun,put,dtype,args) ->
 
       [type,G] = F[I]
 
-      put = dif-top type,G,value,args
+      put = exec-top type,G,value,args
 
       if put.continue
         return put

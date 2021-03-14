@@ -94,17 +94,19 @@ for key,val of props
   proto.normal[val]  = F
 
 
-proto.normal.auth    = tightloop
+proto.normal.auth      = tightloop
 
-proto.normal[uic]    = print.log
+proto.normal[uic]      = print.log
 
-proto.functor        = {...proto.normal}
+proto.functor          = {...proto.normal}
 
-proto.functor.map    = wrap.rest \map
+proto.functor.map      = wrap.rest \map
 
-proto.functor.on     = wrap.on
+proto.functor.forEach  = wrap.rest \forEach
 
-proto.functor[uic]   = print.log
+proto.functor.on       = wrap.on
+
+proto.functor[uic]     = print.log
 
 #---------------------------------------------------------
 
@@ -276,7 +278,7 @@ validate.rest = (funs,state,type) ->
 
     return true
 
-  | \map,\tap =>
+  | \map,\tap,\forEach =>
 
     if not (funs.length is 1)
 
@@ -317,7 +319,7 @@ guard.rest = oxo
     | \and                             => define.and state,funs
     | \or                              => define.or state,funs
     | \alt                             => define.or state,[[\alt,funs]]
-    | \map                             => define.and state,[[\map,funs[0]]]
+    | \map,\forEach                    => define.and state,[[type,funs[0]]]
     | \err,\fix,\cont,\jam,\edit,\tap  => define.and state,[[type,args[0]]]
 
     data = {

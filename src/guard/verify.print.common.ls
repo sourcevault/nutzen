@@ -10,14 +10,6 @@ V = {}
 
 export {...ext,verify:V}
 
-V.def = (args) ->
-
-  [f] = args
-
-  switch R.type f
-  | \Function => [\ok,[\f,f]]
-  | otherwise => [\ok,[\s,f]] # static
-
 customTypeoOf = (unknown) ->
 
   type = R.type unknown
@@ -31,6 +23,15 @@ customTypeoOf = (unknown) ->
     return type
 
   | otherwise => return type
+
+V.def = (args) ->
+
+  [f] = args
+
+  switch customTypeoOf f
+  | \Function => [\ok,[\f,f]]
+  | \htypes   => [\ok,[\v,f]]
+  | otherwise => [\ok,[\s,f]] # static
 
 
 V.num = (num) ->
@@ -72,8 +73,9 @@ V.ar = (args) ->
   | \fault        => return [\fault,\first]
   | \fault.array  => return [\fault,\array]
 
-  switch R.type fun
+  switch customTypeoOf fun
   | \Function     => ret.push [\f,fun]
+  | \htypes       => ret.push [\v,fun]
   | otherwise     => ret.push [\s,fun]
 
   [\ok,ret]
@@ -95,8 +97,9 @@ V.wh = (args) ->
   | \htypes     => ret.push [\v,validator]
   | otherwise   => return [\fault,\first]
 
-  switch R.type ap
+  switch customTypeoOf ap
   | \Function => ret.push [\f,ap]
+  | \htypes   => ret.push [\v,ap]
   | otherwise => ret.push [\s,ap]
 
   [\ok,ret]
@@ -113,12 +116,12 @@ numfunfun = (args) ->
   | \fault        => return [\fault,\first]
   | \fault.array  => return [\fault,\array]
 
-  switch R.type validator
+  switch customTypeoOf validator
   | \Function     => ret.push [\f,validator]
   | \htypes       => ret.push [\v,validator]
   | otherwise     => return [\fault,\second]
 
-  type = R.type ap
+  type = customTypeoOf ap
 
   switch type
   | \Function     => ret.push [\f,ap]

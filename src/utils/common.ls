@@ -160,6 +160,7 @@ print_fail = (filename) -> (message) !->
 
   process.exitCode = 1
 
+wait = (t,f) -> setTimeout f,t
 
 ext =
   *z:z
@@ -171,6 +172,7 @@ ext =
    lit:lit
    flat:flat
    noop:noop
+   wait:wait
    pad:advanced_pad
    R:Object.freeze R
    loopError:loopfault

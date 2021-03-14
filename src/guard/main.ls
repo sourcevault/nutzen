@@ -25,6 +25,7 @@ settle = (F,A) ->
 
   switch ftype
   | \f => f ...A
+  | \v => f.auth ...A
   | \s => f
 
 mod-settle = (F,init,A) ->
@@ -33,6 +34,7 @@ mod-settle = (F,init,A) ->
 
   switch ftype
   | \f =>
+
     switch A.length
     | 1 => f init,A[0]
     | 2 => f init,A[0],A[1]
@@ -45,6 +47,21 @@ mod-settle = (F,init,A) ->
       mod-arg = [init,...A]
 
       f ...mod-arg
+
+  | \v =>
+
+    switch A.length
+    | 1 => f.auth init,A[0]
+    | 2 => f.auth init,A[0],A[1]
+    | 0 => f.auth init
+    | 3 => f.auth init,A[0],A[1],A[2]
+    | 4 => f.auth init,A[0],A[1],A[2],A[3]
+    | 5 => f.auth init,A[0],A[1],A[2],A[3],A[4]
+    | otherwise =>
+
+      mod-arg = [init,...A]
+
+      f.auth ...mod-arg
 
   | \s => f
 
@@ -110,7 +127,6 @@ tightloop = (state) -> ->
     # --------------------------------------------
 
     | \whn =>
-
 
       [[vtype,validatorF],exec] = data
 
@@ -231,7 +247,6 @@ tightloop = (state) -> ->
     | \arpar    =>
 
       [spans,[vtype,validatorF],exec,lastview] = data
-
 
       switch vtype
 
@@ -361,10 +376,7 @@ tightloop = (state) -> ->
 
   def = state.def
 
-  if def
-    switch def[0]
-    | \f => return def[1] ...arguments
-    | \s => return def[1]
+  if def then return settle def,arguments
 
 
 #---------------------------------------------------

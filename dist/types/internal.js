@@ -73,6 +73,7 @@ proto.normal.auth = tightloop;
 proto.normal[uic] = print.log;
 proto.functor = (import$({}, proto.normal));
 proto.functor.map = wrap.rest('map');
+proto.functor.forEach = wrap.rest('forEach');
 proto.functor.on = wrap.on;
 proto.functor[uic] = print.log;
 handleError = function(info){
@@ -190,6 +191,7 @@ validate.rest = function(funs, state, type){
     return true;
   case 'map':
   case 'tap':
+  case 'forEach':
     if (!(funs.length === 1)) {
       print.route([new Error(), 'input.fault', [type, ['arg_count', [state.str, type]]]]);
       return false;
@@ -223,7 +225,8 @@ guard.rest = oxo.wh(validate.rest, function(args, state, type){
     case 'alt':
       return define.or(state, [['alt', funs]]);
     case 'map':
-      return define.and(state, [['map', funs[0]]]);
+    case 'forEach':
+      return define.and(state, [[type, funs[0]]]);
     case 'err':
     case 'fix':
     case 'cont':
