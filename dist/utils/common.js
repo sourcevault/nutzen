@@ -1,4 +1,4 @@
-var vendor, z, l, flat, advanced_pad, jspc, deep_freeze, alpha_sort, R, esp, util, util_inspect_custom, noop, j, zj, loopfault, x$, c, lit, rm_paths, create_stack, print_fail, ext;
+var vendor, z, l, flat, advanced_pad, jspc, deep_freeze, alpha_sort, R, esp, util, util_inspect_custom, noop, j, zj, loopfault, x$, c, lit, rm_paths, create_stack, print_fail, wait, ext;
 vendor = require("./vendor");
 z = console.log;
 l = console.log;
@@ -141,6 +141,9 @@ print_fail = function(filename){
     process.exitCode = 1;
   };
 };
+wait = function(t, f){
+  return setTimeout(f, t);
+};
 ext = {
   z: z,
   j: j,
@@ -151,6 +154,7 @@ ext = {
   lit: lit,
   flat: flat,
   noop: noop,
+  wait: wait,
   pad: advanced_pad,
   R: Object.freeze(R),
   loopError: loopfault,

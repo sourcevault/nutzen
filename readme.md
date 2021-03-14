@@ -10,7 +10,7 @@ npm install sourcevault/hoplon#dist
 
 [![Build Status](https://travis-ci.org/sourcevault/hoplon.svg?branch=dev)](https://travis-ci.org/sourcevault/hoplon) [![Join the chat at https://gitter.im/sourcevault/hoplon](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sourcevault/hoplon)
 
-`hoplon` provides common utility tools for programming that makes heavy use of pattern matching techniques in javascript.
+`hoplon` provides common utility functions for coders that make heavy use of pattern matching technique(s) in `javascript`.
 
 #### Introduction
 
@@ -42,6 +42,9 @@ hoplon.utils
         - [fix](#--fix)
         - [err](#--err)
         - [jam](#--jam)
+        - [tap](#--tap)
+        - [forEach](#--forEach)
+
     1. [Creating Custom Basetypes](#creating-custom-basetypes)
     1. [Context Variable](#context-variable)
     1. [Helper Validators](#helper-validators)
@@ -88,7 +91,7 @@ hoplon.utils
 🟡 Object with required properties `foo` and `bar`.
 
 ```js
-var hoplon = require("hoplon")
+var IS = require("hoplon").types
 
 var V = IS.required("foo","bar")
 
@@ -109,8 +112,7 @@ console.log(V.auth({}))
 
 
 ```js
-
-var hoplon = require("hoplon")
+var IS = require("hoplon").types
 
 var address = IS.required("city","country")
 .on("city",IS.str)
@@ -170,7 +172,7 @@ alt            alternative
 
 - custom validators that are easy to build and extend.
 
-`valleydate` exposes few key operators for creating data validators, for handling arbitrary complex data types.
+`hoplon.types` exposes few key operators for creating data validators, for handling arbitrary complex data types.
 
 We start by defining our basetypes:
 
@@ -180,9 +182,9 @@ We start by defining our basetypes:
 
 - `and`,`or`,`alt`,`map`,`on`.
 
-.. and finally consumption units :
+.. and consumption units :
 
-- `cont/edit`,`jam`,`tap`, `err` and `fix`.
+- `cont/edit`,`tap`,`forEach`,`jam`,`err` and `fix`.
 
 
 #### Initializing Validator
@@ -314,7 +316,6 @@ var ratifydata = IS.obj.map(IS.num);
 
 ```js
 
-
 var V = IS.obj
 .on("foo",IS.num)
 .on("bar",IS.num)
@@ -364,7 +365,7 @@ var V = canbeIP
 
 
 ```js
-IS = require("hoplon")
+var IS = require("hoplon").types
 
 var canbeIP = IS.arr.map(IS.str)
 .or(IS.str.cont (x) => [x]) // <-- we want string to go inside an array
@@ -385,7 +386,7 @@ console.log(ret)
 - Used commonly in creating default, using the IP address from above :
 
 ```js
-IS = require("hoplon")
+IS = require("hoplon").types
 
 var canbeIP = IS.arr.map(IS.str)
 .or(IS.string.cont((x) => [x]))
@@ -410,13 +411,17 @@ console.log(ret) // ["127.0.0.1"]
 
 ### - `tap`
 
-- `tap` is a operation specifically made for debugging / side effect.
+- `tap` is an operation specifically made for debugging / side effect.
 
 - for example, lets say we want to see what values are moving through our chain.
 
 - we could use `cont` from above, but we need to make sure our return values are set correctly.
 
-- `tap` is just like `cont` but it doen't use the returned value to change the original value.
+- `tap` is just like `cont` but it does not use the returned value to change the original value.
+
+### - `forEach`
+
+- `forEach` is `tap` for functors, in the sense that it's only available for `obj` and `arr` types.
 
 #### Creating Custom Basetypes
 
@@ -429,7 +434,7 @@ In case defaults are not sufficient, clean validators can be easily created.
 2. provide it as first argument into `valleydate` as shown below :
 
 ```js
-var hoplon = require("hoplon")
+var IS = require("hoplon").types
 
 var simpleEmail = function(value){
 
@@ -457,7 +462,7 @@ isEmail.cont
 
 - but expects the first argument to be what needs to be validated.
 
-🟡 *so, what does `valleydate` do with the extra arguments ?*
+🟡 *so, what does `holplon.types` do with the extra arguments ?*
 
 - It simply passes it downstream ( as subsequent ) arguments in case they need them.
 
@@ -484,8 +489,7 @@ Some validators are common enough to be added in core.
 🟡 using `int` :
 
 ```js
-var hoplon = require("hoplon")
-
+var IS = require("hoplon").types
 
 IS.int(2)
 //{continue:true,error:false,value:1}
@@ -503,7 +507,7 @@ IS.int(2.1)
 - The function exposed through `maybe.*` using `IS.int` :
 
 ```js
-var hoplon = require("hoplon")
+var IS = require("hoplon").types
 
 
 var V = IS.maybe.int
@@ -527,7 +531,7 @@ V.auth("foo bar")
 
 ```js
 // how to see both helper and primitive validators
-> console.log((require("hoplon")))
+> console.log((require("hoplon")).types)
 {.*}
 int.neg              int.pos
 list.ofint           list.ofnum
@@ -558,7 +562,7 @@ undef                undefnull
 
 flatting it gets quite messy 🤷🏼‍♂️.
 
-`valleydate` provides a helper function `.flatato` to smoothly flatten raw error values.
+`hoplon.types` provides a helper function `.flatato` to smoothly flatten raw error values.
 
 but it requires your messages to follow a specific message passing protocol :
 
@@ -594,6 +598,7 @@ each value is rewritten *at every return*, so for example using context variable
 
 ```ls
 # .. in livescript instead of javascript ..
+be = (require "hoplon").types
 
 V = be.obj.on \foo,
   (foo,__,data) ->
@@ -621,11 +626,11 @@ Using `hoplon.types` as validators for `hoplon.gaurd` is quite common, it's why 
 
 🟡 Handling argument errror for adder function :
 ```js
-var hoplon = require("hoplon")
+var guard = require("hoplon").guard
 
 var add = (x,y) => x + y
 
-var adder = hoplon
+var adder = guard
 .arn(2,() => console.log("Error: only accepts 2 arugument"))
 .ar(2,add)
 .def(null) // always provide a default value when all match fails.
@@ -644,7 +649,7 @@ var typeE = () => console.log("argument type has to be number")
 
 var add = (x,y) =>  x + y
 
-var adder = hoplon
+var adder = guard
 .arn(2,argE)
 .whn(bothNum,typeE)
 .ar(2,add)
@@ -767,11 +772,11 @@ It's also possible to just provide a static value or object as default.
 
 #### `⛔️ Notes ⛔️`
 
-- Each hoplon object **always** has to end with a `.def`.
+- Each `hoplon.guard` object **always** has to end with a `.def`.
 
 - all the methods also accept **non-functions** as their last value, functionality was added to make it possible to easily return static values for efficient and easy pattern matching.
 
-- `hoplon` also accepts validators created using [hoplon.types](https://github.com/sourcevault/valleydate).
+- `hoplon.guard` also accepts validators created using `hoplon.types`.
 
 ##### Description and Type in Table
 
@@ -779,7 +784,7 @@ It's also possible to just provide a static value or object as default.
 [ LEGENDS ]
 
 arglen      👉🏼       number | [num...]
-validator   👉🏼  ( -> bool ) | { valledate object }
+validator   👉🏼  ( -> bool ) | { hoplon.types object }
 exec        👉🏼    function  | any
 
 🟢 Table 1 - method names and their types.
@@ -826,12 +831,12 @@ def          function|any
 
 ##### *immutable*
 
-In case immutable chain is needed, hoplon offers immutability through `hoplon.immutable` namespace.
+In case immutable chain is needed, `hoplon.guard` offers immutability through `hoplon.guard.immutable` namespace.
 
 ```js
-var ihop = hoplon.immutable
+var guard = hoplon.guard.immutable
 
-var init = ihop
+var init = guard
 .def(=> console.log ("wrong number of arguments"))
 
 var add2 = init.ar(2,(x,y)=> x + y)
@@ -845,7 +850,7 @@ console.log (add2 == add3) // false
 
 It's common enough to want to apply the `.ar` counting on a specific argument itself.
 
-`hoplon.unary` is a namespace where the `.ar` counting is done on the first argument.
+`hoplon.guard.unary` is a namespace where the `.ar` counting is done on the first argument.
 
 The condition of course is that the first argument **has** to be **array like**.
 
@@ -853,8 +858,7 @@ The condition of course is that the first argument **has** to be **array like**.
 
 By default exit function doesn't have debug logging enabled.
 
-In case debug message is needed then `.debug` namespace can be used.
-
+In case debug message is needed then `.debug` (`hoplon.guard.debug`) namespace can be used.
 
 
 ### `hoplon.utils`
@@ -865,6 +869,7 @@ In case debug message is needed then `.debug` namespace can be used.
 - `z` - `console.log`
 - `noop` - `noop` function
 - `c` - 8 bit color palette
+- `wait` - setTimeout with the arguments reversed.
 - `esp` - [error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
 - `alpha_sort` - [alpha-sort](https://github.com/sindresorhus/alpha-sort)
 - `zj`- `console.log(j(...))`
@@ -884,7 +889,7 @@ In case debug message is needed then `.debug` namespace can be used.
 ##### *Quick Example 1*
 
 ```js
-var binapi = require ("binapi")
+var binapi = require("hoplon").utils.binapi
 
 var main = function (state,args)
 {
@@ -949,7 +954,7 @@ As shown above, we are using object properties as switches to turn "ON" certain 
 
 ```js
 
-var binapi = require ("binapi")
+var binapi = require("hoplon").utils.binapi
 
 folks =
 {
@@ -979,12 +984,12 @@ console.log(folks.henry) //29
 
 #### using state variable
 
-Sometimes some state has to be present in your function, this is especially useful for nested `binapi`s.
+Sometimes some state has to be present in your function, this is especially useful for nested `binapi`.
 
 🟡 *..Example 3 - adding state variable as second argument..*
 
 ```js
-var binapi = require("binapi");
+var binapi = require("hoplon").utils.binapi
 
 var main,getter;
 
@@ -1018,13 +1023,13 @@ var out = compute(5)
 
 #### Custom Logger
 
-Internally `binapi` uses ES6 proxies allowing binding of custom log functions - providing us with the option of providing better object information when using `console.log`, custom log function is added as the 4rth argument.
+Internally `binapi` uses ES6 proxies allowing binding of custom log functions - providing us with the option of giving better object information when using `console.log`, custom log function is added as the 4rth argument.
 
 
-🟡 *..Example 4 - custom logger provided as third argument..*
+🟡 *..Example 4 - custom logger provided as 4rth argument..*
 
 ```js
-var binapi = require ("binapi")
+var binapi = require("hoplon").utils.binapi
 
 var main = function (){}
 

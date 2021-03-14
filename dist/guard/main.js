@@ -16,6 +16,8 @@ settle = function(F, A){
   switch (ftype) {
   case 'f':
     return f.apply(null, A);
+  case 'v':
+    return f.auth.apply(f, A);
   case 's':
     return f;
   }
@@ -41,6 +43,24 @@ modSettle = function(F, init, A){
     default:
       modArg = [init].concat(arrayFrom$(A));
       return f.apply(null, modArg);
+    }
+  case 'v':
+    switch (A.length) {
+    case 1:
+      return f.auth(init, A[0]);
+    case 2:
+      return f.auth(init, A[0], A[1]);
+    case 0:
+      return f.auth(init);
+    case 3:
+      return f.auth(init, A[0], A[1], A[2]);
+    case 4:
+      return f.auth(init, A[0], A[1], A[2], A[3]);
+    case 5:
+      return f.auth(init, A[0], A[1], A[2], A[3], A[4]);
+    default:
+      modArg = [init].concat(arrayFrom$(A));
+      return f.auth.apply(f, modArg);
     }
   case 's':
     return f;
@@ -255,12 +275,7 @@ tightloop = function(state){
     }
     def = state.def;
     if (def) {
-      switch (def[0]) {
-      case 'f':
-        return def[1].apply(def, arguments);
-      case 's':
-        return def[1];
-      }
+      return settle(def, arguments);
     }
     function fn$(){
       switch (R.type(msg)) {

@@ -99,7 +99,7 @@ print.input_fault.custom = function(arg$){
     l(c.grey("  no value passed.", "\n\n", " minimum of 1 argument of function type is needed."));
     break;
   case 'not_function':
-    l(c.er1("  first argument has to be a function / valleydate object ."));
+    l(c.er1("  first argument has to be a function / hoplon.types object ."));
   }
   return l("");
 };

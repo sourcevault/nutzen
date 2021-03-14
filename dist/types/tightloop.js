@@ -1,4 +1,4 @@
-var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, difKey, difTop, map, upon, resolve, tightloop, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, execKey, execTop, map, forEach, upon, resolve, tightloop, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 pc = require("./print.common");
 com = pc.com, pkgname = pc.pkgname, sig = pc.sig;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
@@ -192,7 +192,7 @@ apply.auth.key = function(F, val, args, key){
     return F.auth.apply(F, A);
   }
 };
-difKey = function(type, F, val, args, key){
+execKey = function(type, F, val, args, key){
   switch (type) {
   case 'd':
     return apply.normal.key(F, val, args, key);
@@ -202,7 +202,7 @@ difKey = function(type, F, val, args, key){
     return sanatize(val, apply.normal.key(F, val, args, key));
   }
 };
-difTop = function(type, F, val, args){
+execTop = function(type, F, val, args){
   switch (type) {
   case 'd':
     return apply.normal.top(F, val, args);
@@ -222,13 +222,13 @@ map = function(dtype, fun, value, args){
     put = null;
     arr = [];
     while (I < In) {
-      put = difKey(type, F, value[I], args, I);
-      if (put.path) {
-        path = put.path;
-      } else {
-        path = [];
-      }
+      put = execKey(type, F, value[I], args, I);
       if (put.error) {
+        if (put.path) {
+          path = put.path;
+        } else {
+          path = [];
+        }
         return {
           'continue': false,
           error: true,
@@ -250,13 +250,13 @@ map = function(dtype, fun, value, args){
     put = null;
     for (key in value) {
       val = value[key];
-      put = difKey(type, F, val, args, key);
-      if (put.path) {
-        path = put.path;
-      } else {
-        path = [];
-      }
+      put = execKey(type, F, val, args, key);
       if (put.error) {
+        if (put.path) {
+          path = put.path;
+        } else {
+          path = [];
+        }
         return {
           'continue': false,
           error: true,
@@ -274,13 +274,41 @@ map = function(dtype, fun, value, args){
     };
   }
 };
+forEach = function(dtype, fun, value, args){
+  var type, F, I, In, key, val;
+  type = fun[0], F = fun[1];
+  switch (dtype) {
+  case 'arr':
+    I = 0;
+    In = value.length;
+    while (I < In) {
+      execKey(type, F, value[I], args, I);
+      I += 1;
+    }
+    return {
+      'continue': true,
+      error: false,
+      value: value
+    };
+  case 'obj':
+    for (key in value) {
+      val = value[key];
+      execKey(type, F, val, args, key);
+    }
+    return {
+      'continue': true,
+      error: false,
+      value: value
+    };
+  }
+};
 upon = function(arg$, value, args){
   var type, fun, key, shape, G, put, path, arr, I, In, ref$;
   type = arg$[0], fun = arg$[1];
   switch (type) {
   case 'string':
     key = fun[0], shape = fun[1], G = fun[2];
-    put = difKey(shape, G, value[key], args, key);
+    put = execKey(shape, G, value[key], args, key);
     if (put.path) {
       path = put.path;
     } else {
@@ -307,7 +335,7 @@ upon = function(arg$, value, args){
     In = arr.length;
     while (I < In) {
       key = arr[I];
-      put = difKey(shape, G, value[key], args, key);
+      put = execKey(shape, G, value[key], args, key);
       if (put.path) {
         path = put.path;
       } else {
@@ -335,7 +363,7 @@ upon = function(arg$, value, args){
     In = fun.length;
     while (I < In) {
       ref$ = fun[I], key = ref$[0], shape = ref$[1], G = ref$[2];
-      difKey(shape, G, value[key], args, key);
+      execKey(shape, G, value[key], args, key);
       if (put.path) {
         path = put.path;
       } else {
@@ -373,6 +401,8 @@ resolve = function(fun, put, dtype, args){
     return sanatize(value, apply.normal.top(F, value, args));
   case 'map':
     return map(dtype, F, value, args);
+  case 'forEach':
+    return forEach(dtype, F, value, args);
   case 'on':
     return upon(F, value, args);
   case 'cont':
@@ -406,7 +436,7 @@ resolve = function(fun, put, dtype, args){
     nI = F.length;
     do {
       ref$ = F[I], type = ref$[0], G = ref$[1];
-      put = difTop(type, G, value, args);
+      put = execTop(type, G, value, args);
       if (put['continue']) {
         return put;
       }

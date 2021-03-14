@@ -7,16 +7,6 @@ V = {};
 ref$ = out$;
 import$(ref$, ext);
 ref$.verify = V;
-V.def = function(args){
-  var f;
-  f = args[0];
-  switch (R.type(f)) {
-  case 'Function':
-    return ['ok', ['f', f]];
-  default:
-    return ['ok', ['s', f]];
-  }
-};
 customTypeoOf = function(unknown){
   var type;
   type = R.type(unknown);
@@ -29,6 +19,18 @@ customTypeoOf = function(unknown){
     return type;
   default:
     return type;
+  }
+};
+V.def = function(args){
+  var f;
+  f = args[0];
+  switch (customTypeoOf(f)) {
+  case 'Function':
+    return ['ok', ['f', f]];
+  case 'htypes':
+    return ['ok', ['v', f]];
+  default:
+    return ['ok', ['s', f]];
   }
 };
 V.num = function(num){
@@ -79,9 +81,12 @@ V.ar = function(args){
   case 'fault.array':
     return ['fault', 'array'];
   }
-  switch (R.type(fun)) {
+  switch (customTypeoOf(fun)) {
   case 'Function':
     ret.push(['f', fun]);
+    break;
+  case 'htypes':
+    ret.push(['v', fun]);
     break;
   default:
     ret.push(['s', fun]);
@@ -108,9 +113,12 @@ V.wh = function(args){
   default:
     return ['fault', 'first'];
   }
-  switch (R.type(ap)) {
+  switch (customTypeoOf(ap)) {
   case 'Function':
     ret.push(['f', ap]);
+    break;
+  case 'htypes':
+    ret.push(['v', ap]);
     break;
   default:
     ret.push(['s', ap]);
@@ -133,7 +141,7 @@ numfunfun = function(args){
   case 'fault.array':
     return ['fault', 'array'];
   }
-  switch (R.type(validator)) {
+  switch (customTypeoOf(validator)) {
   case 'Function':
     ret.push(['f', validator]);
     break;
@@ -143,7 +151,7 @@ numfunfun = function(args){
   default:
     return ['fault', 'second'];
   }
-  type = R.type(ap);
+  type = customTypeoOf(ap);
   switch (type) {
   case 'Function':
     ret.push(['f', ap]);
