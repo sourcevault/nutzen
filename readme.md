@@ -225,7 +225,7 @@ If `{cotinue:false,error:true,...}` the return object would also have attributes
 
 After initilizating a validator with its basetype, you are returned a unit object that can be chained ( infinitely ) using a few operators.
 
-These operators all accept custom validators but also other `valleydate` objects.
+These operators all accept custom validators but also other `hoplon` validator (`hoplon.types`) objects.
 
 ### - `and`
 
@@ -421,7 +421,7 @@ console.log(ret) // ["127.0.0.1"]
 
 ### - `forEach`
 
-- `forEach` is `tap` for functors, in the sense that it's only available for `obj` and `arr` types.
+- `forEach` is `tap` for functors, in the sense that it's only available for `obj`,`arr` and `arg` types.
 
 #### Creating Custom Basetypes
 
@@ -431,7 +431,7 @@ In case defaults are not sufficient, clean validators can be easily created.
   - `boolean`
   - `[boolean,any]`
 
-2. provide it as first argument into `valleydate` as shown below :
+2. provide it as first argument into `holplon.types` as shown below :
 
 ```js
 var IS = require("hoplon").types
@@ -447,7 +447,7 @@ var simpleEmail = function(value){
 
 var isEmail = IS(simpleEmail)
 
-// isEmail is now a valleydate validator which means it gets
+// isEmail is now an holplon validator which means it gets
 
 // .and, .or, .cont, .err , .jam and .fix methods.
 
@@ -616,7 +616,7 @@ It's one of the trade off of having hidden **mutability**, it's easy to avoid su
 
 #### `hoplon.types.known`
 
-Using `hoplon.types` as validators for `hoplon.gaurd` is quite common, it's why `hoplon.types.known` was introduced as a namespace.
+Using `hoplon` validators in `hoplon.gaurd` is quite common, it's why `hoplon.types.known` was introduced as a namespace.
 
 `hoplon.types.known.*` avoids making the **first** type check, but **does do** the subsequent type check. At first glance the namespace does not seem useful, but as it turns out, algebraic unit functions are really good at describing control flow logic - again use the right tool for the job 👀.
 
@@ -869,18 +869,18 @@ In case debug message is needed then `.debug` (`hoplon.guard.debug`) namespace c
 - `z` - `console.log`
 - `noop` - `noop` function
 - `c` - 8 bit color palette
-- `wait` - setTimeout with the arguments reversed.
-- `esp` - [error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
-- `alpha_sort` - [alpha-sort](https://github.com/sindresorhus/alpha-sort)
 - `zj`- `console.log(j(...))`
+- `alpha_sort` - [alpha-sort](https://github.com/sindresorhus/alpha-sort)
+- `esp` - [error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
 - `deep_freeze` - [deep-freeze](https://github.com/substack/deep-freeze)
 - `advanced_pad` - [advanced-pad](https://github.com/tylerdevs/advanced-pad)
 - `lit` - zip printer for color output
 - `j` - [json-stringify-pretty-compact](https://github.com/AitoDotAI/json-stringify-pretty-compact#readme)
+- `wait` - setTimeout with the arguments reversed.
 - `print_fail` - used in test files to show file location for test failure.
 - `create_stack` - wrapper for `error-stack-parser` that accepts error object.
 - `common_symbols` - Symbols used to identify different objects, like `hoplon.type`.
-- `loopfault` - a proxy object that acts as a dummy return object to prevent throwing errors.
+- `loopfault` - a proxy object that acts as a dummy return object to prevent throwing unnecessary errors.
 - `util_inspect_custom` - wrapper for `node.js`'s `util_inspect_custom`  that does not throw error if used in browser.
 
 
