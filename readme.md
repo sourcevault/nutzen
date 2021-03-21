@@ -419,6 +419,8 @@ console.log(ret) // ["127.0.0.1"]
 
 - `tap` is just like `cont` but it does not use the returned value to change the original value.
 
+- there is also `hoplon.type.tap` provided as a helper function.
+
 ### - `forEach`
 
 - `forEach` is `tap` for functors, in the sense that it's only available for `obj`,`arr` and `arg` types.
@@ -534,6 +536,10 @@ V.auth("foo bar")
 > console.log((require("hoplon")).types)
 {.*}
 int.neg              int.pos
+known.arr            known.bool
+known.fun            known.null
+known.num            known.obj
+known.str            known.undef
 list.ofint           list.ofnum
 list.ofstr           maybe.arr
 maybe.bool           maybe.boolnum
@@ -548,12 +554,13 @@ not.null             not.num
 not.obj              not.str
 not.undef            arg
 arr                  bool
-boolnum              fun
-flatato              null
+boolnum              flatato
+fun                  null
 num                  obj
 reqres               required
 restricted           str
 undef                undefnull
+tap
 ```
 
 ####  `.flatato`
@@ -658,6 +665,8 @@ var adder = guard
 adder(1,2) // 3
 ```
 This now allows us to cover both `typeError` and `argumentError` for the adder function.
+
+#### `hoplon.types.known`
 
 #### *Why ?*
 
@@ -1050,7 +1059,9 @@ console.log (tsf) // ( sync | flip )
 
 #### Update and API change
 
-◾️ `1.0.0` - `hoplon` and `valleydate` modules merged into `hoplon.gaurd` and `hoplon.types`, `@sourcevault/common.utils` also merged into `hoplon.utils`.
+◾️ `0.1.24` - `hoplon.types.tap` added.
+
+◾️ `1.0.0` - `hoplon` and `valleydate` modules merged into `hoplon.gaurd` and `hoplon.types`, `@sourcevault/common.utils` also merged into `hoplon.utils`, and also introduced `hoplon.types.known`.
 
 ◾️ `0.0.41` - `.arpar` added and validators can now be `valleydate` objects.
 
