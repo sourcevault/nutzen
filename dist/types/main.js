@@ -1,4 +1,4 @@
-var ref$, com, print, z, l, R, j, deep_freeze, uic, loopError, oxo, int, custom, define, cache, be, props, nonmap, base, not_base, undefnull, F, pop, i$, len$, name, type, A, B, C, notArrayofStrOrNum, reqError, resError, reqresError, objarr, restricted, integer, boolnum, maybe_boolnum, maybe, list, handleE, is_special_str, rmObj, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ref$, com, print, z, l, R, j, deep_freeze, uic, loopError, oxo, int, custom, define, cache, be, props, nonmap, base, not_base, undefnull, F, pop, i$, len$, name, type, A, B, C, notArrayofStrOrNum, reqError, resError, reqresError, objarr, restricted, integer, boolnum, maybe_boolnum, maybe, list, handleE, is_special_str, rmObj, betrue, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ref$ = require('./print.common'), com = ref$.com, print = ref$.print;
 z = com.z, l = com.l, R = com.R, j = com.j, deep_freeze = com.deep_freeze, uic = com.uic, loopError = com.loopError;
 oxo = require('../guard/main');
@@ -388,6 +388,12 @@ handleE.entry = function(msg){
     sorted = onlyob.sort(handleE.sort);
     return sorted;
   }
+};
+betrue = be(function(){
+  return true;
+});
+be.tap = function(f){
+  return betrue.tap(f);
 };
 be.flatato = handleE.entry;
 be = deep_freeze(be);

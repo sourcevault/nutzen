@@ -11,7 +11,7 @@ rm-dist: rm -rf dist/*/*
 rm-src-js: rm src/*/*.js
 
 test.all:
-  - gulp compile
+  - gulp default
   - |-
     for i in test/*/*.js
     do
@@ -19,7 +19,7 @@ test.all:
     done
 
 test.proj:
-  - gulp compile 1>/dev/null
+  - gulp default 1>/dev/null
   - |-
     for i in test/{{global.proj}}/*.js
     do
@@ -27,7 +27,7 @@ test.proj:
     done
 
 test.only:
-  - gulp compile 1>/dev/null
+  - gulp default
   - node ./test/{{global.proj}}/{{global.which}}.js || exit 1
 
 
@@ -36,7 +36,8 @@ gulpfile:
     - src/gulpfile.ls
   exec-locale:
     - lsc -bco . src/gulpfile.ls
-    - gulp compile
+    - gulp default
+
 
 dev.install:
   - npm install gulp
@@ -45,5 +46,6 @@ dev.install:
   - npm install gulp-livescript
   - npm install gulp-rename
   - npm install gulp-yaml
+  - npm install gulp-replace
 
 version.update: update-version src/package.yaml hoplon

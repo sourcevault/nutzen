@@ -10,6 +10,8 @@ print      = {}
 
 pkgname    = \hoplon.types
 
+version    = \__VERSION__
+
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
 
 export
@@ -237,7 +239,7 @@ print.log = ->
 
 sort = (x) -> x.sort(alpha_sort.ascending)
 
-same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit']
+same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit','tap','forEach']
 
 myflat = oxo
 .wh do
@@ -276,6 +278,8 @@ print.inner = ->
 
   props =  sort [ I for I of flat myflat @]
 
+  props.push \tap
+
   ob = split props
 
   len = (find_len 0,props) + 4
@@ -291,7 +295,7 @@ print.inner = ->
 
   table = [I.join " " for I in (R.splitEvery 2,table)].join "\n"
 
-  str = c.pink "{.*}\n"
+  str = c.pink "{.*} v#{version}\n"
 
   str += c.blue table
 

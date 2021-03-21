@@ -297,6 +297,7 @@ be.int     = be integer
 
 be.boolnum = be boolnum
 
+
 #--------------------------------------------------------
 
 be.int.neg  = be.int.and do
@@ -461,6 +462,12 @@ handleE.entry = (msg) ->
     sorted = onlyob.sort handleE.sort
 
     sorted
+
+# -----------------------------------
+
+betrue = be -> true
+
+be.tap = (f) -> betrue.tap f
 
 # -----------------------------------
 

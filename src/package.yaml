@@ -5,7 +5,7 @@ homepage: https://github.com/sourcevault/hoplon#readme.md
 license: BSD-3-Clause
 description: utility module, immutable type validator for typscript antagonist & Erlang/Elixir type guards , but with every imaginable method.
 repository: https://github.com/sourcevault/hoplon.git
-version: 0.1.23
+version: 0.1.24
 main: dist/main.js
 scripts:
   test: bash ./testall.sh
@@ -15,6 +15,7 @@ dependencies:
 devDependencies:
   "gulp-livescript": "*"
   "gulp-rename": "*"
+  "gulp-replace": "*"
   "gulp-yaml": "*"
   livescript: "*"
   "gulp-tap": "*"
