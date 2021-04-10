@@ -14,7 +14,7 @@ npm install sourcevault/hoplon#dist
 
 #### Introduction
 
-There ar 3 namespaces that exists in `hoplon` :
+There are 3 namespaces that exists in `hoplon` :
 
 ```js
 var hoplon = require("hoplon")
@@ -27,7 +27,7 @@ hoplon.utils
 
 ◾️ [`hoplon.guard`](#hoplonguard) - functional guards (mutable & immutable), similar to what exists in Elixir / Erlang for graceful error handling.
 
-◾️ [`hoplon.utils`](#hoplonutils) - exposes `hoplon`'s internal utils, like [`Ramda`](https://github.com/ramda/ramda)  and [`error-stack-parser`](https://github.com/stacktracejs/error-stack-parser), ( it's done so that I have fewer direct dependencies upstream, you do not have to use them if you do not want to 😀 ).
+◾️ [`hoplon.utils`](#hoplonutils) - exposes `hoplon`'s internal utils, like [`Ramda`](https://github.com/ramda/ramda)  and [`error-stack-parser`](https://github.com/stacktracejs/error-stack-parser), ( it's done so that I have fewer direct dependencies upstream ).
 
 1. [hoplon.types](#hoplontypes)
     1. [Introduction](#-why-another-schema-validator-)
@@ -146,7 +146,6 @@ console.log(V.auth(sample))
 ```
 
 🟢 Table 1 - method names and their mapping to which underlying type check.
-
 
 ```
 SHORTHANDS     ..FOR
@@ -665,8 +664,6 @@ var adder = guard
 adder(1,2) // 3
 ```
 This now allows us to cover both `typeError` and `argumentError` for the adder function.
-
-#### `hoplon.types.known`
 
 #### *Why ?*
 
