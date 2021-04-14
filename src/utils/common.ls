@@ -54,6 +54,12 @@ zj = (x,y)->
   else
     z j x
 
+zn = ->
+
+  args = ['\n',...arguments,'\n']
+
+  console.log ...args
+
 # --------------------------------------------------------------------------------------
 
 loopfault = ->
@@ -168,6 +174,7 @@ ext =
    l:l
    c:c
    zj:zj
+   zn:zn
    esp:esp
    lit:lit
    flat:flat

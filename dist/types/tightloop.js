@@ -20,7 +20,7 @@ sanatize = function(x, UFO){
         'continue': false,
         error: true,
         value: x,
-        message: ""
+        message: undefined
       };
     }
   case 'Array':
@@ -68,11 +68,11 @@ z$ = x$.auth = {};
 z$.key = null;
 z$.top = null;
 blunder = function(fun, put, args){
-  var patt, F, message;
+  var patt, F, data;
   patt = fun[0], F = fun[1];
   switch (patt) {
   case 'err':
-    message = (function(){
+    data = (function(){
       switch (typeof F) {
       case 'function':
         return apply.normal.key(F, put.message, args, put.path);
@@ -80,8 +80,24 @@ blunder = function(fun, put, args){
         return F;
       }
     }());
-    put.message = message;
-    return put;
+    switch (R.type(data)) {
+    case 'Array':
+    case 'String':
+    case 'Number':
+      put.message = data;
+      break;
+    case 'Object':
+      if (data.hasOwnProperty('message')) {
+        put.message = data.message;
+      }
+      if (data.hasOwnProperty('path')) {
+        put.path = data.path;
+      }
+      break;
+    case 'Null':
+      put.message = void 8;
+    }
+    break;
   case 'fix':
     put.value = (function(){
       switch (typeof F) {
@@ -93,10 +109,11 @@ blunder = function(fun, put, args){
     }());
     put['continue'] = true;
     put.error = false;
-    return put;
+    break;
   default:
-    return put;
+
   }
+  return put;
 };
 apply.normal.key = function(F, val, args, key){
   var list, A;
@@ -495,9 +512,6 @@ tightloop = function(x){
           I = nI;
           J = nJ;
         } else {
-          if (!(R.type(put.message) === 'Array')) {
-            put.message = [put.message];
-          }
           if (!(nput.message === undefined)) {
             put.message.push(nput.message);
           }

@@ -12,17 +12,22 @@ gulp-yaml       = require \gulp-yaml
 
 replace         = require \gulp-replace
 
+gutil           = require \gulp-util
+
 fs              = require \fs
 
 wait = (t,f)-> setTimeout f,t
 
 z = console.log
 
+
 gulp.task \default,(done) ->
 
   gulp.src "./src/package.yaml"
 
-  .pipe gulp-yaml({schema:\DEFAULT_SAFE_SCHEMA})
+  .pipe gulp-yaml({schema:\DEFAULT_FULL_SCHEMA,space:2})
+
+  .on \error -> throw it
 
   .pipe gulp.dest "."
 
@@ -32,6 +37,10 @@ gulp.task \default,(done) ->
 
   .pipe gulp-livescript bare:true
 
+  .on \error,gutil.log
+
+  .on \error -> throw it
+
   .pipe gulp.dest "."
 
   # ------------------------------
@@ -40,6 +49,11 @@ gulp.task \default,(done) ->
 
   .pipe gulp-livescript bare:true
 
+
+  .on \error,gutil.log
+
+  .on \error -> throw it
+
   .pipe gulp.dest "./dist"
 
   # ------------------------------
@@ -47,6 +61,10 @@ gulp.task \default,(done) ->
   ls = gulp.src "./src/*/*.ls"
 
   .pipe gulp-livescript bare:true
+
+  .on \error,gutil.log
+
+  .on \error -> throw it
 
   .pipe gulp.dest "./dist"
 
@@ -70,6 +88,10 @@ gulp.task \default,(done) ->
   gulp.src "./test/*/*.ls"
 
   .pipe gulp-livescript bare:true
+
+  .on \error,gutil.log
+
+  .on \error -> throw it
 
   .pipe gulp.dest "./test"
 

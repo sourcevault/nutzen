@@ -231,15 +231,16 @@ getprop = (item) ->
 
 includes = R.flip R.includes
 
-print.log = ->
-
-  prop = getprop @
-
-  lit ["{.*} ",prop.join " "],[c.pink,c.blue]
-
 sort = (x) -> x.sort(alpha_sort.ascending)
 
-same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit','tap','forEach']
+print.log = ->
+
+  prop = sort (getprop @)
+
+  lit ["{.*} ",prop.join " "],[c.warn,c.grey]
+
+
+same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit','tap','forEach','wrap']
 
 myflat = oxo
 .wh do
@@ -295,8 +296,8 @@ print.inner = ->
 
   table = [I.join " " for I in (R.splitEvery 2,table)].join "\n"
 
-  str = c.pink "{.*} v#{version}\n"
+  str = c.warn "{.*} v#{version}\n"
 
-  str += c.blue table
+  str += table
 
   str

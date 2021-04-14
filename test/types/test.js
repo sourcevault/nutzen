@@ -15,13 +15,8 @@ data = {
   }
 };
 V = be(function(){
-  return [false, 'first'];
-}).or(be(function(){
-  return [false, 'second'];
-}).or(be(function(){
-  return [false, 'third'];
-}))).or(be.obj).err(be.flatato);
-V.auth(1);
+  return false;
+}).or(be.arr.map(be.str));
 V = be.obj.on('foo', be.obj.on('bar', be.num.cont(function(x, a, b, c, d){
   return x;
 })).on('bar', be.str.and(function(x, j, k){
@@ -36,4 +31,3 @@ V.auth({
     bar: 1
   }
 }, ['data'], ['file']);
-V = be.required(['remotehost', 'remotefold']).on(['remotehost', 'remotefold'], be.str).or(be.bool.or(be.undef.err(["data"]))).err(function(msg){});

@@ -14,6 +14,8 @@ be = custom
 
 #-------------------------------------------------------------------
 
+# first column is the function name, second column is error message.
+
 props =
   [\obj \Object]
   [\arr \Array]
@@ -128,6 +130,8 @@ for [name,type] in props
   define.basis name,C
 
   be.known[name] = C
+
+#----------------------------
 
 for name in nonmap
 
@@ -430,7 +434,7 @@ handleE.array = (msg,fin) ->
         handleE.array I,fin
 
 
-rm-obj = R.filter (x) -> ((typeof x) is \object)
+rm-not-arrays = R.filter (x) -> ((R.type x) is \Array)
 
 handleE.entry = (msg) ->
 
@@ -440,26 +444,27 @@ handleE.entry = (msg) ->
 
   | \Array    =>
 
-      fin = []
+    fin = []
 
-      if is_special_str msg[0]
+    if is_special_str msg[0]
 
-        msg = [msg]
+      msg = [msg]
 
-      handleE.array msg,fin
+    handleE.array msg,fin
 
-      fin
+    fin
 
+  | otherwise => []
 
-  onlyob = rm-obj out
+  clean = rm-not-arrays out
 
-  if onlyob.length is 0
+  if (clean.length is 0)
 
     return out
 
   else
 
-    sorted = onlyob.sort handleE.sort
+    sorted = clean.sort handleE.sort
 
     sorted
 

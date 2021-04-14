@@ -64,6 +64,13 @@ wrap.on = function(){
 z3$ = proto = {};
 z3$.normal = {};
 z3$.functor = null;
+proto.normal.wrap = function(){
+  var F;
+  F = this;
+  return function(){
+    return F.auth.apply(F, arguments).value;
+  };
+};
 for (key in props) {
   val = props[key];
   F = wrap.rest(val);

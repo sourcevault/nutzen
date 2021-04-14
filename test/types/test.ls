@@ -14,12 +14,23 @@ data =
   *foo:
     bar:"hello world"
 
-V = be -> [false,\first]
-.or (be -> [false,\second]).or be -> [false,\third]
-.or be.obj
-.err be.flatato
+# V = be -> [false,\first]
+# .or (be -> [false,\second]).or be -> [false,\third]
+# .or be.obj
+# .err be.flatato
 
-V.auth 1
+# K = be.arr.alt be.str
+# .err be.flatato
+
+V = be (-> false)
+
+# .err (msg,path) -> [msg,null,'foobar']
+
+.or be.arr.map be.str
+
+# .and -> [false,'foobar','jews']
+
+# .err be.flatato
 
 # z (be.obj.on \foo, ->)
 
@@ -47,14 +58,14 @@ V = be.obj.on do
 V.auth {foo:{bar:1}},[\data],[\file]
 
 
-V = be.required [\remotehost,\remotefold]
+# V = be.required [\remotehost,\remotefold]
 
-.on [\remotehost,\remotefold],be.str
+# .on [\remotehost,\remotefold],be.str
 
-.or do
-  be.bool.or be.undef.err ["data"]
+# .or do
+  # be.bool.or be.undef.err ["data"]
   # .err ([__,b]) -> b
 
-.err (msg) ->
+# .err (msg) ->
 
   # j msg

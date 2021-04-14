@@ -72,7 +72,7 @@ validate   = {}
 
 #---------------------------------------------------------
 
-props = [\and \or \alt \cont \tap \edit \err \jam \fix]
+props = [\and \or \alt \cont \tap \edit \err \jam \fix ]
 
 init-state =
   all  :[]
@@ -87,12 +87,20 @@ proto       = {}
   ..normal  = {}
   ..functor = null
 
+proto.normal.wrap = ->
+
+  F = @
+
+  -> (F.auth.apply F,arguments).value
+
+
+
+
 for key,val of props
 
   F = wrap.rest val
 
   proto.normal[val]  = F
-
 
 proto.normal.auth      = tightloop
 

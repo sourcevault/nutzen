@@ -3,9 +3,9 @@ author: sourcevault
 email: joykrishnamondal@gmail.com
 homepage: https://github.com/sourcevault/hoplon#readme.md
 license: BSD-3-Clause
-description: utility module, immutable type validator for typscript antagonist & Erlang/Elixir type guards , but with every imaginable method.
+description: utility module, immutable type validator & Erlang/Elixir style guards ( but with every imaginable method ).
 repository: https://github.com/sourcevault/hoplon.git
-version: 0.1.24
+version: 0.1.25
 main: dist/main.js
 scripts:
   test: bash ./testall.sh

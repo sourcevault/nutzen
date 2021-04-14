@@ -1,51 +1,74 @@
 global:
-  proj: utils
+  proj: types
   which: test
 
 watch:
   - src
   - test/*/*.ls
 
-rm-dist: rm -rf dist/*/*
+rm.dist:
+  description: delete all .js files in dist folder.
+  exec-locale: rm -rf dist/*/*
 
-rm-src-js: rm src/*/*.js
-
-test.all:
-  - gulp default
-  - |-
-    for i in test/*/*.js
-    do
-      node $i || exit 1
-    done
-
-test.proj:
-  - gulp default 1>/dev/null
-  - |-
-    for i in test/{{global.proj}}/*.js
-    do
-      node $i || exit 1
-    done
-
-test.only:
-  - gulp default
-  - node ./test/{{global.proj}}/{{global.which}}.js || exit 1
-
+rm.src:
+  description: delete all .js files in src folder.
+  exec-locale:
+    rm src/*/*.js
 
 gulpfile:
   watch:
     - src/gulpfile.ls
-  exec-locale:
+  description: watch gulpfile.ls and run gulp default (only).
+  exec-locale: &gulpfile
     - lsc -bco . src/gulpfile.ls
-    - gulp default
+    - gulp default --silent
+
+
+
+test.all:
+  watch: true
+  description: run all test files for all projects.
+  exec-locale:
+    - *gulpfile
+    - |-
+      for i in test/*/*.js
+      do
+        node $i || exit 1
+      done
+
+test.proj:
+  watch: true
+  description: run all test files for proj=X.
+  exec-locale:
+    - *gulpfile
+    - |-
+      for i in test/{{global.proj}}/*.js
+      do
+        node $i || exit 1
+      done
+
+test.file:
+  watch: true
+  description: run a specific test file for proj=X which=Y.
+  exec-locale:
+    - gulp default --silent
+    - node ./test/{{global.proj}}/{{global.which}}.js || exit 1
+
 
 
 dev.install:
-  - npm install gulp
-  - npm install livescript
-  - npm install gulp-tap
-  - npm install gulp-livescript
-  - npm install gulp-rename
-  - npm install gulp-yaml
-  - npm install gulp-replace
+  description: install all dev dependencies.
+
+  exec-locale:
+    - npm install gulp -g
+    - npm install livescript
+    - npm install gulp-tap
+    - npm install gulp-livescript
+    - npm install gulp-rename
+    - npm install gulp-yaml
+    - npm install gulp-replace
+    - npm install gulp-util
+
+
 
 version.update: update-version src/package.yaml hoplon

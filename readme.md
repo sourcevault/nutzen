@@ -44,6 +44,7 @@ hoplon.utils
         - [jam](#--jam)
         - [tap](#--tap)
         - [forEach](#--forEach)
+        - [wrap](#--wrap)
 
     1. [Creating Custom Basetypes](#creating-custom-basetypes)
     1. [Context Variable](#context-variable)
@@ -51,7 +52,7 @@ hoplon.utils
         - [required](#helper-validators)
         - [integer](#helper-validators)
         - [maybe\*](#maybe)
-    1. [.flatato](#flatato)
+    1. [.flatro](#flatro)
     1. [common pitfall](#common-pitfall)
     1. [hoplon.types.known](#hoplontypesknown)
 
@@ -185,6 +186,9 @@ We start by defining our basetypes:
 
 - `cont/edit`,`tap`,`forEach`,`jam`,`err` and `fix`.
 
+`⛔️ Note ⛔️`
+
+- `wrap` is a special helper function, that **does not** return a `hoplon.types` object.
 
 #### Initializing Validator
 
@@ -219,6 +223,11 @@ If `{cotinue:false,error:true,...}` the return object would also have attributes
 - `message`- that passes along error messages from the validator.
 - `path` - in case the input is of type array or object, the path within the object where the validator function failed.
 
+`⛔️ Notes ⛔️`
+
+The `path` variable is provided for convenience, it discards information about what happens in side chains in your validator(s).
+
+In case the side channel information is relevant, you can **rewrite** your main chain's error message and(or) path variable by returning a object with `.message` and (or) `.path`properties.
 
 #### Chainable Functions
 
@@ -424,6 +433,37 @@ console.log(ret) // ["127.0.0.1"]
 
 - `forEach` is `tap` for functors, in the sense that it's only available for `obj`,`arr` and `arg` types.
 
+### - `wrap`
+
+- For user facing function, we generally end up having to create a wrapper function of this sort :
+
+```js
+IS = require("hoplon").types
+
+var V = IS.arr.fix(() => []) // empty array if not array
+
+var F = (x) => (V.auth(x)).value // creating our wrapper function by hand
+
+F([1,2,35]) // [1,2,35]
+
+F(null) // []
+```
+
+`.wrap()` prevents us from having to write `line 5`, instead we could just do :
+
+```js
+IS = require("hoplon").types
+
+var V = IS.arr.fix(() => []) // empty array if not array
+.wrap()
+
+V([1,2,35]) // [1,2,35]
+
+V(null) // []
+```
+
+It seems like such a trivial thing, but because it's so common, it does not make much sense to not include it as a standard helper.
+
 #### Creating Custom Basetypes
 
 In case defaults are not sufficient, clean validators can be easily created.
@@ -553,7 +593,7 @@ not.null             not.num
 not.obj              not.str
 not.undef            arg
 arr                  bool
-boolnum              flatato
+boolnum              flatro
 fun                  null
 num                  obj
 reqres               required
@@ -562,13 +602,13 @@ undef                undefnull
 tap
 ```
 
-####  `.flatato`
+####  `.flatro`
 
 `.err` function by default gives the raw chain of errors.
 
 flatting it gets quite messy 🤷🏼‍♂️.
 
-`hoplon.types` provides a helper function `.flatato` to smoothly flatten raw error values.
+`hoplon.types` provides a helper function `.flatro` to smoothly flatten raw error values.
 
 but it requires your messages to follow a specific message passing protocol :
 
@@ -576,10 +616,10 @@ but it requires your messages to follow a specific message passing protocol :
 
 - first value of said array should always be a string that starts with a colon ':'.
 
-- to help with sorting, a number can be provided after a second colon ':' to tell flatato the hierarchy of your messages.
+- to help with sorting, a number can be provided after a second colon ':' to tell flatro the hierarchy of your messages.
 
 ```js
-// Examples of message that flatato matches against
+// Examples of message that flatro matches against
 [
   ':not_tuple',
   [' value is not tuple type.']
@@ -622,7 +662,7 @@ It's one of the trade off of having hidden **mutability**, it's easy to avoid su
 
 #### `hoplon.types.known`
 
-Using `hoplon` validators in `hoplon.gaurd` is quite common, it's why `hoplon.types.known` was introduced as a namespace.
+Using `hoplon` validators in `hoplon.guard` is quite common, it's why `hoplon.types.known` was introduced as a namespace.
 
 `hoplon.types.known.*` avoids making the **first** type check, but **does do** the subsequent type check. At first glance the namespace does not seem useful, but as it turns out, algebraic unit functions are really good at describing control flow logic - again use the right tool for the job 👀.
 
@@ -876,6 +916,7 @@ In case debug message is needed then `.debug` (`hoplon.guard.debug`) namespace c
 - `noop` - `noop` function
 - `c` - 8 bit color palette
 - `zj`- `console.log(j(...))`
+- `zn` - adds new line before and after `console.log`
 - `alpha_sort` - [alpha-sort](https://github.com/sindresorhus/alpha-sort)
 - `esp` - [error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
 - `deep_freeze` - [deep-freeze](https://github.com/substack/deep-freeze)
@@ -1058,7 +1099,7 @@ console.log (tsf) // ( sync | flip )
 
 ◾️ `0.1.24` - `hoplon.types.tap` added.
 
-◾️ `1.0.0` - `hoplon` and `valleydate` modules merged into `hoplon.gaurd` and `hoplon.types`, `@sourcevault/common.utils` also merged into `hoplon.utils`, and also introduced `hoplon.types.known`.
+◾️ `1.0.0` - `hoplon` and `valleydate` modules merged into `hoplon.guard` and `hoplon.types`, `@sourcevault/common.utils` also merged into `hoplon.utils`, and also introduced `hoplon.types.known`.
 
 ◾️ `0.0.41` - `.arpar` added and validators can now be `valleydate` objects.
 

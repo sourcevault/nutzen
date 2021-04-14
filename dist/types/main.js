@@ -1,4 +1,4 @@
-var ref$, com, print, z, l, R, j, deep_freeze, uic, loopError, oxo, int, custom, define, cache, be, props, nonmap, base, not_base, undefnull, F, pop, i$, len$, name, type, A, B, C, notArrayofStrOrNum, reqError, resError, reqresError, objarr, restricted, integer, boolnum, maybe_boolnum, maybe, list, handleE, is_special_str, rmObj, betrue, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ref$, com, print, z, l, R, j, deep_freeze, uic, loopError, oxo, int, custom, define, cache, be, props, nonmap, base, not_base, undefnull, F, pop, i$, len$, name, type, A, B, C, notArrayofStrOrNum, reqError, resError, reqresError, objarr, restricted, integer, boolnum, maybe_boolnum, maybe, list, handleE, is_special_str, rmNotArrays, betrue, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ref$ = require('./print.common'), com = ref$.com, print = ref$.print;
 z = com.z, l = com.l, R = com.R, j = com.j, deep_freeze = com.deep_freeze, uic = com.uic, loopError = com.loopError;
 oxo = require('../guard/main');
@@ -363,11 +363,11 @@ handleE.array = function(msg, fin){
   }
   return results$;
 };
-rmObj = R.filter(function(x){
-  return typeof x === 'object';
+rmNotArrays = R.filter(function(x){
+  return R.type(x) === 'Array';
 });
 handleE.entry = function(msg){
-  var out, fin, onlyob, sorted;
+  var out, fin, clean, sorted;
   out = (function(){
     switch (R.type(msg)) {
     case 'String':
@@ -379,13 +379,15 @@ handleE.entry = function(msg){
       }
       handleE.array(msg, fin);
       return fin;
+    default:
+      return [];
     }
   }());
-  onlyob = rmObj(out);
-  if (onlyob.length === 0) {
+  clean = rmNotArrays(out);
+  if (clean.length === 0) {
     return out;
   } else {
-    sorted = onlyob.sort(handleE.sort);
+    sorted = clean.sort(handleE.sort);
     return sorted;
   }
 };

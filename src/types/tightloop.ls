@@ -17,7 +17,7 @@ sanatize = (x,UFO) ->
     if UFO
       return (continue:true,error:false,value:x)
     else
-      return (continue:false,error:true,value:x,message:"")
+      return (continue:false,error:true,value:x,message:undefined)
 
   | \Array =>
 
@@ -62,6 +62,7 @@ apply = {}
     ..key = null
     ..top = null
 
+
 blunder = (fun,put,args) ->
 
   [patt,F] = fun
@@ -69,13 +70,31 @@ blunder = (fun,put,args) ->
   switch patt
   | \err =>
 
-    message = switch typeof F
+    data = switch typeof F
     | \function => apply.normal.key F,put.message,args,put.path
     | otherwise => F
 
-    put.message = message
+    # ----------------------------------
 
-    put
+    switch R.type data
+
+    | \Array,\String,\Number =>
+
+      put.message = data
+
+    | \Object =>
+
+      if (data.hasOwnProperty \message)
+
+        put.message = data.message
+
+      if (data.hasOwnProperty \path)
+
+        put.path = data.path
+
+    | \Null =>
+
+      put.message = void
 
   | \fix =>
 
@@ -86,9 +105,9 @@ blunder = (fun,put,args) ->
     put.continue = true
     put.error    = false
 
-    put
+  | otherwise => void
 
-  | otherwise => put
+  put
 
 
 apply.normal.key = (F,val,args,key) ->
@@ -128,7 +147,6 @@ apply.normal.top = (F,val,args) ->
     A.unshift val
 
     F ...A
-
 
 
 apply.auth.top = (F,val,args) ->
@@ -257,7 +275,6 @@ map = (dtype,fun,value,args) ->
 
     {continue:true,error:false,value:ob}
 
-
 forEach = (dtype,fun,value,args) ->
 
   [type,F] = fun
@@ -285,9 +302,6 @@ forEach = (dtype,fun,value,args) ->
       exec-key type,F,val,args,key
 
     {continue:true,error:false,value:value}
-
-
-
 
 
 upon = ([type,fun],value,args) ->
@@ -337,6 +351,7 @@ upon = ([type,fun],value,args) ->
         path = []
 
       if put.error
+
         return {
           continue:false
           error:true
@@ -421,9 +436,10 @@ resolve = (fun,put,dtype,args) ->
 
   | \jam       =>
 
-
     put.message  = switch typeof F
+
     | \function  => apply.normal.top F,value,args
+
     | otherwise  => F
 
     put.continue = false
@@ -468,12 +484,12 @@ tightloop = (x) !->
 
   nI         = all.length
 
-
   while I < nI
 
     each = all[I]
 
     switch I%2
+
     | 0 => # and
 
       J  = 0
@@ -485,9 +501,13 @@ tightloop = (x) !->
         fun = each[J]
 
         if put.error
+
           put = blunder fun,put,arguments
+
         else
+
           put = resolve fun,put,type,arguments
+
 
         J += 1
 
@@ -518,19 +538,17 @@ tightloop = (x) !->
         nput = resolve fun,put,type,arguments
 
         if nput.continue and (patt is \alt)
+
           put = nput
-          J = nJ
+          J   = nJ
 
         else if nput.continue
+
           put = nput
-          I = nI
-          J = nJ
+          I   = nI # end entire loop
+          J   = nJ
 
         else
-
-          if not ((R.type put.message) is \Array)
-
-            put.message = [put.message]
 
           if not (nput.message is undefined)
 
