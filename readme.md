@@ -44,6 +44,7 @@ hoplon.utils
         - [jam](#--jam)
         - [tap](#--tap)
         - [forEach](#--forEach)
+        - [wrap](#--wrap)
 
     1. [Creating Custom Basetypes](#creating-custom-basetypes)
     1. [Context Variable](#context-variable)
@@ -185,6 +186,9 @@ We start by defining our basetypes:
 
 - `cont/edit`,`tap`,`forEach`,`jam`,`err` and `fix`.
 
+`⛔️ Note ⛔️`
+
+- `wrap` is a special helper function, that **does not** return a `hoplon.types` object.
 
 #### Initializing Validator
 
@@ -423,6 +427,37 @@ console.log(ret) // ["127.0.0.1"]
 ### - `forEach`
 
 - `forEach` is `tap` for functors, in the sense that it's only available for `obj`,`arr` and `arg` types.
+
+### - `wrap`
+
+- For user facing function, we generally end up having to create a wrapper function of this sort :
+
+```js
+IS = require("hoplon").types
+
+var V = IS.arr.fix(() => []) // empty array if not array
+
+var F = (x) => (V.auth(x)).value // creating our wrapper function by hand
+
+F([1,2,35]) // [1,2,35]
+
+F(null) // []
+```
+
+`.wrap()` prevents us from having to write `line 5`, instead we could just do :
+
+```js
+IS = require("hoplon").types
+
+var V = IS.arr.fix(() => []) // empty array if not array
+.wrap()
+
+V([1,2,35]) // [1,2,35]
+
+V(null) // []
+```
+
+It seems like such a trivial thing, but because it's so common, it does not make much sense to not include it as a standard helper.
 
 #### Creating Custom Basetypes
 
@@ -876,6 +911,7 @@ In case debug message is needed then `.debug` (`hoplon.guard.debug`) namespace c
 - `noop` - `noop` function
 - `c` - 8 bit color palette
 - `zj`- `console.log(j(...))`
+- `zn` - adds new line before and after `console.log`
 - `alpha_sort` - [alpha-sort](https://github.com/sindresorhus/alpha-sort)
 - `esp` - [error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
 - `deep_freeze` - [deep-freeze](https://github.com/substack/deep-freeze)

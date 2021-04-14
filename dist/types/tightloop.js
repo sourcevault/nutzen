@@ -20,7 +20,7 @@ sanatize = function(x, UFO){
         'continue': false,
         error: true,
         value: x,
-        message: ""
+        message: undefined
       };
     }
   case 'Array':
@@ -68,7 +68,7 @@ z$ = x$.auth = {};
 z$.key = null;
 z$.top = null;
 blunder = function(fun, put, args){
-  var patt, F, message;
+  var patt, F, message, nput;
   patt = fun[0], F = fun[1];
   switch (patt) {
   case 'err':
@@ -80,7 +80,20 @@ blunder = function(fun, put, args){
         return F;
       }
     }());
-    put.message = message;
+    switch (R.type(message)) {
+    case 'Array':
+    case 'String':
+    case 'Number':
+      put.message = message;
+      break;
+    case 'Object':
+      nput = message;
+      put.message = nput.message;
+      put.path = nput.path;
+      break;
+    case 'Null':
+      put.message = void 8;
+    }
     return put;
   case 'fix':
     put.value = (function(){

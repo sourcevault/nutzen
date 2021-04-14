@@ -4,7 +4,7 @@ oxo = require('../guard/main');
 print = {};
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
 pkgname = 'hoplon.types';
-version = '0.1.24';
+version = '0.1.25';
 out$.com = com = com;
 out$.print = print = print;
 out$.pkgname = pkgname = pkgname;
@@ -189,15 +189,15 @@ getprop = function(item){
   return fin;
 };
 includes = R.flip(R.includes);
-print.log = function(){
-  var prop;
-  prop = getprop(this);
-  return lit(["{.*} ", prop.join(" ")], [c.pink, c.blue]);
-};
 sort = function(x){
   return x.sort(alpha_sort.ascending);
 };
-same = includes(['and', 'or', 'cont', 'jam', 'fix', 'err', 'map', 'on', 'alt', 'auth', 'edit', 'tap', 'forEach']);
+print.log = function(){
+  var prop;
+  prop = sort(getprop(this));
+  return lit(["{.*} ", prop.join(" ")], [c.warn, c.grey]);
+};
+same = includes(['and', 'or', 'cont', 'jam', 'fix', 'err', 'map', 'on', 'alt', 'auth', 'edit', 'tap', 'forEach', 'wrap']);
 myflat = oxo.wh(function(ob){
   switch (R.type(ob)) {
   case 'Function':
@@ -264,7 +264,7 @@ print.inner = function(){
     }
     return results$;
   }()).join("\n");
-  str = c.pink("{.*} v" + version + "\n");
-  str += c.blue(table);
+  str = c.warn("{.*} v" + version + "\n");
+  str += table;
   return str;
 };

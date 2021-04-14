@@ -1,4 +1,4 @@
-var vendor, z, l, flat, advanced_pad, jspc, deep_freeze, alpha_sort, R, esp, util, util_inspect_custom, noop, j, zj, loopfault, x$, c, lit, rm_paths, create_stack, print_fail, wait, ext;
+var vendor, z, l, flat, advanced_pad, jspc, deep_freeze, alpha_sort, R, esp, util, util_inspect_custom, noop, j, zj, zn, loopfault, x$, c, lit, rm_paths, create_stack, print_fail, wait, ext, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 vendor = require("./vendor");
 z = console.log;
 l = console.log;
@@ -31,6 +31,11 @@ zj = function(x, y){
   } else {
     return z(j(x));
   }
+};
+zn = function(){
+  var args;
+  args = ['\n'].concat(arrayFrom$(arguments), ['\n']);
+  return console.log.apply(console, args);
 };
 loopfault = function(){
   var loopError, apply, get;
@@ -150,6 +155,7 @@ ext = {
   l: l,
   c: c,
   zj: zj,
+  zn: zn,
   esp: esp,
   lit: lit,
   flat: flat,
