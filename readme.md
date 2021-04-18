@@ -52,7 +52,7 @@ hoplon.utils
         - [required](#helper-validators)
         - [integer](#helper-validators)
         - [maybe\*](#maybe)
-    1. [.flatato](#flatato)
+    1. [.flatro](#flatro)
     1. [common pitfall](#common-pitfall)
     1. [hoplon.types.known](#hoplontypesknown)
 
@@ -223,6 +223,11 @@ If `{cotinue:false,error:true,...}` the return object would also have attributes
 - `message`- that passes along error messages from the validator.
 - `path` - in case the input is of type array or object, the path within the object where the validator function failed.
 
+`⛔️ Notes ⛔️`
+
+The `path` variable is provided for convenience, it discards information about what happens in side chains in your validator(s).
+
+In case the side channel information is relevant, you can **rewrite** your main chain's error message and(or) path variable by returning a object with `.message` and (or) `.path`properties.
 
 #### Chainable Functions
 
@@ -404,7 +409,9 @@ console.log(ret) // ["127.0.0.1"]
 
 - When validation fails, callback provided to `.err` is invoked.
 
-- The return value of `.err` replaces the `.error` message to be sent upstream.
+- The return value of `.err` replaces the `.error` message to be sent downstream.
+
+- returning `{message:msg,path:p}` would replace `message` with `msg` and path with `p`.
 
 ### - `jam`
 
@@ -588,7 +595,7 @@ not.null             not.num
 not.obj              not.str
 not.undef            arg
 arr                  bool
-boolnum              flatato
+boolnum              flatro
 fun                  null
 num                  obj
 reqres               required
@@ -597,13 +604,13 @@ undef                undefnull
 tap
 ```
 
-####  `.flatato`
+####  `.flatro`
 
 `.err` function by default gives the raw chain of errors.
 
 flatting it gets quite messy 🤷🏼‍♂️.
 
-`hoplon.types` provides a helper function `.flatato` to smoothly flatten raw error values.
+`hoplon.types` provides a helper function `.flatro` to smoothly flatten raw error values.
 
 but it requires your messages to follow a specific message passing protocol :
 
@@ -611,10 +618,10 @@ but it requires your messages to follow a specific message passing protocol :
 
 - first value of said array should always be a string that starts with a colon ':'.
 
-- to help with sorting, a number can be provided after a second colon ':' to tell flatato the hierarchy of your messages.
+- to help with sorting, a number can be provided after a second colon ':' to tell flatro the hierarchy of your messages.
 
 ```js
-// Examples of message that flatato matches against
+// Examples of message that flatro matches against
 [
   ':not_tuple',
   [' value is not tuple type.']
@@ -657,7 +664,7 @@ It's one of the trade off of having hidden **mutability**, it's easy to avoid su
 
 #### `hoplon.types.known`
 
-Using `hoplon` validators in `hoplon.gaurd` is quite common, it's why `hoplon.types.known` was introduced as a namespace.
+Using `hoplon` validators in `hoplon.guard` is quite common, it's why `hoplon.types.known` was introduced as a namespace.
 
 `hoplon.types.known.*` avoids making the **first** type check, but **does do** the subsequent type check. At first glance the namespace does not seem useful, but as it turns out, algebraic unit functions are really good at describing control flow logic - again use the right tool for the job 👀.
 
@@ -1092,9 +1099,11 @@ console.log (tsf) // ( sync | flip )
 
 #### Update and API change
 
+◾️ `0.1.26` -  added `.wrap` and `.err` now allows changing of path variable downstream, if a object is used instead of an array.
+
 ◾️ `0.1.24` - `hoplon.types.tap` added.
 
-◾️ `1.0.0` - `hoplon` and `valleydate` modules merged into `hoplon.gaurd` and `hoplon.types`, `@sourcevault/common.utils` also merged into `hoplon.utils`, and also introduced `hoplon.types.known`.
+◾️ `1.0.0` - `hoplon` and `valleydate` modules merged into `hoplon.guard` and `hoplon.types`, `@sourcevault/common.utils` also merged into `hoplon.utils`, and also introduced `hoplon.types.known`.
 
 ◾️ `0.0.41` - `.arpar` added and validators can now be `valleydate` objects.
 
