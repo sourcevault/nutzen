@@ -409,7 +409,9 @@ console.log(ret) // ["127.0.0.1"]
 
 - When validation fails, callback provided to `.err` is invoked.
 
-- The return value of `.err` replaces the `.error` message to be sent upstream.
+- The return value of `.err` replaces the `.error` message to be sent downstream.
+
+- returning `{message:msg,path:p}` would replace `message` with `msg` and path with `p`.
 
 ### - `jam`
 
@@ -1096,6 +1098,8 @@ console.log (tsf) // ( sync | flip )
 ```
 
 #### Update and API change
+
+◾️ `0.1.26` -  added `.wrap` and `.err` now allows changing of path variable downstream, if a object is used instead of an array.
 
 ◾️ `0.1.24` - `hoplon.types.tap` added.
 

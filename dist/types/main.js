@@ -397,6 +397,6 @@ betrue = be(function(){
 be.tap = function(f){
   return betrue.tap(f);
 };
-be.flatato = handleE.entry;
+be.flatro = handleE.entry;
 be = deep_freeze(be);
 module.exports = be;

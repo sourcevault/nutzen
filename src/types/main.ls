@@ -476,7 +476,7 @@ be.tap = (f) -> betrue.tap f
 
 # -----------------------------------
 
-be.flatato = handleE.entry
+be.flatro = handleE.entry
 
 # -----------------------------------
 
