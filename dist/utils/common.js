@@ -82,6 +82,9 @@ x$.grey = function(txt){
 x$.blue = function(txt){
   return "\x1B[38;5;12m" + txt + "\x1B[39m";
 };
+x$.white = function(txt){
+  return "\x1B[37m" + txt + "\x1B[39m";
+};
 lit = R.pipe(R.zipWith(function(x, f){
   switch (R.type(f)) {
   case 'Function':

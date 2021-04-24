@@ -91,7 +91,14 @@ blunder = function(fun, put, args){
         put.message = data.message;
       }
       if (data.hasOwnProperty('path')) {
-        put.path = data.path;
+        switch (R.type(data.path)) {
+        case 'Number':
+        case 'String':
+          put.path = [data.path];
+          break;
+        case 'Array':
+          put.path = data.path;
+        }
       }
       break;
     case 'Null':
