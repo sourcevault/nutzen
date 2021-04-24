@@ -90,7 +90,11 @@ blunder = (fun,put,args) ->
 
       if (data.hasOwnProperty \path)
 
-        put.path = data.path
+        switch R.type data.path
+        | \Number,\String =>
+          put.path = [data.path]
+        | \Array =>
+          put.path = data.path
 
     | \Null =>
 

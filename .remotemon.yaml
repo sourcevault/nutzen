@@ -7,18 +7,21 @@ watch:
   - test/*/*.ls
 
 rm.dist:
-  description: delete all .js files in dist folder.
+  description:
+    - delete all .js files in dist folder.
   exec-locale: rm -rf dist/*/*
 
 rm.src:
-  description: delete all .js files in src folder.
+  description:
+    - delete all .js files in src folder.
   exec-locale:
     rm src/*/*.js
 
 gulpfile:
   watch:
     - src/gulpfile.ls
-  description: watch gulpfile.ls and run gulp default (only).
+  description:
+    - watch gulpfile.ls and run gulp default (only).
   exec-locale: &gulpfile
     - lsc -bco . src/gulpfile.ls
     - gulp default --silent
@@ -27,7 +30,8 @@ gulpfile:
 
 test.all:
   watch: true
-  description: run all test files for all projects.
+  description:
+    - run all test files for all projects.
   exec-locale:
     - *gulpfile
     - |-
@@ -38,7 +42,8 @@ test.all:
 
 test.proj:
   watch: true
-  description: run all test files for proj=X.
+  description:
+    - run all test files for proj=X.
   exec-locale:
     - *gulpfile
     - |-
@@ -49,7 +54,8 @@ test.proj:
 
 test.file:
   watch: true
-  description: run a specific test file for proj=X which=Y.
+  description:
+    - run a specific test file for proj=X which=Y.
   exec-locale:
     - gulp default --silent
     - node ./test/{{global.proj}}/{{global.which}}.js || exit 1
