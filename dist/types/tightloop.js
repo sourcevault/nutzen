@@ -75,7 +75,7 @@ blunder = function(fun, put, args){
     data = (function(){
       switch (typeof F) {
       case 'function':
-        return apply.normal.key(F, put.message, args, put.path);
+        return apply.normal.err(F, args, put);
       default:
         return F;
       }
@@ -122,27 +122,53 @@ blunder = function(fun, put, args){
   }
   return put;
 };
-apply.normal.key = function(F, val, args, key){
-  var list, A;
+apply.normal.key = function(F, val, args, path){
+  var list;
   switch (args.length) {
   case 1:
-    return F(val, key);
+    return F(val, path);
   case 2:
-    return F(val, key, args[1]);
+    return F(val, path, args[1]);
   case 3:
-    return F(val, key, args[1], args[2]);
+    return F(val, path, args[1], args[2]);
   case 4:
-    return F(val, key, args[1], args[2], args[3]);
+    return F(val, path, args[1], args[2], args[3]);
   case 5:
-    return F(val, key, args[1], args[2], args[3], args[4]);
+    return F(val, path, args[1], args[2], args[3], args[4]);
   case 6:
-    return F(val, key, args[1], args[2], args[3], args[4], args[5]);
+    return F(val, path, args[1], args[2], args[3], args[4], args[5]);
   case 7:
-    return F(val, key, args[1], args[2], args[3], args[4], args[5], args[6]);
+    return F(val, path, args[1], args[2], args[3], args[4], args[5], args[6]);
   default:
     list = Array.prototype.slice.call(args);
-    A = list.splice(1, 0, key);
-    return F.apply(null, A);
+    list.splice(1, 0, path);
+    return F.apply(null, list);
+  }
+};
+apply.normal.err = function(F, args, put){
+  var message, path, list;
+  message = put.message, path = put.path;
+  switch (args.length) {
+  case 0:
+    return F(message, path);
+  case 1:
+    return F(message, path, args[0]);
+  case 2:
+    return F(message, path, args[0], args[1]);
+  case 3:
+    return F(message, path, args[0], args[1], args[2]);
+  case 4:
+    return F(message, path, args[0], args[1], args[2], args[3]);
+  case 5:
+    return F(message, path, args[0], args[1], args[2], args[3], args[4]);
+  case 6:
+    return F(message, path, args[0], args[1], args[2], args[3], args[4], args[5]);
+  case 7:
+    return F(message, path, args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+  default:
+    list = Array.prototype.slice.call(args);
+    list.unshift(message, path);
+    return F.apply(null, list);
   }
 };
 apply.normal.top = function(F, val, args){
@@ -216,6 +242,9 @@ apply.auth.key = function(F, val, args, key){
     return F.auth.apply(F, A);
   }
 };
+'d';
+'i';
+'f';
 execKey = function(type, F, val, args, key){
   switch (type) {
   case 'd':

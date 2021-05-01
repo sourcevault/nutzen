@@ -18,4 +18,11 @@ example =
   \henry : (age: \foobar)
   \joe : 33
 
-ret = main.auth example
+# ret = main.auth example
+
+# V = be.arr.map be.num
+
+V = be.str
+.fix (val)-> val
+
+# V.auth [1,2,3,null,4],1,2,3,4,5,6,7

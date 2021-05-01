@@ -1,4 +1,4 @@
-var com, z, l, R, j, zj, print_fail, be, p, inn, main, example, ret;
+var com, z, l, R, j, zj, print_fail, be, p, inn, main, example, V;
 com = require('../../dist/utils/main');
 z = com.z, l = com.l, R = com.R, j = com.j, zj = com.zj, print_fail = com.print_fail;
 be = require('../../dist/types/main');
@@ -15,4 +15,6 @@ example = {
   },
   'joe': 33
 };
-ret = main.auth(example);
+V = be.str.fix(function(val){
+  return val;
+});

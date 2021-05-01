@@ -28,7 +28,7 @@ help       = c.grey "[  docs] #{com.homepage}\n"
 
 # -------------------------------------------------------------------
 
-show_stack = create_stack 2,[],help
+show_stack = create_stack 2,['internal/modules/cjs','node:internal'],help
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - -
 

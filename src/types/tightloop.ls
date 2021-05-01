@@ -71,7 +71,7 @@ blunder = (fun,put,args) ->
   | \err =>
 
     data = switch typeof F
-    | \function => apply.normal.key F,put.message,args,put.path
+    | \function => apply.normal.err F,args,put
     | otherwise => F
 
     # ----------------------------------
@@ -113,24 +113,44 @@ blunder = (fun,put,args) ->
 
   put
 
-
-apply.normal.key = (F,val,args,key) ->
+apply.normal.key = (F,val,args,path) ->
 
   switch args.length
-  | 1 => F val,key
-  | 2 => F val,key,args[1]
-  | 3 => F val,key,args[1],args[2]
-  | 4 => F val,key,args[1],args[2],args[3]
-  | 5 => F val,key,args[1],args[2],args[3],args[4]
-  | 6 => F val,key,args[1],args[2],args[3],args[4],args[5]
-  | 7 => F val,key,args[1],args[2],args[3],args[4],args[5],args[6]
+  | 1 => F val,path
+  | 2 => F val,path,args[1]
+  | 3 => F val,path,args[1],args[2]
+  | 4 => F val,path,args[1],args[2],args[3]
+  | 5 => F val,path,args[1],args[2],args[3],args[4]
+  | 6 => F val,path,args[1],args[2],args[3],args[4],args[5]
+  | 7 => F val,path,args[1],args[2],args[3],args[4],args[5],args[6]
   | otherwise =>
 
     list = Array.prototype.slice.call args
 
-    A = list.splice 1,0,key
+    list.splice 1,0,path
 
-    F ...A
+    F ...list
+
+apply.normal.err = (F,args,put) ->
+
+  {message,path} = put
+
+  switch args.length
+  | 0 => F message,path
+  | 1 => F message,path,args[0]
+  | 2 => F message,path,args[0],args[1]
+  | 3 => F message,path,args[0],args[1],args[2]
+  | 4 => F message,path,args[0],args[1],args[2],args[3]
+  | 5 => F message,path,args[0],args[1],args[2],args[3],args[4]
+  | 6 => F message,path,args[0],args[1],args[2],args[3],args[4],args[5]
+  | 7 => F message,path,args[0],args[1],args[2],args[3],args[4],args[5],args[6]
+  | otherwise =>
+
+    list = Array.prototype.slice.call args
+
+    list.unshift message,path
+
+    F ...list
 
 apply.normal.top = (F,val,args) ->
 
@@ -190,6 +210,10 @@ apply.auth.key = (F,val,args,key) ->
     A = list.splice 1,0,key
 
     F.auth ...A
+
+\d # default
+\i # instance
+\f # function
 
 exec-key = (type,F,val,args,key) ->
 
