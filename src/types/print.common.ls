@@ -32,6 +32,9 @@ show_stack = create_stack 2,['internal/modules/cjs','node:internal'],help
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - -
 
+
+type_color = c.warn
+
 print.resreq = ([cat,type]) ->
 
   methodname = switch cat
@@ -75,7 +78,7 @@ show_name = (name,type = "[inputError] ") ->
 
   l lit do
     ["[#{pkgname}]",type,name]
-    [c.er1,c.er3,c.warn]
+    [c.er1,c.er3,c.er2]
 
 print.input_fault.andor = ([type,info])->
 
@@ -106,7 +109,7 @@ print.input_fault.andor = ([type,info])->
 
   l ""
 
-  l c.blue " - :: fun|[fun,..],..,.."
+  l type_color " - :: fun|[fun,..],..,.."
 
   l ""
 
@@ -194,7 +197,7 @@ print.input_fault.on = ([patt,loc])->
     l ""
 
 
-    lines = [c.blue (" - .on :: #{val}") for key,val of on_dtype].join "\n\n"
+    lines = [type_color (" - .on :: #{val}") for key,val of on_dtype].join "\n\n"
 
     l lines
 

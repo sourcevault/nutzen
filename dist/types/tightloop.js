@@ -116,6 +116,7 @@ blunder = function(fun, put, args){
     }());
     put['continue'] = true;
     put.error = false;
+    put.message = undefined;
     break;
   default:
 

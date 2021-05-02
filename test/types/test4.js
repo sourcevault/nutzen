@@ -15,6 +15,4 @@ example = {
   },
   'joe': 33
 };
-V = be.str.fix(function(val){
-  return val;
-});
+V = be.obj.on(null);

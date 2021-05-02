@@ -22,7 +22,14 @@ example =
 
 # V = be.arr.map be.num
 
-V = be.str
-.fix (val)-> val
+V = be.obj
+.on null
+
+
 
 # V.auth [1,2,3,null,4],1,2,3,4,5,6,7
+
+# V = be.obj.on \hello,
+
+
+
