@@ -4,14 +4,14 @@ oxo = require('../guard/main');
 print = {};
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
 pkgname = 'hoplon.types';
-version = '0.1.27';
+version = '0.1.28';
 out$.com = com = com;
 out$.print = print = print;
 out$.pkgname = pkgname = pkgname;
 out$.sig = sig = com.common_symbols.htypes;
 print.log = {};
 help = c.grey("[  docs] " + com.homepage + "\n");
-show_stack = create_stack(2, [], help);
+show_stack = create_stack(2, ['internal/modules/cjs', 'node:internal'], help);
 print.resreq = function(arg$){
   var cat, type, methodname, txt;
   cat = arg$[0], type = arg$[1];
