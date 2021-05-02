@@ -1,10 +1,10 @@
-var com, oxo, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, pkgname, version, sig, help, show_stack, show_chain, show_name, x$, on_dtype, getprop, includes, sort, same, myflat, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var com, oxo, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, pkgname, version, sig, help, show_stack, type_color, show_chain, show_name, x$, on_dtype, getprop, includes, sort, same, myflat, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 com = require('../utils/main');
 oxo = require('../guard/main');
 print = {};
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
 pkgname = 'hoplon.types';
-version = '0.1.28';
+version = '0.1.29';
 out$.com = com = com;
 out$.print = print = print;
 out$.pkgname = pkgname = pkgname;
@@ -12,6 +12,7 @@ out$.sig = sig = com.common_symbols.htypes;
 print.log = {};
 help = c.grey("[  docs] " + com.homepage + "\n");
 show_stack = create_stack(2, ['internal/modules/cjs', 'node:internal'], help);
+type_color = c.warn;
 print.resreq = function(arg$){
   var cat, type, methodname, txt;
   cat = arg$[0], type = arg$[1];
@@ -68,7 +69,7 @@ show_chain = function(arg$){
 };
 show_name = function(name, type){
   type == null && (type = "[inputError] ");
-  return l(lit(["[" + pkgname + "]", type, name], [c.er1, c.er3, c.warn]));
+  return l(lit(["[" + pkgname + "]", type, name], [c.er1, c.er3, c.er2]));
 };
 print.input_fault.andor = function(arg$){
   var type, info;
@@ -87,7 +88,7 @@ print.input_fault.andor = function(arg$){
   l("");
   l(c.ok(" accepted type signature :"));
   l("");
-  l(c.blue(" - :: fun|[fun,..],..,.."));
+  l(type_color(" - :: fun|[fun,..],..,.."));
   return l("");
 };
 print.input_fault.custom = function(arg$){
@@ -156,7 +157,7 @@ print.input_fault.on = function(arg$){
       var ref$, results$ = [];
       for (key in ref$ = on_dtype) {
         val = ref$[key];
-        results$.push(c.blue(" - .on :: " + val));
+        results$.push(type_color(" - .on :: " + val));
       }
       return results$;
     }()).join("\n\n");
