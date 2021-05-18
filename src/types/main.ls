@@ -87,7 +87,13 @@ pop = (msg) -> msg.pop! ; msg
 
 #-----------------------------
 
-be.not = (F) -> be (x) -> not (F x).continue
+be.not = (F) ->
+
+  V = be F
+
+  be (x) -> not (V.auth x).continue
+
+
 
 be.maybe = (F) -> ((be F).or be.undef).err pop
 

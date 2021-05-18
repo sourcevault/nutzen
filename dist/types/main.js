@@ -78,8 +78,10 @@ pop = function(msg){
   return msg;
 };
 be.not = function(F){
+  var V;
+  V = be(F);
   return be(function(x){
-    return !F(x)['continue'];
+    return !V.auth(x)['continue'];
   });
 };
 be.maybe = function(F){
