@@ -4,7 +4,7 @@ oxo = require('../guard/main');
 print = {};
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
 pkgname = 'hoplon.types';
-version = '0.1.30';
+version = '0.2.30';
 out$.com = com = com;
 out$.print = print = print;
 out$.pkgname = pkgname = pkgname;

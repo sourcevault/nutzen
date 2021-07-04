@@ -6,7 +6,7 @@
   "license": "BSD-3-Clause",
   "description": "utility module, immutable type validator & Erlang/Elixir style guards ( but with every imaginable method ).",
   "repository": "https://github.com/sourcevault/hoplon.git",
-  "version": "0.1.30",
+  "version": "0.2.30",
   "main": "dist/main.js",
   "scripts": {
     "test": "bash ./testall.sh"

@@ -106,6 +106,10 @@ create_stack = function(take_only, paths, init_txt){
   EMP = rm_paths(paths);
   return function(E){
     var disp, i$, len$, I, lineNumber, fileName, functionName, columnNumber, path, item;
+    if (!E) {
+      l("Error: cannot show Error stack without Error object.");
+      return;
+    }
     E = esp.parse(E);
     if (init_txt) {
       l(init_txt);
@@ -123,6 +127,9 @@ create_stack = function(take_only, paths, init_txt){
       }
       item = lit(["  - ", R.last(path), ":", lineNumber, " ", functionName, "\n    ", fileName + ":", lineNumber, ":" + columnNumber + "\n"], [0, c.warn, 0, c.er, 0, 0, 0, c.black, c.er, c.black]);
       disp.push(item);
+    }
+    if (disp.length === 0) {
+      return;
     }
     return l(
     R.join("\n")(
