@@ -20,7 +20,6 @@ wait = (t,f)-> setTimeout f,t
 
 z = console.log
 
-
 gulp.task \default,(done) ->
 
   gulp.src "./src/package.yaml"
@@ -49,7 +48,6 @@ gulp.task \default,(done) ->
 
   .pipe gulp-livescript bare:true
 
-
   .on \error,gutil.log
 
   .on \error -> throw it
@@ -76,12 +74,11 @@ gulp.task \default,(done) ->
 
     version_number = raw-json.version
 
-    gulp.src "./dist/types/print.common.js"
+    gulp.src "./dist/utils/main.js"
 
     .pipe replace \__VERSION__,version_number
 
-    .pipe gulp.dest "./dist/types/"
-
+    .pipe gulp.dest "./dist/utils/"
 
   # ------------------------------
 

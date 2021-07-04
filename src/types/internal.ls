@@ -4,7 +4,7 @@ tightloop = require \./tightloop
 
 # ------------------------------------------------------------------
 
-{z,l,R,j,uic,deep_freeze,loopError} = com
+{z,l,R,j,uic,deep_freeze,loopError,zj} = com
 
 oxo = require \../guard/main
 
@@ -13,6 +13,10 @@ cache = {}
   ..ins = new Set!
 
 # ------------------------------------------------------------------
+
+\d # default / base type , arr, obj, ...
+\i # instance  
+\f # function
 
 assort = (F) ->
 
@@ -93,9 +97,6 @@ proto.normal.wrap = ->
 
   -> (F.auth.apply F,arguments).value
 
-
-
-
 for key,val of props
 
   F = wrap.rest val
@@ -115,8 +116,6 @@ proto.functor.forEach  = wrap.rest \forEach
 proto.functor.on       = wrap.on
 
 proto.functor[uic]     = print.log
-
-#---------------------------------------------------------
 
 #---------------------------------------------------------
 
@@ -179,6 +178,12 @@ define.on = (type,args,state) ->
 
     put = [\on,[\object,fun]]
 
+  | \single_array =>
+
+    array = type[1]
+
+    put = [\on,[\single_array,array]]
+
   block = define.and state,[put]
 
   data = {
@@ -194,6 +199,7 @@ define.on = (type,args,state) ->
 
 #-----------------------------------------------------------------------
 
+
 guard.on = oxo.unary
 
 .arn [1,2],
@@ -202,17 +208,96 @@ guard.on = oxo.unary
 
 .arpar 1,
 
-  ([maybe-object],state) ->
+  (args,state) ->
 
-    if ((R.type maybe-object) is \Object)
+    [maybe_object] = args
 
-      for I,val of maybe-object
+    type = R.type maybe_object
+
+    if (type is \Object)
+
+      for I,val of maybe_object
 
         if not (((R.type val) is \Function) or (cache.ins.has val))
 
           return [false,[(new Error!),\input.fault,[\on [\object,[state.str,\on]]]]]
 
-      return [true,\object]
+      return [true,[\object]]
+
+    else if (type is \Array)
+
+      ok = true
+
+      clean = []
+
+      error_msg = null
+
+      for each in maybe_object
+
+        if not (each.length is 3)
+          ok = false
+          error_msg = \length_less_then_3
+          break
+
+        [type,fields,F] = each
+
+        field_type = R.type fields
+
+        if type is \and
+          if field_type is \String
+            field_type = \S
+          else if field_type is \Array
+            field_type = \A
+          else
+            error_msg = \alt_wrong_field_type
+            ok = false
+            break
+        else if type is \alt
+          if field_type is \Array
+            for I in fields
+              if not ((R.type I) in [\String,\Number])
+                ok = false
+                break
+            if not ok
+              error_msg = \alt_wrong_field_type
+              break
+            field_type = \A
+
+          else if (field_type is \String)
+
+            field_type = \S
+
+          else
+            ok = false
+            break
+          
+        else
+          ok = false
+          error_msg = \not_and_alt
+          break
+
+        wF = assort F
+
+        if wF[0] is \f
+          ok = false
+          break
+
+        clean.push [type,[field_type,fields],wF[0],wF[1]]
+
+      if ok
+        return [true,[\single_array,clean]]
+      else
+
+        inner_error = [
+          \on
+          [\single_array
+           [state.str,\on]
+           error_msg
+          ]
+
+        ]
+
+        return [false,[(new Error!),\input.fault,inner_error]]
 
     else
 

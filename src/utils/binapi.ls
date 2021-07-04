@@ -1,4 +1,4 @@
-{uic,noop} = require "./common"
+{uic,noop,R} = require "./common"
 
 generic_log = (state) -> state
 
@@ -40,7 +40,14 @@ get = (__,ukey,___) ->
 
   if ret then return ret
 
-  state = @uget @state,ukey
+  sortir = @uget @state,ukey
+
+  if (R.type sortir) is \Array
+    [cont,state] = sortir
+    if not cont
+      return state
+  else
+    state = sortir
 
   data =
     cache:{}

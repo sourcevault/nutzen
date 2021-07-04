@@ -10,8 +10,7 @@ fail = print_fail "test/utils/test2.js"
 
 main = ->
 
-getter = (state,key) ->
-  state.concat key
+getter = (state,key) -> [true,state.concat key]
 
 log = (state) ->
 

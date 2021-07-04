@@ -17,17 +17,18 @@ sanatize = (x,UFO) ->
     if UFO
       return (continue:true,error:false,value:x)
     else
-      return (continue:false,error:true,value:x,message:undefined)
+      return (continue:false,error:true,value:x,message:void)
 
   | \Array =>
 
-    [cont,unknown,path] = UFO
-
-    if cont
+    if UFO[0]
 
       return (continue:true,error:false,value:x)
 
     else
+
+      unknown = UFO[1]
+      path    = UFO[2]
 
       switch R.type path
       | \Array =>
@@ -45,13 +46,17 @@ sanatize = (x,UFO) ->
         path     :npath
       }
 
+  | \Object => return UFO
+
   | otherwise =>
+
+    msg = "[#{pkgname}][typeError][user-supplied-validator] undefined return value."
 
     return {
       continue : false
       error    : true
       value    : x
-      message  : "[#{pkgname}][typeError][user-supplied-validator] undefined return value."
+      message  : msg
     }
 
 apply = {}
@@ -61,7 +66,6 @@ apply = {}
   ..auth = {}
     ..key = null
     ..top = null
-
 
 blunder = (fun,put,args) ->
 
@@ -213,17 +217,27 @@ apply.auth.key = (F,val,args,key) ->
     F.auth ...A
 
 \d # default
-\i # instance
-\f # function
+\i # instance / hoplon.types instance
+\f # function / user provided function
 
 exec-key = (type,F,val,args,key) ->
 
-  switch type
+  sortir = switch type
   | \d => apply.normal.key F,val,args,key
   | \i => apply.auth.key F,val,args,key
   | \f => sanatize do
     val
     apply.normal.key F,val,args,key
+
+  if sortir.error
+    if sortir.path
+      sortir.path = [key] ++ sortir.path
+    else
+      sortir.path = [key]
+
+    sortir.value = val
+
+  sortir
 
 exec-top = (type,F,val,args) ->
 
@@ -256,18 +270,7 @@ map = (dtype,fun,value,args) ->
 
       if put.error
 
-        if put.path
-          path = put.path
-        else
-          path = []
-
-        return {
-          continue:false
-          error:true
-          value:value
-          message:put.message
-          path:[I,...path]
-        }
+        return put
 
       arr.push put.value
 
@@ -286,19 +289,7 @@ map = (dtype,fun,value,args) ->
       put = exec-key type,F,val,args,key
 
       if put.error
-
-        if put.path
-          path = put.path
-        else
-          path = []
-
-        return {
-          continue:false
-          error:true
-          value:value
-          message:put.message
-          path:[key,...path]
-        }
+        return put
 
       ob[key] = put.value
 
@@ -342,19 +333,8 @@ upon = ([type,fun],value,args) ->
 
     put = exec-key shape,G,value[key],args,key
 
-    if put.path
-      path = put.path
-    else
-      path = []
-
     if put.error
-      return {
-        continue:false
-        error:true
-        value:value
-        message:put.message
-        path:[key,...path]
-      }
+      return put
 
     value[key] = put.value
 
@@ -374,20 +354,8 @@ upon = ([type,fun],value,args) ->
 
       put = exec-key shape,G,value[key],args,key
 
-      if put.path
-        path = put.path
-      else
-        path = []
-
       if put.error
-
-        return {
-          continue:false
-          error:true
-          value:value
-          message:put.message
-          path:[key,...path]
-        }
+        return put
 
       value[key] = put.value
 
@@ -405,27 +373,70 @@ upon = ([type,fun],value,args) ->
 
       [key,shape,G] = fun[I]
 
-      exec-key shape,G,value[key],args,key
-
-      if put.path
-        path = put.path
-      else
-        path = []
+      put = exec-key shape,G,value[key],args,key
 
       if put.error
-        return {
-          continue:false
-          error:true
-          value:value
-          message:put.message
-          path:[key,...path]
-        }
+        return put
 
       value[key] = put.value
 
       I += 1
 
     {continue:true,error:false,value:value}
+
+  | \single_array =>
+
+    I  = 0
+
+    In = fun.length
+
+    while I < In
+
+      [type,[field_type,field],wFt,wFF] = fun[I]
+
+      if (type is \and)
+
+        if field_type is \S
+
+          put = exec-key wFt,wFF,value[field],args,field
+
+          if put.error
+            return put
+
+          value[field] = put.value
+
+        else if field_type is \A
+
+          for each in field
+
+            put = exec-key wFt,wFF,value[each],args,each
+
+            if put.error
+              return put
+
+            value[each] = put.value
+
+      else if type is \alt
+
+        if field_type is \S
+
+          field = [field]
+
+        for each in field
+
+          put = exec-key wFt,wFF,value[each],args,each
+
+          if put.continue
+            value[each] = put.value
+            break
+
+        if put.error
+          return put
+
+      I += 1
+
+    {continue:true,error:false,value:value}
+
 
 
 resolve = (fun,put,dtype,args) ->
@@ -463,7 +474,7 @@ resolve = (fun,put,dtype,args) ->
 
     put
 
-  | \jam       =>
+  | \jam         =>
 
     put.message  = switch typeof F
 
@@ -537,7 +548,6 @@ tightloop = (x) !->
 
           put = resolve fun,put,type,arguments
 
-
         J += 1
 
       while J < nJ
@@ -566,7 +576,7 @@ tightloop = (x) !->
 
         nput = resolve fun,put,type,arguments
 
-        if nput.continue and (patt is \alt)
+        if (patt is \alt) and nput.continue
 
           put = nput
           J   = nJ
@@ -593,7 +603,3 @@ tightloop = (x) !->
 
 
 module.exports = tightloop
-
-
-
-

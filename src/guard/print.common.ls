@@ -8,10 +8,11 @@ export
   com             = com
   print           = print
   modflag         = Symbol "self"
+  defacto         = Symbol "default"
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
-{z,l,R,c,esp,create_stack,lit} = com
+{z,l,R,c,esp,create_stack,lit,version} = com
 
 print.log  = {}
 
@@ -19,7 +20,7 @@ help       = c.grey "[  docs] #{com.homepage}\n"
 
 show_stack = create_stack 3,[],help
 
-pkgname     = \hoplon.guard
+pkgname     = "v#{version}|hoplon.guard"
 
 print.log.def_fault = -> c.er2 "[error.#{pkgname}]"
 
@@ -81,7 +82,7 @@ print.log.main = (state) ->
     clr = c.warn
 
   if state.apply
-    str += "|apply"
+    str += "| apply"
 
   put = clr ("[#{pkgname}" + str + "]")
 
@@ -92,7 +93,6 @@ print.log.main = (state) ->
   str
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
-
 
 show_chain = (input-str,path = [],show-args = true)->
 

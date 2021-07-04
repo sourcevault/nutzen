@@ -1,11 +1,14 @@
-var ref$, com, print, sig, tightloop, z, l, R, j, uic, deep_freeze, loopError, oxo, x$, cache, assort, cato, y$, wrap, z$, guard, z1$, define, z2$, validate, props, initState, z3$, proto, key, val, F, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ref$, com, print, sig, tightloop, z, l, R, j, uic, deep_freeze, loopError, zj, oxo, x$, cache, assort, cato, y$, wrap, z$, guard, z1$, define, z2$, validate, props, initState, z3$, proto, key, val, F, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ref$ = require('./print.common'), com = ref$.com, print = ref$.print, sig = ref$.sig;
 tightloop = require('./tightloop');
-z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError;
+z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError, zj = com.zj;
 oxo = require('../guard/main');
 x$ = cache = {};
 x$.def = new Set();
 x$.ins = new Set();
+'d';
+'i';
+'f';
 assort = function(F){
   if (cache.def.has(F)) {
     return ['d', F];
@@ -105,7 +108,7 @@ custom = oxo.arn(1, function(){
 });
 custom[uic] = print.inner;
 define.on = function(type, args, state){
-  var props, F, put, key, ob, fun, res$, val, block, data, ref$;
+  var props, F, put, key, ob, fun, res$, val, array, block, data, ref$;
   switch (type[0]) {
   case 'array':
     props = args[0], F = args[1];
@@ -125,6 +128,10 @@ define.on = function(type, args, state){
     }
     fun = res$;
     put = ['on', ['object', fun]];
+    break;
+  case 'single_array':
+    array = type[1];
+    put = ['on', ['single_array', array]];
   }
   block = define.and(state, [put]);
   data = (ref$ = {}, import$(ref$, state), (ref$.phase = 'chain', ref$.all = block, ref$.str = state.str.concat('on'), ref$));
@@ -132,17 +139,79 @@ define.on = function(type, args, state){
 };
 guard.on = oxo.unary.arn([1, 2], function(args, state){
   return handleError([new Error(), 'input.fault', ['on', ['arg_count', [state.str, 'on']]]]);
-}).arpar(1, function(arg$, state){
-  var maybeObject, I, val;
-  maybeObject = arg$[0];
-  if (R.type(maybeObject) === 'Object') {
-    for (I in maybeObject) {
-      val = maybeObject[I];
+}).arpar(1, function(args, state){
+  var maybe_object, type, I, val, ok, clean, error_msg, i$, len$, each, fields, F, field_type, j$, len1$, ref$, wF, inner_error;
+  maybe_object = args[0];
+  type = R.type(maybe_object);
+  if (type === 'Object') {
+    for (I in maybe_object) {
+      val = maybe_object[I];
       if (!(R.type(val) === 'Function' || cache.ins.has(val))) {
         return [false, [new Error(), 'input.fault', ['on', ['object', [state.str, 'on']]]]];
       }
     }
-    return [true, 'object'];
+    return [true, ['object']];
+  } else if (type === 'Array') {
+    ok = true;
+    clean = [];
+    error_msg = null;
+    for (i$ = 0, len$ = maybe_object.length; i$ < len$; ++i$) {
+      each = maybe_object[i$];
+      if (!(each.length === 3)) {
+        ok = false;
+        error_msg = 'length_less_then_3';
+        break;
+      }
+      type = each[0], fields = each[1], F = each[2];
+      field_type = R.type(fields);
+      if (type === 'and') {
+        if (field_type === 'String') {
+          field_type = 'S';
+        } else if (field_type === 'Array') {
+          field_type = 'A';
+        } else {
+          error_msg = 'alt_wrong_field_type';
+          ok = false;
+          break;
+        }
+      } else if (type === 'alt') {
+        if (field_type === 'Array') {
+          for (j$ = 0, len1$ = fields.length; j$ < len1$; ++j$) {
+            I = fields[j$];
+            if (!((ref$ = R.type(I)) === 'String' || ref$ === 'Number')) {
+              ok = false;
+              break;
+            }
+          }
+          if (!ok) {
+            error_msg = 'alt_wrong_field_type';
+            break;
+          }
+          field_type = 'A';
+        } else if (field_type === 'String') {
+          field_type = 'S';
+        } else {
+          ok = false;
+          break;
+        }
+      } else {
+        ok = false;
+        error_msg = 'not_and_alt';
+        break;
+      }
+      wF = assort(F);
+      if (wF[0] === 'f') {
+        ok = false;
+        break;
+      }
+      clean.push([type, [field_type, fields], wF[0], wF[1]]);
+    }
+    if (ok) {
+      return [true, ['single_array', clean]];
+    } else {
+      inner_error = ['on', ['single_array', [state.str, 'on'], error_msg]];
+      return [false, [new Error(), 'input.fault', inner_error]];
+    }
   } else {
     return [false];
   }

@@ -69,9 +69,8 @@ undefnull = function(UFO){
   }
 };
 cache.def.add(undefnull);
-be.undefnull = be(undefnull);
 F = base("Arguments");
-define.basis("arg", F);
+define.basis('arg', F);
 be.arg = F;
 pop = function(msg){
   msg.pop();
@@ -84,6 +83,8 @@ be.not = function(F){
     return !V.auth(x)['continue'];
   });
 };
+be.undefnull = be(undefnull);
+be.not.undefnull = be.not(undefnull);
 be.maybe = function(F){
   return be(F).or(be.undef).err(pop);
 };
@@ -387,7 +388,7 @@ handleE.entry = function(msg){
   }());
   clean = rmNotArrays(out);
   if (clean.length === 0) {
-    return out;
+    return [void 8, out];
   } else {
     sorted = clean.sort(handleE.sort);
     return sorted;
@@ -396,6 +397,7 @@ handleE.entry = function(msg){
 betrue = be(function(){
   return true;
 });
+be.any = betrue;
 be.tap = function(f){
   return betrue.tap(f);
 };

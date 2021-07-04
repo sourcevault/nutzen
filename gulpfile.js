@@ -39,7 +39,7 @@ gulp.task('default', function(done){
     var rawJson, version_number;
     rawJson = JSON.parse(fs.readFileSync('./package.json').toString());
     version_number = rawJson.version;
-    return gulp.src("./dist/types/print.common.js").pipe(replace('__VERSION__', version_number)).pipe(gulp.dest("./dist/types/"));
+    return gulp.src("./dist/utils/main.js").pipe(replace('__VERSION__', version_number)).pipe(gulp.dest("./dist/utils/"));
   });
   gulp.src("./test/*/*.ls").pipe(gulpLivescript({
     bare: true

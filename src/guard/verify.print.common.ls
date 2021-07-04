@@ -1,14 +1,16 @@
-ext                     = require "./print.common"
+ext                             = require "./print.common"
 
-{com,print,modflag}     = ext
+{com,print,modflag}             = ext
 
-{z,R,common_symbols,zj} = com
 
-htypes                  = com.common_symbols.htypes
+{z,R,common_symbols,zj,version} = com
+
+htypes                          = com.common_symbols.htypes
 
 V = {}
 
 export {...ext,verify:V}
+
 
 customTypeoOf = (unknown) ->
 

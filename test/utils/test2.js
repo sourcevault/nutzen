@@ -5,7 +5,7 @@ l = com.l, z = com.z, binapi = com.binapi;
 fail = print_fail("test/utils/test2.js");
 main = function(){};
 getter = function(state, key){
-  return state.concat(key);
+  return [true, state.concat(key)];
 };
 log = function(state){
   var chain;

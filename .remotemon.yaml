@@ -1,53 +1,55 @@
-global:
+var:
   proj: types
   which: test
 
-watch:
+watch: &watch
   - src
   - test/*/*.ls
+
+ignore: &ignore
+  - dist
 
 rm.dist:
   description:
     - delete all .js files in dist folder.
-  exec-locale: rm -rf dist/*/*
+  local: rm -rf dist/*/*
 
 rm.src:
   description:
     - delete all .js files in src folder.
-  exec-locale:
+  local:
     rm src/*/*.js
 
 gulpfile:
-  watch:
-    - src/gulpfile.ls
+  watch: true
   description:
     - watch gulpfile.ls and run gulp default (only).
-  exec-locale: &gulpfile
+  local: &gulpfile
     - lsc -bco . src/gulpfile.ls
     - gulp default --silent
 
-
-
 test.all:
-  watch: true
+  watch: false
   description:
     - run all test files for all projects.
-  exec-locale:
+  local:
     - *gulpfile
     - |-
       for i in test/*/*.js
       do
         node $i || exit 1
+        echo $i
       done
+    - echo 'done!'
 
 test.proj:
   watch: true
   description:
     - run all test files for proj=X.
-  exec-locale:
+  local:
     - *gulpfile
     - |-
-      for i in test/{{global.proj}}/*.js
+      for i in test/{{var.proj}}/*.js
       do
         node $i || exit 1
       done
@@ -56,25 +58,23 @@ test.file:
   watch: true
   description:
     - run a specific test file for proj=X which=Y.
-  exec-locale:
+  local:
     - gulp default --silent
-    - node ./test/{{global.proj}}/{{global.which}}.js || exit 1
-
+    - node ./test/{{proj}}/{{which}}.js || exit 1
 
 
 dev.install:
   description: install all dev dependencies.
-
-  exec-locale:
+  local:
     - npm install gulp -g
-    - npm install livescript
-    - npm install gulp-tap
-    - npm install gulp-livescript
-    - npm install gulp-rename
-    - npm install gulp-yaml
-    - npm install gulp-replace
-    - npm install gulp-util
+    - pnpm install livescript
+    - pnpm install gulp-tap
+    - pnpm install gulp-livescript
+    - pnpm install gulp-rename
+    - pnpm install gulp-yaml
+    - pnpm install gulp-replace
+    - pnpm install gulp-util
 
-
-
-version.update: update-version src/package.yaml hoplon
+version.update:
+  watch: false
+  local: update-version src/package.yaml hoplon version

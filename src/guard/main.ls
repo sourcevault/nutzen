@@ -1,6 +1,6 @@
 ext = require "./verify.print.common"
 
-{com,verify,modflag,print} = ext
+{com,verify,modflag,defacto,print} = ext
 
 {l,z,R,uic,binapi} = com
 
@@ -248,6 +248,9 @@ tightloop = (state) -> ->
 
       [spans,[vtype,validatorF],exec,lastview] = data
 
+      if not spans[arglen]
+        break
+
       switch vtype
 
       | \f =>
@@ -277,7 +280,7 @@ tightloop = (state) -> ->
 
           if not (ret in [void,false,null]) then return ret
 
-      | \v =>
+      | \v => # hoplon validator
 
         vd = validatorF.auth arguments
 
@@ -451,6 +454,8 @@ handle.def.ok = (self,data) ->
 
   F  = tightloop neo
 
+  F[defacto] = data[1]
+
   if state.debug
     F[uic] = print.log.wrap neo
 
@@ -469,7 +474,6 @@ genfun = (vfun,fname) -> ->
   if state.fault then return @
 
   [zone,data] = vfun arguments
-
 
   handle[zone] @,data,fname
 
@@ -519,6 +523,8 @@ cat.opt = new Set [\unary,\immutable,\debug]
 
 cat.methods = new Set (props.concat ["def"])
 
+# Set(12) {'ma', 'arma', 'wh', 'ar', 'whn', 'arn', 'arwh', 'arnwh', 'arwhn', 'arnwhn', 'arpar', 'def'}
+
 getter = ({path,lock,str,vr},key) ->
 
   if lock
@@ -541,11 +547,15 @@ getter = ({path,lock,str,vr},key) ->
 
       sorted = (R.clone npath).sort!
 
-      {path:sorted,lock:false,str:(sorted.join "."),vr:npath}
+      [true,{path:sorted,lock:false,str:(sorted.join "."),vr:npath}]
 
   else if cat.methods.has key
 
-    {path:path,lock:true,str:str,vr:vr,key:key}
+    [true,{path:path,lock:true,str:str,vr:vr,key:key}]
+
+  else if key is \getdef
+
+    return [false,defacto]
 
   else
 
@@ -584,4 +594,9 @@ pkg = binapi do
   entry,getter,{path:[],lock:false,vr:[],str:[],key:null}
   print.log.prox
 
+
 module.exports = pkg
+
+
+
+

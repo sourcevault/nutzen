@@ -76,7 +76,6 @@ hoplon.utils
         - [immutable](#immutable)
         - [unary](#unary)
         - [debug](#dubug)
-
 1. [hoplon.utils](#hoplonutils)
 
   1. [hoplon.utils.binapi](#hoplonutilsbinapi)
@@ -343,6 +342,41 @@ var V2 = IS.obj.on(["foo","bar"],IS.num)
 V2.auth((foo:1,bar:2))
 
 ```
+
+a common pattern with `.on` is type validation based on prior values.
+
+an example taken from the `remotemon` project :
+
+```ls
+be = hoplon.types
+
+bko = be.known.obj
+
+check_if_remote_not_defined = bko
+.on \remote,be.arr
+.and do
+  bko.on \remotehost,be.undefnull
+  .or do
+    bko.on \remotefold,be.undefnull
+.cont true
+.fix false
+```
+
+here we can see that `remotehost` and `remotefold` cannot be `undefined` **if** `remote` is an array type.
+
+the logic is hard to decipher using normal usage of `.on`.
+
+```ls
+V = be.known.obj
+.on do
+  *[
+    [\and,\remote,be.arr]
+    [\alt,[\remotefold,\remotehost],be.undefnull]
+   ]
+.cont true
+.fix false
+```
+however we can use the single array pattern to flatten the same logic, this is a 'special' function provided to match on `.on` due to the commonality of the usage.
 
 ### - `cont`
 
@@ -618,7 +652,9 @@ but it requires your messages to follow a specific message passing protocol :
 
 - first value of said array should always be a string that starts with a colon ':'.
 
-- to help with sorting, a number can be provided after a second colon ':' to tell flatro the hierarchy of your messages.
+- to help with sorting, a number can be provided after a second colon ':' to tell flatro the hierarchy ( importance ) of your messages.
+
+messages that do not have any signature are given `:undef`.
 
 ```js
 // Examples of message that flatro matches against
@@ -636,6 +672,12 @@ but it requires your messages to follow a specific message passing protocol :
   ':not_tuple:2',
   ['innertype',' value is not tuple type.']
 ]
+
+[
+  ':undef',
+  ['not array','not string']
+]
+
 ```
 
 #### .. common pitfall ..
@@ -825,6 +867,8 @@ It's also possible to just provide a static value or object as default.
 - all the methods also accept **non-functions** as their last value, functionality was added to make it possible to easily return static values for efficient and easy pattern matching.
 
 - `hoplon.guard` also accepts validators created using `hoplon.types`.
+
+- when creating large validator chains, sometimes you want to 'reach' / 'use' the `.def` value to *short circuit* your pattern matching, in situation like that `hoplon.guard.getdef` is provided, it allows using the `.def` function directly, it's important to note this is an purely an *optimization concern* - to keep `hoplon.guard` competitive with a native implementation.
 
 ##### Description and Type in Table
 

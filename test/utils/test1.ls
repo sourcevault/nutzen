@@ -12,7 +12,7 @@ fail = print_fail "test/utils/test1.js"
 
 # complex monadic api example from readme
 
-get = ([old,num],key) -> [key,num]
+get = ([old,num],key) -> [true,[key,num]]
 
 lopo = (state) -> binapi F6,get,state
 

@@ -6,11 +6,12 @@ print      = {}
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
 
-{l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack} = com
+{l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack,version} = com
 
-pkgname    = \hoplon.types
 
-version    = \__VERSION__
+pkgversion = "v#{version}"
+
+pkgname    = "hoplon.types"
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
 
@@ -32,8 +33,7 @@ show_stack = create_stack 2,['internal/modules/cjs','node:internal'],help
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - -
 
-
-type_color = c.warn
+type_color = c.pink
 
 print.resreq = ([cat,type]) ->
 
@@ -42,7 +42,7 @@ print.resreq = ([cat,type]) ->
   | \res     => ".restricted"
   | \req     => ".required"
 
-  l lit ["[#{pkgname}]","[argumentError] ",methodname],[c.er2,c.er3,c.er1]
+  show_name methodname,"[argumentError] "
 
   txt = switch cat
   | \resreq =>
@@ -74,11 +74,11 @@ show_chain = ([init,last]) ->
     ["  ",((init).join "."),("."  + last),"(xx)"," <-- error here"]
     [0,c.ok,c.er2,c.er3,c.er2]
 
-show_name = (name,type = "[inputError] ") ->
+show_name = (extra,type = "[inputError] ") ->
 
   l lit do
-    ["[#{pkgname}]",type,name]
-    [c.er1,c.er3,c.er2]
+    ["[#{pkgversion}][#{pkgname}]", type,extra]
+    [                        c.er1,c.er1,c.er1]
 
 print.input_fault.andor = ([type,info])->
 
@@ -159,9 +159,10 @@ print.input_fault.map = ([patt,loc]) ->
   l ""
 
 on_dtype = {}
-  ..string = "string|number , function"
-  ..array  = "string|[number....] , function"
-  ..object = "object{*:function} "
+  ..string       = "(string|number,function)"
+  ..array        = "(string|[number....],function)"
+  ..object       = "(object{*:function})"
+  ..single_array = "(['and'|'alt',string|[string,...],INC{hoplon.type}],...])"
 
 
 print.input_fault.on = ([patt,loc])->
@@ -184,11 +185,11 @@ print.input_fault.on = ([patt,loc])->
     switch patt
     | \typeError =>
 
-      l c.er1 "  unable to pattern match on user input."
+      l c.er3 "  unable to pattern match on user input."
 
     | \arg_count =>
 
-      l c.er1 "  minimum of 2 arguments required."
+      l c.er3 "  minimum of 2 arguments required."
 
     l ""
 
@@ -207,7 +208,7 @@ print.input_fault.on = ([patt,loc])->
     dtype = on_dtype[patt]
 
     l lit do
-      [" .on"," :: ",dtype," <-- what may match"]
+      [" .on"," :: ",dtype," <-- #{patt} signature."]
       [c.warn,c.white,c.ok,c.grey]
 
   l ""

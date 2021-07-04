@@ -6,7 +6,7 @@ fail = print_fail("test/utils/test1.js");
 get = function(arg$, key){
   var old, num;
   old = arg$[0], num = arg$[1];
-  return [key, num];
+  return [true, [key, num]];
 };
 lopo = function(state){
   return binapi(F6, get, state);

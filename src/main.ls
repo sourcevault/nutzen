@@ -1,7 +1,7 @@
-com    = require "./utils/main"
+com = require "./utils/main"
 
-guard  = require "./guard/main"
+guard = require "./guard/main"
 
-types  = require "./types/main"
+types = require "./types/main"
 
 export {types,guard,utils:com}

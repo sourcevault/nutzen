@@ -1,6 +1,6 @@
-var ext, com, verify, modflag, print, l, z, R, uic, binapi, init, settle, modSettle, tightloop, main, looper, handle, genfun, props, cat, getter, topcache, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ext, com, verify, modflag, defacto, print, l, z, R, uic, binapi, init, settle, modSettle, tightloop, main, looper, handle, genfun, props, cat, getter, topcache, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ext = require("./verify.print.common");
-com = ext.com, verify = ext.verify, modflag = ext.modflag, print = ext.print;
+com = ext.com, verify = ext.verify, modflag = ext.modflag, defacto = ext.defacto, print = ext.print;
 l = com.l, z = com.z, R = com.R, uic = com.uic, binapi = com.binapi;
 init = {
   str: [],
@@ -187,6 +187,9 @@ tightloop = function(state){
         break;
       case 'arpar':
         spans = data[0], ref$ = data[1], vtype = ref$[0], validatorF = ref$[1], exec = data[2], lastview = data[3];
+        if (!spans[arglen]) {
+          break;
+        }
         switch (vtype) {
         case 'f':
           ret = validatorF.apply(null, arguments);
@@ -344,6 +347,7 @@ handle.def.ok = function(self, data){
     str: state.str
   });
   F = tightloop(neo);
+  F[defacto] = data[1];
   if (state.debug) {
     F[uic] = print.log.wrap(neo);
   }
@@ -400,21 +404,27 @@ getter = function(arg$, key){
     } else {
       npath = path.concat(key);
       sorted = R.clone(npath).sort();
-      return {
-        path: sorted,
-        lock: false,
-        str: sorted.join("."),
-        vr: npath
-      };
+      return [
+        true, {
+          path: sorted,
+          lock: false,
+          str: sorted.join("."),
+          vr: npath
+        }
+      ];
     }
   } else if (cat.methods.has(key)) {
-    return {
-      path: path,
-      lock: true,
-      str: str,
-      vr: vr,
-      key: key
-    };
+    return [
+      true, {
+        path: path,
+        lock: true,
+        str: str,
+        vr: vr,
+        key: key
+      }
+    ];
+  } else if (key === 'getdef') {
+    return [false, defacto];
   } else {
     print.route(['setting', [new Error(), 'not_in_opts', vr, key]]);
     return null;

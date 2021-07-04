@@ -1,9 +1,9 @@
-var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, execKey, execTop, map, forEach, upon, resolve, tightloop, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, execKey, execTop, map, forEach, upon, resolve, tightloop;
 pc = require("./print.common");
 com = pc.com, pkgname = pc.pkgname, sig = pc.sig;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
 sanatize = function(x, UFO){
-  var cont, unknown, path, npath;
+  var unknown, path, npath, msg;
   switch (R.type(UFO)) {
   case 'Boolean':
   case 'Null':
@@ -20,18 +20,19 @@ sanatize = function(x, UFO){
         'continue': false,
         error: true,
         value: x,
-        message: undefined
+        message: void 8
       };
     }
   case 'Array':
-    cont = UFO[0], unknown = UFO[1], path = UFO[2];
-    if (cont) {
+    if (UFO[0]) {
       return {
         'continue': true,
         error: false,
         value: x
       };
     } else {
+      unknown = UFO[1];
+      path = UFO[2];
       switch (R.type(path)) {
       case 'Array':
         npath = path;
@@ -51,12 +52,15 @@ sanatize = function(x, UFO){
         path: npath
       };
     }
+  case 'Object':
+    return UFO;
   default:
+    msg = "[" + pkgname + "][typeError][user-supplied-validator] undefined return value.";
     return {
       'continue': false,
       error: true,
       value: x,
-      message: "[" + pkgname + "][typeError][user-supplied-validator] undefined return value."
+      message: msg
     };
   }
 };
@@ -247,14 +251,26 @@ apply.auth.key = function(F, val, args, key){
 'i';
 'f';
 execKey = function(type, F, val, args, key){
-  switch (type) {
-  case 'd':
-    return apply.normal.key(F, val, args, key);
-  case 'i':
-    return apply.auth.key(F, val, args, key);
-  case 'f':
-    return sanatize(val, apply.normal.key(F, val, args, key));
+  var sortir;
+  sortir = (function(){
+    switch (type) {
+    case 'd':
+      return apply.normal.key(F, val, args, key);
+    case 'i':
+      return apply.auth.key(F, val, args, key);
+    case 'f':
+      return sanatize(val, apply.normal.key(F, val, args, key));
+    }
+  }());
+  if (sortir.error) {
+    if (sortir.path) {
+      sortir.path = [key].concat(sortir.path);
+    } else {
+      sortir.path = [key];
+    }
+    sortir.value = val;
   }
+  return sortir;
 };
 execTop = function(type, F, val, args){
   switch (type) {
@@ -267,7 +283,7 @@ execTop = function(type, F, val, args){
   }
 };
 map = function(dtype, fun, value, args){
-  var type, F, I, In, put, arr, path, ob, key, val;
+  var type, F, I, In, put, arr, ob, key, val;
   type = fun[0], F = fun[1];
   switch (dtype) {
   case 'arr':
@@ -278,18 +294,7 @@ map = function(dtype, fun, value, args){
     while (I < In) {
       put = execKey(type, F, value[I], args, I);
       if (put.error) {
-        if (put.path) {
-          path = put.path;
-        } else {
-          path = [];
-        }
-        return {
-          'continue': false,
-          error: true,
-          value: value,
-          message: put.message,
-          path: [I].concat(arrayFrom$(path))
-        };
+        return put;
       }
       arr.push(put.value);
       I += 1;
@@ -306,18 +311,7 @@ map = function(dtype, fun, value, args){
       val = value[key];
       put = execKey(type, F, val, args, key);
       if (put.error) {
-        if (put.path) {
-          path = put.path;
-        } else {
-          path = [];
-        }
-        return {
-          'continue': false,
-          error: true,
-          value: value,
-          message: put.message,
-          path: [key].concat(arrayFrom$(path))
-        };
+        return put;
       }
       ob[key] = put.value;
     }
@@ -357,25 +351,14 @@ forEach = function(dtype, fun, value, args){
   }
 };
 upon = function(arg$, value, args){
-  var type, fun, key, shape, G, put, path, arr, I, In, ref$;
+  var type, fun, key, shape, G, put, arr, I, In, ref$, ref1$, field_type, field, wFt, wFF, i$, len$, each;
   type = arg$[0], fun = arg$[1];
   switch (type) {
   case 'string':
     key = fun[0], shape = fun[1], G = fun[2];
     put = execKey(shape, G, value[key], args, key);
-    if (put.path) {
-      path = put.path;
-    } else {
-      path = [];
-    }
     if (put.error) {
-      return {
-        'continue': false,
-        error: true,
-        value: value,
-        message: put.message,
-        path: [key].concat(arrayFrom$(path))
-      };
+      return put;
     }
     value[key] = put.value;
     return {
@@ -390,19 +373,8 @@ upon = function(arg$, value, args){
     while (I < In) {
       key = arr[I];
       put = execKey(shape, G, value[key], args, key);
-      if (put.path) {
-        path = put.path;
-      } else {
-        path = [];
-      }
       if (put.error) {
-        return {
-          'continue': false,
-          error: true,
-          value: value,
-          message: put.message,
-          path: [key].concat(arrayFrom$(path))
-        };
+        return put;
       }
       value[key] = put.value;
       I += 1;
@@ -417,22 +389,56 @@ upon = function(arg$, value, args){
     In = fun.length;
     while (I < In) {
       ref$ = fun[I], key = ref$[0], shape = ref$[1], G = ref$[2];
-      execKey(shape, G, value[key], args, key);
-      if (put.path) {
-        path = put.path;
-      } else {
-        path = [];
-      }
+      put = execKey(shape, G, value[key], args, key);
       if (put.error) {
-        return {
-          'continue': false,
-          error: true,
-          value: value,
-          message: put.message,
-          path: [key].concat(arrayFrom$(path))
-        };
+        return put;
       }
       value[key] = put.value;
+      I += 1;
+    }
+    return {
+      'continue': true,
+      error: false,
+      value: value
+    };
+  case 'single_array':
+    I = 0;
+    In = fun.length;
+    while (I < In) {
+      ref$ = fun[I], type = ref$[0], ref1$ = ref$[1], field_type = ref1$[0], field = ref1$[1], wFt = ref$[2], wFF = ref$[3];
+      if (type === 'and') {
+        if (field_type === 'S') {
+          put = execKey(wFt, wFF, value[field], args, field);
+          if (put.error) {
+            return put;
+          }
+          value[field] = put.value;
+        } else if (field_type === 'A') {
+          for (i$ = 0, len$ = field.length; i$ < len$; ++i$) {
+            each = field[i$];
+            put = execKey(wFt, wFF, value[each], args, each);
+            if (put.error) {
+              return put;
+            }
+            value[each] = put.value;
+          }
+        }
+      } else if (type === 'alt') {
+        if (field_type === 'S') {
+          field = [field];
+        }
+        for (i$ = 0, len$ = field.length; i$ < len$; ++i$) {
+          each = field[i$];
+          put = execKey(wFt, wFF, value[each], args, each);
+          if (put['continue']) {
+            value[each] = put.value;
+            break;
+          }
+        }
+        if (put.error) {
+          return put;
+        }
+      }
       I += 1;
     }
     return {
@@ -541,7 +547,7 @@ tightloop = function(x){
         fun = each[J];
         patt = fun[0];
         nput = resolve(fun, put, type, arguments);
-        if (nput['continue'] && patt === 'alt') {
+        if (patt === 'alt' && nput['continue']) {
           put = nput;
           J = nJ;
         } else if (nput['continue']) {

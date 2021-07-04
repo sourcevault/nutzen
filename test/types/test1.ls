@@ -10,8 +10,7 @@ address = be.required \city
 .on \city,be.str
 .on \country,be.str.fix \France
 
-V = be.required \name,\age
-,\address
+V = be.required \name,\age,\address
 .on \address,address
 .on \name,be.str
 .on \age,be.num
@@ -24,16 +23,12 @@ sample =
       country:null
 
 
-ret = V.auth sample
+sortir = V.auth sample
 
-if not (ret.value.address.country is \France)
+
+if not (sortir.value.address.country is \France)
 
   p!
-
-
-
-
-
 
 
 

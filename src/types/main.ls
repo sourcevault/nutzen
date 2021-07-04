@@ -71,13 +71,9 @@ cache.def.add undefnull
 
 #--------------------------------------------------------
 
-be.undefnull = be undefnull
-
-#--------------------------------------------------------
-
 F = base "Arguments"
 
-define.basis "arg",F
+define.basis \arg,F
 
 be.arg = F
 
@@ -93,7 +89,13 @@ be.not = (F) ->
 
   be (x) -> not (V.auth x).continue
 
+#--------------------------------------------------------
 
+be.undefnull = be undefnull
+
+be.not.undefnull = be.not undefnull
+
+#--------------------------------------------------------
 
 be.maybe = (F) -> ((be F).or be.undef).err pop
 
@@ -101,11 +103,11 @@ be.maybe = (F) -> ((be F).or be.undef).err pop
 
 be.list  = (F) -> be.arr.map F
 
-be.not[uic]    = print.inner
+be.not[uic] = print.inner
 
-be.list[uic]   = print.inner
+be.list[uic] = print.inner
 
-be.maybe[uic]  = print.inner
+be.maybe[uic] = print.inner
 
 #-----------------------------
 
@@ -209,7 +211,7 @@ be.required = reqError.def ->
 
   props = R.flatten [...arguments]
 
-  ret = objarr.on props, be.not.undef.err [\:req,props]
+  ret = objarr.on props,(be.not.undef.err [\:req,props])
 
   ret
 
@@ -439,7 +441,6 @@ handleE.array = (msg,fin) ->
 
         handleE.array I,fin
 
-
 rm-not-arrays = R.filter (x) -> ((R.type x) is \Array)
 
 handleE.entry = (msg) ->
@@ -466,17 +467,19 @@ handleE.entry = (msg) ->
 
   if (clean.length is 0)
 
-    return out
+    return [void,out]
 
   else
 
     sorted = clean.sort handleE.sort
 
-    sorted
+    return sorted
 
 # -----------------------------------
 
 betrue = be -> true
+
+be.any = betrue
 
 be.tap = (f) -> betrue.tap f
 

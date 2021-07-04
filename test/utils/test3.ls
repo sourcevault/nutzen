@@ -7,3 +7,7 @@ com = require "../../dist/utils/main.js"
 fail = print_fail "test/utils/test3.js"
 
 # ------------------------------------------------------------------------------------------
+
+# show_stack = create_stack 2,[]
+
+# show_stack new Error!
