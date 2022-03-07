@@ -1,14 +1,14 @@
-var com, print, modflag, z, l, R, c, esp, create_stack, lit, help, show_stack, pkgname, arrange, show_chain, map_fname_to_ctypes, StrArgLen, StrEType, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var com, print, modflag, z, l, R, c, esp, create_stack, lit, version, help, show_stack, pkgname, arrange, show_chain, map_fname_to_ctypes, StrArgLen, StrEType, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 com = require("../../dist/utils/main.js");
 print = {};
 out$.com = com = com;
 out$.print = print = print;
 out$.modflag = modflag = Symbol("self");
-z = com.z, l = com.l, R = com.R, c = com.c, esp = com.esp, create_stack = com.create_stack, lit = com.lit;
+z = com.z, l = com.l, R = com.R, c = com.c, esp = com.esp, create_stack = com.create_stack, lit = com.lit, version = com.version;
 print.log = {};
 help = c.grey("[  docs] " + com.homepage + "\n");
 show_stack = create_stack(3, [], help);
-pkgname = 'hoplon.guard';
+pkgname = "hoplon.guard (" + version + ")";
 print.log.def_fault = function(){
   return c.er2("[error." + pkgname + "]");
 };

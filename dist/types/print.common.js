@@ -1,10 +1,9 @@
-var com, oxo, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, pkgname, version, sig, help, show_stack, type_color, show_chain, show_name, x$, on_dtype, getprop, includes, sort, same, myflat, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var com, oxo, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, version, pkgname, sig, help, show_stack, type_color, show_chain, show_name, x$, on_dtype, getprop, includes, sort, same, myflat, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 com = require('../utils/main');
 oxo = require('../guard/main');
 print = {};
-l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
-pkgname = 'hoplon.types';
-version = '0.2.30';
+l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack, version = com.version;
+pkgname = "hoplon.types (" + version + ")";
 out$.com = com = com;
 out$.print = print = print;
 out$.pkgname = pkgname = pkgname;
