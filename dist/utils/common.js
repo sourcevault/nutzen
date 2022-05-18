@@ -171,6 +171,7 @@ ext = {
   flat: flat,
   noop: noop,
   wait: wait,
+  jspc: jspc,
   pad: advanced_pad,
   R: Object.freeze(R),
   loopError: loopfault,
