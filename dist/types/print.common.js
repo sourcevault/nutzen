@@ -1,9 +1,10 @@
-var com, oxo, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, version, pkgname, sig, help, show_stack, type_color, show_chain, show_name, x$, on_dtype, getprop, includes, sort, same, myflat, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var com, oxo, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, version, pkgversion, pkgname, sig, help, show_stack, type_color, show_chain, show_name, x$, on_dtype, getprop, includes, sort, same, myflat, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 com = require('../utils/main');
 oxo = require('../guard/main');
 print = {};
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack, version = com.version;
-pkgname = "hoplon.types (" + version + ")";
+pkgversion = "v" + version;
+pkgname = "hoplon.types";
 out$.com = com = com;
 out$.print = print = print;
 out$.pkgname = pkgname = pkgname;
@@ -11,7 +12,7 @@ out$.sig = sig = com.common_symbols.htypes;
 print.log = {};
 help = c.grey("[  docs] " + com.homepage + "\n");
 show_stack = create_stack(2, ['internal/modules/cjs', 'node:internal'], help);
-type_color = c.warn;
+type_color = c.pink;
 print.resreq = function(arg$){
   var cat, type, methodname, txt;
   cat = arg$[0], type = arg$[1];
@@ -25,7 +26,7 @@ print.resreq = function(arg$){
       return ".required";
     }
   }());
-  l(lit(["[" + pkgname + "]", "[argumentError] ", methodname], [c.er2, c.er3, c.er1]));
+  show_name(methodname, "[argumentError] ");
   txt = (function(){
     switch (cat) {
     case 'resreq':
@@ -66,9 +67,9 @@ show_chain = function(arg$){
   init = arg$[0], last = arg$[1];
   return l(lit(["  ", init.join("."), "." + last, "(xx)", " <-- error here"], [0, c.ok, c.er2, c.er3, c.er2]));
 };
-show_name = function(name, type){
+show_name = function(extra, type){
   type == null && (type = "[inputError] ");
-  return l(lit(["[" + pkgname + "]", type, name], [c.er1, c.er3, c.er2]));
+  return l(lit(["[" + pkgversion + "][" + pkgname + "]", type, extra], [c.er1, c.er1, c.er1]));
 };
 print.input_fault.andor = function(arg$){
   var type, info;
@@ -121,9 +122,10 @@ print.input_fault.map = function(arg$){
   return l("");
 };
 x$ = on_dtype = {};
-x$.string = "string|number , function";
-x$.array = "string|[number....] , function";
-x$.object = "object{*:function} ";
+x$.string = "(string|number,function)";
+x$.array = "(string|[number....],function)";
+x$.object = "(object{*:function})";
+x$.single_array = "(['and'|'alt',string|[string,...],INC{hoplon.type}],...])";
 print.input_fault.on = function(arg$){
   var patt, loc, eType, lines, key, val, dtype;
   patt = arg$[0], loc = arg$[1];
@@ -144,10 +146,10 @@ print.input_fault.on = function(arg$){
   case 'arg_count':
     switch (patt) {
     case 'typeError':
-      l(c.er1("  unable to pattern match on user input."));
+      l(c.er3("  unable to pattern match on user input."));
       break;
     case 'arg_count':
-      l(c.er1("  minimum of 2 arguments required."));
+      l(c.er3("  minimum of 2 arguments required."));
     }
     l("");
     l(c.grey(" types that may match :"));
@@ -164,7 +166,7 @@ print.input_fault.on = function(arg$){
     break;
   default:
     dtype = on_dtype[patt];
-    l(lit([" .on", " :: ", dtype, " <-- what may match"], [c.warn, c.white, c.ok, c.grey]));
+    l(lit([" .on", " :: ", dtype, " <-- " + patt + " signature."], [c.warn, c.white, c.ok, c.grey]));
   }
   return l("");
 };

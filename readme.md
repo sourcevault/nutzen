@@ -76,7 +76,6 @@ hoplon.utils
         - [immutable](#immutable)
         - [unary](#unary)
         - [debug](#dubug)
-
 1. [hoplon.utils](#hoplonutils)
 
   1. [hoplon.utils.binapi](#hoplonutilsbinapi)
@@ -618,7 +617,9 @@ but it requires your messages to follow a specific message passing protocol :
 
 - first value of said array should always be a string that starts with a colon ':'.
 
-- to help with sorting, a number can be provided after a second colon ':' to tell flatro the hierarchy of your messages.
+- to help with sorting, a number can be provided after a second colon ':' to tell flatro the hierarchy ( importance ) of your messages.
+
+messages that do not have any signature are given `:undef`.
 
 ```js
 // Examples of message that flatro matches against
@@ -636,6 +637,12 @@ but it requires your messages to follow a specific message passing protocol :
   ':not_tuple:2',
   ['innertype',' value is not tuple type.']
 ]
+
+[
+  ':undef',
+  ['not array','not string']
+]
+
 ```
 
 #### .. common pitfall ..
@@ -825,6 +832,8 @@ It's also possible to just provide a static value or object as default.
 - all the methods also accept **non-functions** as their last value, functionality was added to make it possible to easily return static values for efficient and easy pattern matching.
 
 - `hoplon.guard` also accepts validators created using `hoplon.types`.
+
+- when creating large validator chains, sometimes you want to 'reach' / 'use' the `.def` value to *short circuit* your pattern matching, in situation like that `hoplon.guard.getdef` is provided, it allows using the `.def` function directly, it's important to note this is an purely an *optimization concern* - to keep `hoplon.guard` competitive with a native implementation.
 
 ##### Description and Type in Table
 
