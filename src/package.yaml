@@ -5,7 +5,7 @@ homepage: https://github.com/sourcevault/hoplon#readme.md
 license: BSD-3-Clause
 description: utility module, immutable type validator & Erlang/Elixir style guards ( but with every imaginable method ).
 repository: https://github.com/sourcevault/hoplon.git
-version: 1.0.0
+version: 1.0.1
 main: dist/main.js
 scripts:
   test: bash ./testall.sh
