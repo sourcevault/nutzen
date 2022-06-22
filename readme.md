@@ -343,6 +343,41 @@ V2.auth((foo:1,bar:2))
 
 ```
 
+a common pattern with `.on` is type validation based on prior values.
+
+an example taken from the `remotemon` project :
+
+```ls
+be = hoplon.types
+
+bko = be.known.obj
+
+check_if_remote_not_defined = bko
+.on \remote,be.arr
+.and do
+  bko.on \remotehost,be.undefnull
+  .or do
+    bko.on \remotefold,be.undefnull
+.cont true
+.fix false
+```
+
+here we can see that `remotehost` and `remotefold` cannot be `undefined` **if** `remote` is an array type.
+
+the logic is hard to decipher using normal usage of `.on`.
+
+```ls
+V = be.known.obj
+.on do
+  *[
+    [\and,\remote,be.arr]
+    [\alt,[\remotefold,\remotehost],be.undefnull]
+   ]
+.cont true
+.fix false
+```
+however we can use the single array pattern to flatten the same logic, this is a 'special' function provided to match on `.on` due to the commonality of the usage.
+
 ### - `cont`
 
 Alias: **edit**
