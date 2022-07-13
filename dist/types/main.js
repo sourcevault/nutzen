@@ -388,7 +388,7 @@ handleE.entry = function(msg){
   }());
   clean = rmNotArrays(out);
   if (clean.length === 0) {
-    return [void 8, out];
+    return [[void 8, out]];
   } else {
     sorted = clean.sort(handleE.sort);
     return sorted;

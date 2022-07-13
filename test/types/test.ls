@@ -28,7 +28,3 @@ sample_data =
   *remote: 1
    remotfold: 3
    foobar: 4
-
-z V.auth sample_data
-
-

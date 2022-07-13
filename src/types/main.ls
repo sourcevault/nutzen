@@ -467,7 +467,7 @@ handleE.entry = (msg) ->
 
   if (clean.length is 0)
 
-    return [void,out]
+    return [[void,out]]
 
   else
 

@@ -8,4 +8,3 @@ sample_data = {
   remotfold: 3,
   foobar: 4
 };
-z(V.auth(sample_data));
