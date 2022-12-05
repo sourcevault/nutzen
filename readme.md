@@ -159,6 +159,7 @@ num            Number
 str            String
 fun            Function
 arg            Argument
+objerr         Error
 -------------------------------
 cont           continue
 err            error
@@ -175,7 +176,7 @@ alt            alternative
 
 We start by defining our basetypes:
 
-- `num`,`arr`,`str`,`null`,`bool`,`undef`,`arg`,`obj` and `fun`.
+- `num`,`arr`,`str`,`null`,`bool`,`undef`,`arg`,`obj`,`fun` and `objerr`
 
 .. then chainable units :
 

@@ -46,7 +46,21 @@ sanatize = (x,UFO) ->
         path     :npath
       }
 
-  | \Object => return UFO
+  | \Object =>
+
+    switch UFO.continue
+    | true  =>
+      UFO.error = false
+    | false =>
+      UFO.error = true
+
+    switch UFO.error
+    | true  =>
+      UFO.contiue = false
+    | false =>
+      UFO.contiue = true
+
+    return UFO
 
   | otherwise =>
 

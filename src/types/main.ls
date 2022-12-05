@@ -25,6 +25,7 @@ props =
   [\str \String]
   [\fun \Function]
   [\bool \Boolean]
+  [\objerr \Error]
 
 nonmap = R.map do
   ([name]) -> name

@@ -5,7 +5,7 @@ oxo = require('../guard/main');
 int = require('./internal');
 custom = int.custom, define = int.define, cache = int.cache;
 be = custom;
-props = [['obj', 'Object'], ['arr', 'Array'], ['undef', 'Undefined'], ['null', 'Null'], ['num', 'Number'], ['str', 'String'], ['fun', 'Function'], ['bool', 'Boolean']];
+props = [['obj', 'Object'], ['arr', 'Array'], ['undef', 'Undefined'], ['null', 'Null'], ['num', 'Number'], ['str', 'String'], ['fun', 'Function'], ['bool', 'Boolean'], ['objerr', 'Error']];
 nonmap = R.map(function(arg$){
   var name;
   name = arg$[0];

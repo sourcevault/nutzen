@@ -28,6 +28,9 @@ gulpfile:
     - lsc -bco . src/gulpfile.ls
     - gulp default --silent
 
+build:
+  - gulp default --silent
+
 test.all:
   watch: false
   description:
@@ -49,7 +52,7 @@ test.proj:
   local:
     - *gulpfile
     - |-
-      for i in test/{{var.proj}}/*.js
+      for i in test/${var.proj}/*.js
       do
         node $i || exit 1
       done
@@ -60,7 +63,7 @@ test.file:
     - run a specific test file for proj=X which=Y.
   local:
     - gulp default --silent
-    - node ./test/{{proj}}/{{which}}.js || exit 1
+    - node ./test/${proj}/${which}.js || exit 1
 
 
 dev.install:

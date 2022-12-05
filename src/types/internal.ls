@@ -83,7 +83,7 @@ init-state =
   type :null
   str  :[]
 
-wrap.rest  = (type) -> ->  guard.rest arguments,@[sig],type
+wrap.rest  = (type) -> -> guard.rest arguments,@[sig],type
 
 wrap.on    = -> guard.on arguments,@[sig]
 
@@ -345,7 +345,6 @@ guard.on = oxo.unary
 .def (args,state) ->
 
   handleError [(new Error!),\input.fault,[\on [\typeError,[state.str,\on]]]]
-
 
 #-----------------------------------------------------------------------
 
