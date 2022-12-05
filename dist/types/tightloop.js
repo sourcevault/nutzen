@@ -53,6 +53,20 @@ sanatize = function(x, UFO){
       };
     }
   case 'Object':
+    switch (UFO['continue']) {
+    case true:
+      UFO.error = false;
+      break;
+    case false:
+      UFO.error = true;
+    }
+    switch (UFO.error) {
+    case true:
+      UFO.contiue = false;
+      break;
+    case false:
+      UFO.contiue = true;
+    }
     return UFO;
   default:
     msg = "[" + pkgname + "][typeError][user-supplied-validator] undefined return value.";
