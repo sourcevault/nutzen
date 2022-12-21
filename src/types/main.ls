@@ -18,16 +18,16 @@ be = custom
 
 # .and be.int.neg
 
-# V = be ->
-# .and noop
+V = be ->
+.and noop
 # .and noop
 # .or noop
 # .and noop
 # .and noop
 # .bt 0
 
-# .on 2,noop
-# .on 3,noop
+.on 2,noop
+.on 3,noop
 
 # .and be.int.neg
 

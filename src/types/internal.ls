@@ -313,7 +313,7 @@ guard.on = oxo.unary
 
     if (data[1] is \input.fault) then return handleError data
 
-    false
+    void
 
 .arma 2,
 
