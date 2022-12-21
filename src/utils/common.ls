@@ -39,24 +39,31 @@ noop[util_inspect_custom] = -> @[util_inspect_custom]
 
 # --------------------------------------------------------------------------------------
 
+jdef = {maxLength:30,margins:true}
 
-j = (x) -> jspc do
-  x
-  {
-    maxLength:30
-    margins:true
-  }
+j = (obj) -> jspc obj,jdef
 
+j.o = R.curry (opt,obj) ->
 
-zj = (x,y)->
-  if y
-    z y,(j x) # just like j, but shows console.log
+  if opt is undefined
+    opt = jdef
   else
-    z j x
+    opt = R.mergeRight jdef,opt
 
-zn = ->
+  jspc obj,opt
 
-  args = ['\n',...arguments,'\n']
+# just like j, but shows console.log
+
+zj = (obj,y) ->
+
+  if y
+    z y,(j obj)
+  else
+    z j obj
+
+z.n = ->
+
+  args = ['\n--\n',...arguments,'\n--\n']
 
   console.log ...args
 
@@ -123,9 +130,11 @@ create_stack = (take_only,paths = [],init_txt) ->
 
     disp = []
 
-    for I in E
+    cc = [c.blue,c.grey]
 
-      {lineNumber,fileName,functionName,columnNumber} = I
+    for data in E
+
+      {lineNumber,fileName,functionName,columnNumber} = data
 
       path = fileName.split "/"
 
@@ -135,7 +144,7 @@ create_stack = (take_only,paths = [],init_txt) ->
 
         functionName = ""
 
-      item = lit do
+      item = do
         [
           "  - "
           R.last path
@@ -148,15 +157,25 @@ create_stack = (take_only,paths = [],init_txt) ->
           lineNumber
           ":" + columnNumber + "\n"
         ]
-        [0,c.warn,0,c.er,0,0,0,c.black,c.er,c.black]
 
-      disp.push item
+      c_item = R.join "",item
+
+      disp.push c_item
 
     if disp.length is 0 then return
 
     disp
     |> R.reverse
     |> R.take take_only
+    |> (x) ->
+
+      fin = []
+
+      for I from 0 til x.length
+
+        fin.push cc[I%2] x[I]
+
+      fin
     |> R.join "\n"
     |> l
 
@@ -184,7 +203,6 @@ ext =
    l:l
    c:c
    zj:zj
-   zn:zn
    esp:esp
    lit:lit
    flat:flat

@@ -2,7 +2,7 @@
 
 # ------------------------------------------------------------------
 
-{z,l,R,j,deep_freeze,uic,loopError} = com
+{z,l,R,j,deep_freeze,uic,loopError,noop} = com
 
 oxo = require \../guard/main
 
@@ -12,481 +12,524 @@ int = require \./internal
 
 be = custom
 
-#-------------------------------------------------------------------
+# V = be.num
 
-# first column is the function name, second column is error message.
+# .and be.int.pos
 
-props =
-  [\obj \Object]
-  [\arr \Array]
-  [\undef \Undefined]
-  [\null \Null]
-  [\num \Number]
-  [\str \String]
-  [\fun \Function]
-  [\bool \Boolean]
-  [\objerr \Error]
+# .and be.int.neg
 
-nonmap = R.map do
-  ([name]) -> name
-  R.drop 2,props
+# V = be ->
+# .and noop
+# .and noop
+# .or noop
+# .and noop
+# .and noop
+# .bt 0
 
-base = (type) -> (UFO) ->
+# .on 2,noop
+# .on 3,noop
 
-  if ((R.type UFO) is type)
+# .and be.int.neg
 
-    {continue:true,error:false,value:UFO}
+# V = be.known.obj
+# .on do
+#   *[
+#     [\and,\remote,be.arr]
+#     [\alt,[\remotefold,\remotehost],be.undefnull]
+#    ]
 
-  else
+# V = be.obj
+# .on \remote,be.arr
+# .and \remotefold,be.undef
+# .cont (x)->
+#   z "hello world"
+# .bt 1
+# .on \remotehost,be.undef
 
-    str = R.toLower "not #{type}"
 
-    {error:true,continue:false,message:str,value:UFO}
+# V = be.obj
+# .on do
+#   *[
+#     [\and,\remote,be.arr]
+#     [\alt,[\remotefold,\remotehost],be.undefnull]
+#    ]
 
-# ------------------------------------------------------------------
 
-not_base = (type) -> (UFO) ->
+# #-------------------------------------------------------------------
 
-  if ((R.type UFO) is type)
+# # first column is the function name, second column is error message.
 
-    str = R.toLower "is #{type}"
+# props =
+#   [\obj \Object]
+#   [\arr \Array]
+#   [\undef \Undefined]
+#   [\null \Null]
+#   [\num \Number]
+#   [\str \String]
+#   [\fun \Function]
+#   [\bool \Boolean]
+#   [\objerr \Error]
 
-    {error:true,continue:false,message:str,value:UFO}
+# nonmap = R.map do
+#   ([name]) -> name
+#   R.drop 2,props
 
-  else
+# base = (type) -> (UFO) ->
 
-    {continue:true,error:false,value:UFO}
+#   if ((R.type UFO) is type)
 
-# ------------------------------------------------------
+#     {continue:true,error:false,value:UFO}
 
-undefnull = (UFO) ->
+#   else
 
-  if ((R.type UFO) in [\Undefined \Null])
+#     str = R.toLower "not #{type}"
 
-    return {continue:true,error:false,value:UFO}
-  else
+#     {error:true,continue:false,message:str,value:UFO}
 
-    return {continue:false,error:true,message:"not undefined or null",value:UFO}
+# # ------------------------------------------------------------------
 
-cache.def.add undefnull
+# not_base = (type) -> (UFO) ->
 
-#--------------------------------------------------------
+#   if ((R.type UFO) is type)
 
-F = base "Arguments"
+#     str = R.toLower "is #{type}"
 
-define.basis \arg,F
+#     {error:true,continue:false,message:str,value:UFO}
 
-be.arg = F
+#   else
 
-#-----------------------------
+#     {continue:true,error:false,value:UFO}
 
-pop = (msg) -> msg.pop! ; msg
+# # ------------------------------------------------------
 
-#-----------------------------
+# undefnull = (UFO) ->
 
-be.not = (F) ->
+#   if ((R.type UFO) in [\Undefined \Null])
 
-  V = be F
+#     return {continue:true,error:false,value:UFO}
+#   else
 
-  be (x) -> not (V.auth x).continue
+#     return {continue:false,error:true,message:"not undefined or null",value:UFO}
 
-#--------------------------------------------------------
+# cache.def.add undefnull
 
-be.undefnull = be undefnull
+# #--------------------------------------------------------
 
-be.not.undefnull = be.not undefnull
+# F = base "Arguments"
 
-#--------------------------------------------------------
+# define.basis \arg,F
 
-be.maybe = (F) -> ((be F).or be.undef).err pop
+# be.arg = F
 
-#-----------------------------
+# #-----------------------------
 
-be.list  = (F) -> be.arr.map F
+# pop = (msg) -> msg.pop! ; msg
 
-be.not[uic] = print.inner
+# #-----------------------------
 
-be.list[uic] = print.inner
+# be.not = (F) ->
 
-be.maybe[uic] = print.inner
+#   V = be F
 
-#-----------------------------
+#   be (x) -> not (V.auth x).continue
 
-be.known = {}
+# #--------------------------------------------------------
 
-for [name,type] in props
+# be.undefnull = be undefnull
 
-  A = base type
+# be.not.undefnull = be.not undefnull
 
-  base name,A
+# #--------------------------------------------------------
 
-  define.basis name,A
+# be.maybe = (F) -> ((be F).or be.undef).err pop
 
-  be[name] = A
+# #-----------------------------
 
-  #----------------------------
+# be.list  = (F) -> be.arr.map F
 
-  B = not_base type
+# be.not[uic] = print.inner
 
-  define.basis name,B
+# be.list[uic] = print.inner
 
-  be.not[name] = B
+# be.maybe[uic] = print.inner
 
-  #----------------------------
+# #-----------------------------
 
-  C = {}
+# be.known = {}
 
-  define.basis name,C
+# for [name,type] in props
 
-  be.known[name] = C
+#   A = base type
 
-#----------------------------
+#   base name,A
 
-for name in nonmap
+#   define.basis name,A
 
-  be.maybe[name] = be.maybe be[name]
+#   be[name] = A
 
-# ------------------------------------------------------------------
+#   #----------------------------
 
-be.maybe.obj = be.obj.or be.undef
+#   B = not_base type
 
-be.maybe.arr = be.arr.or be.undef
+#   define.basis name,B
 
-# ------------------------------------------------------------------
+#   be.not[name] = B
 
-not-arrayof-str-or-num = (type) -> ->
+#   #----------------------------
 
-  args = R.flatten [...arguments]
+#   C = {}
 
-  for key in args
+#   define.basis name,C
 
-    if not ((R.type key) in [\String \Number])
+#   be.known[name] = C
 
-      print.route [(new Error!),\resreq,[type]]
+# #----------------------------
 
-      return true
+# for name in nonmap
 
-  return false
+#   be.maybe[name] = be.maybe be[name]
 
-reqError = oxo.wh do
-  not-arrayof-str-or-num \req
-  loopError
+# # ------------------------------------------------------------------
 
-resError = oxo.wh do
-  not-arrayof-str-or-num \res
-  loopError
+# be.maybe.obj = be.obj.or be.undef
 
-reqresError = oxo.wh do
-  (req,res) ->
+# be.maybe.arr = be.arr.or be.undef
 
-    if not (((R.type req) is "Array") and (((R.type res) is "Array")))
+# # ------------------------------------------------------------------
 
-      print.route [(new Error!),\resreq,[\resreq,\prime]]
+# not-arrayof-str-or-num = (type) -> ->
 
-      return true
+#   args = R.flatten [...arguments]
 
-    for I in req
+#   for key in args
 
-      if not ((R.type I) in [\String \Number])
+#     if not ((R.type key) in [\String \Number])
 
-        print.route [(new Error!),\resreq,[\resreq,\res]]
+#       print.route [(new Error!),\resreq,[type]]
 
-        return true
+#       return true
 
-    for I in res
+#   return false
 
-      if not ((R.type I) in [\String \Number])
+# reqError = oxo.wh do
+#   not-arrayof-str-or-num \req
+#   loopError
 
-        print.route [(new Error!),\resreq,[\resreq,\req]]
+# resError = oxo.wh do
+#   not-arrayof-str-or-num \res
+#   loopError
 
-        return true
+# reqresError = oxo.wh do
+#   (req,res) ->
 
+#     if not (((R.type req) is "Array") and (((R.type res) is "Array")))
 
-  loopError
+#       print.route [(new Error!),\resreq,[\resreq,\prime]]
 
-#------------------------------------------------------
+#       return true
 
-objarr = (be.obj.alt be.arr).err "not object or array"
+#     for I in req
 
-be.required = reqError.def ->
+#       if not ((R.type I) in [\String \Number])
 
-  props = R.flatten [...arguments]
+#         print.route [(new Error!),\resreq,[\resreq,\res]]
 
-  ret = objarr.on props,(be.not.undef.err [\:req,props])
+#         return true
 
-  ret
+#     for I in res
 
-#-------------------------------------------------------------------------------------
+#       if not ((R.type I) in [\String \Number])
 
-restricted = (props,po) -> (obj) ->
+#         print.route [(new Error!),\resreq,[\resreq,\req]]
 
-  keys = Object.keys obj
+#         return true
 
-  for I in keys
 
-    if not po[I]
+#   loopError
 
-      return [false,[\:res,props],I]
+# #------------------------------------------------------
 
-  true
+# objarr = (be.obj.alt be.arr).err "not object or array"
 
-be.restricted = resError.def ->
+# be.required = reqError.def ->
 
-  props = R.flatten [...arguments]
+#   props = R.flatten [...arguments]
 
-  po = {}
+#   ret = objarr.on props,(be.not.undef.err [\:req,props])
 
-  for I in props
+#   ret
 
-    po[I] = true
+# #-------------------------------------------------------------------------------------
 
-  objarr.and restricted props,po
+# restricted = (props,po) -> (obj) ->
 
-be.reqres = reqresError.def (req,res) ->
+#   keys = Object.keys obj
 
-  po = {}
+#   for I in keys
 
-  for I in res
+#     if not po[I]
 
-    po[I] = true
+#       return [false,[\:res,props],I]
 
-  objarr.on req, be.not.undef.err [\:req,req]
-  .and restricted res,po
+#   true
 
-#-------------------------------------------------------------------------------------
+# be.restricted = resError.def ->
 
-integer = (UFO) ->
+#   props = R.flatten [...arguments]
 
-  if not ((R.type UFO) is \Number)
+#   po = {}
 
-    return {continue:false,error:true,message:"not an integer ( or number )",value:UFO}
+#   for I in props
 
-  residue = Math.abs (UFO - Math.round(UFO))
+#     po[I] = true
 
-  if (residue > 0)
+#   objarr.and restricted props,po
 
-    return {continue:false,error:true,message:"not an integer",value:UFO}
+# be.reqres = reqresError.def (req,res) ->
 
-  else
+#   po = {}
 
-    return {continue:true,error:false,value:UFO}
+#   for I in res
 
+#     po[I] = true
 
-cache.def.add integer
+#   objarr.on req, be.not.undef.err [\:req,req]
+#   .and restricted res,po
 
-#-------------------------------------------------------------------------------------
+# #-------------------------------------------------------------------------------------
 
-boolnum = (UFO) ->
+# integer = (UFO) ->
 
-  if ((R.type UFO) in [\Boolean \Number])
+#   if not ((R.type UFO) is \Number)
 
-    return {continue:true,error:false,value:UFO}
+#     return {continue:false,error:true,message:"not an integer ( or number )",value:UFO}
 
-  else
+#   residue = Math.abs (UFO - Math.round(UFO))
 
-    return {continue:false,error:true,message:"not a number or boolean",value:UFO}
+#   if (residue > 0)
 
-cache.def.add boolnum
+#     return {continue:false,error:true,message:"not an integer",value:UFO}
 
-#-------------------------------------------------------------------------------------
+#   else
 
+#     return {continue:true,error:false,value:UFO}
 
-maybe_boolnum = (UFO) ->
 
-  if ((R.type UFO) in [\Undefined \Boolean \Number])
+# cache.def.add integer
 
-    return {continue:true,error:false,value:UFO}
+# #-------------------------------------------------------------------------------------
 
-  else
+# boolnum = (UFO) ->
 
-    return {continue:false,error:true,message:"not a number or boolean",value:UFO}
+#   if ((R.type UFO) in [\Boolean \Number])
 
+#     return {continue:true,error:false,value:UFO}
 
-cache.def.add maybe_boolnum
+#   else
 
-#-------------------------------------------------------
+#     return {continue:false,error:true,message:"not a number or boolean",value:UFO}
 
-be.int     = be integer
+# cache.def.add boolnum
 
-be.boolnum = be boolnum
+# #-------------------------------------------------------------------------------------
 
 
-#--------------------------------------------------------
+# maybe_boolnum = (UFO) ->
 
-be.int.neg  = be.int.and do
-    (x) ->
-      if (x <= 0)
-        return true
-      else
-        return [false,"not a negative integer"]
+#   if ((R.type UFO) in [\Undefined \Boolean \Number])
 
-be.int.pos  = be.int.and do
-    (x) ->
-      if (x >= 0)
-        return true
-      else
-        return [false,"not a positive integer"]
+#     return {continue:true,error:false,value:UFO}
 
-#--------------------------------------------------------
+#   else
 
-maybe          = be.maybe
+#     return {continue:false,error:true,message:"not a number or boolean",value:UFO}
 
-maybe.int      = be.int.or be.undef
 
-maybe.int.pos  = maybe be.int.pos
+# cache.def.add maybe_boolnum
 
-maybe.int.neg  = maybe be.int.neg
+# #-------------------------------------------------------
 
-maybe.boolnum  = be maybe_boolnum
+# be.int     = be integer
 
-#--------------------------------------------------------
+# be.boolnum = be boolnum
 
-list = be.list
 
-list.ofstr = list be.str
-.err (msg,key)->
+# #--------------------------------------------------------
 
-  switch R.type key
-  | \Undefined => "not a list of string."
-  | otherwise  => [\:list ,[key[0],"not string type"]]
+# be.int.neg  = be.int.and do
+#     (x) ->
+#       if (x <= 0)
+#         return true
+#       else
+#         return [false,"not a negative integer"]
 
-list.ofnum = list be.num
-.err (msg,key) ->
+# be.int.pos  = be.int.and do
+#     (x) ->
+#       if (x >= 0)
+#         return true
+#       else
+#         return [false,"not a positive integer"]
 
-  switch R.type key
-  | \Undefined =>  "not a list of number."
-  | otherwise  => [\:list,[key[0],"not number type"]]
+# #--------------------------------------------------------
 
-list.ofint = list be.int
-.err (msg,key) ->
+# maybe          = be.maybe
 
-  switch R.type key
-  | \Undefined => "not a list of integer."
-  | otherwise  => [\:list,[key[0],"not integer type"]]
+# maybe.int      = be.int.or be.undef
 
-maybe.list = {}
+# maybe.int.pos  = maybe be.int.pos
 
-maybe.list.ofstr = maybe list.ofstr
+# maybe.int.neg  = maybe be.int.neg
 
-maybe.list.ofnum = maybe list.ofnum
+# maybe.boolnum  = be maybe_boolnum
 
-maybe.list.ofint = maybe list.ofint
+# #--------------------------------------------------------
 
-# -----------------------------------
+# list = be.list
 
-handleE = {}
+# list.ofstr = list be.str
+# .err (msg,key)->
 
-handleE.rm_num = ([txt,msg]) ->
+#   switch R.type key
+#   | \Undefined => "not a list of string."
+#   | otherwise  => [\:list ,[key[0],"not string type"]]
 
-  name = (txt.split ":")[1]
+# list.ofnum = list be.num
+# .err (msg,key) ->
 
-  if msg is void then [name]
-  else then [name,msg]
+#   switch R.type key
+#   | \Undefined =>  "not a list of number."
+#   | otherwise  => [\:list,[key[0],"not number type"]]
 
+# list.ofint = list be.int
+# .err (msg,key) ->
 
-handleE.sort = ([txt1],[txt2]) ->
+#   switch R.type key
+#   | \Undefined => "not a list of integer."
+#   | otherwise  => [\:list,[key[0],"not integer type"]]
 
-  [__,name1,number1] = txt1.split ":"
+# maybe.list = {}
 
-  if (number1 is void)
+# maybe.list.ofstr = maybe list.ofstr
 
-    number1 = 0
+# maybe.list.ofnum = maybe list.ofnum
 
-  else
+# maybe.list.ofint = maybe list.ofint
 
-    number1 = parseInt number1
+# # -----------------------------------
 
-  [__,name2,number2] = txt2.split ":"
+# handleE = {}
 
-  if (number2 is void)
+# handleE.rm_num = ([txt,msg]) ->
 
-    number2 = 0
+#   name = (txt.split ":")[1]
 
-  else
+#   if msg is void then [name]
+#   else then [name,msg]
 
-    number2 = parseInt number2
 
-  if number1 > number2 then return -1
+# handleE.sort = ([txt1],[txt2]) ->
 
-  if number1 < number2 then return 1
+#   [__,name1,number1] = txt1.split ":"
 
-  else then return 0
+#   if (number1 is void)
 
-is_special_str = (str) ->
+#     number1 = 0
 
-  if (((R.type str) is \String) and (str[0] is ":"))
+#   else
 
-    return true
+#     number1 = parseInt number1
 
-  else return false
+#   [__,name2,number2] = txt2.split ":"
 
-handleE.array = (msg,fin) ->
+#   if (number2 is void)
 
-  for I in msg
+#     number2 = 0
 
-    switch R.type I
+#   else
 
-    | \String,\Number =>
+#     number2 = parseInt number2
 
-      fin.push I
+#   if number1 > number2 then return -1
 
-    | \Array  =>
+#   if number1 < number2 then return 1
 
-      uno = I[0]
+#   else then return 0
 
-      if is_special_str uno
+# is_special_str = (str) ->
 
-        fin.push I
+#   if (((R.type str) is \String) and (str[0] is ":"))
 
-      else
+#     return true
 
-        handleE.array I,fin
+#   else return false
 
-rm-not-arrays = R.filter (x) -> ((R.type x) is \Array)
+# handleE.array = (msg,fin) ->
 
-handleE.entry = (msg) ->
+#   for I in msg
 
-  out = switch R.type msg
+#     switch R.type I
 
-  | \String   => [msg]
+#     | \String,\Number =>
 
-  | \Array    =>
+#       fin.push I
 
-    fin = []
+#     | \Array  =>
 
-    if is_special_str msg[0]
+#       uno = I[0]
 
-      msg = [msg]
+#       if is_special_str uno
 
-    handleE.array msg,fin
+#         fin.push I
 
-    fin
+#       else
 
-  | otherwise => []
+#         handleE.array I,fin
 
-  clean = rm-not-arrays out
+# rm-not-arrays = R.filter (x) -> ((R.type x) is \Array)
 
-  if (clean.length is 0)
+# handleE.entry = (msg) ->
 
-    return [[void,out]]
+#   out = switch R.type msg
 
-  else
+#   | \String   => [msg]
 
-    sorted = clean.sort handleE.sort
+#   | \Array    =>
 
-    return sorted
+#     fin = []
 
-# -----------------------------------
+#     if is_special_str msg[0]
 
-betrue = be -> true
+#       msg = [msg]
 
-be.any = betrue
+#     handleE.array msg,fin
 
-be.tap = (f) -> betrue.tap f
+#     fin
 
-# -----------------------------------
+#   | otherwise => []
 
-be.flatro = handleE.entry
+#   clean = rm-not-arrays out
+
+#   if (clean.length is 0)
+
+#     return [[void,out]]
+
+#   else
+
+#     sorted = clean.sort handleE.sort
+
+#     return sorted
+
+# # -----------------------------------
+
+# betrue = be -> true
+
+# be.any = betrue
+
+# be.tap = (f) -> betrue.tap f
+
+# # -----------------------------------
+
+# be.flatro = handleE.entry
 
 # -----------------------------------
 

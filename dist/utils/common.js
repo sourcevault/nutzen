@@ -1,4 +1,4 @@
-var vendor, z, l, flat, advanced_pad, jspc, deep_freeze, alpha_sort, R, esp, util, util_inspect_custom, noop, j, zj, zn, loopfault, x$, c, lit, rm_paths, create_stack, print_fail, wait, ext, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var vendor, z, l, flat, advanced_pad, jspc, deep_freeze, alpha_sort, R, esp, util, util_inspect_custom, noop, jdef, j, zj, loopfault, x$, c, lit, rm_paths, create_stack, print_fail, wait, ext, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 vendor = require("./vendor");
 z = console.log;
 l = console.log;
@@ -19,22 +19,31 @@ noop = function(){};
 noop[util_inspect_custom] = function(){
   return this[util_inspect_custom];
 };
-j = function(x){
-  return jspc(x, {
-    maxLength: 30,
-    margins: true
-  });
+jdef = {
+  maxLength: 30,
+  margins: true
 };
-zj = function(x, y){
-  if (y) {
-    return z(y, j(x));
+j = function(obj){
+  return jspc(obj, jdef);
+};
+j.o = R.curry(function(opt, obj){
+  if (opt === undefined) {
+    opt = jdef;
   } else {
-    return z(j(x));
+    opt = R.mergeRight(jdef, opt);
+  }
+  return jspc(obj, opt);
+});
+zj = function(obj, y){
+  if (y) {
+    return z(y, j(obj));
+  } else {
+    return z(j(obj));
   }
 };
-zn = function(){
+z.n = function(){
   var args;
-  args = ['\n'].concat(arrayFrom$(arguments), ['\n']);
+  args = ['\n--\n'].concat(arrayFrom$(arguments), ['\n--\n']);
   return console.log.apply(console, args);
 };
 loopfault = function(){
@@ -105,7 +114,7 @@ create_stack = function(take_only, paths, init_txt){
   paths == null && (paths = []);
   EMP = rm_paths(paths);
   return function(E){
-    var disp, i$, len$, I, lineNumber, fileName, functionName, columnNumber, path, item;
+    var disp, cc, i$, len$, data, lineNumber, fileName, functionName, columnNumber, path, item, c_item;
     if (!E) {
       l("Error: cannot show Error stack without Error object.");
       return;
@@ -115,9 +124,10 @@ create_stack = function(take_only, paths, init_txt){
       l(init_txt);
     }
     disp = [];
+    cc = [c.blue, c.grey];
     for (i$ = 0, len$ = E.length; i$ < len$; ++i$) {
-      I = E[i$];
-      lineNumber = I.lineNumber, fileName = I.fileName, functionName = I.functionName, columnNumber = I.columnNumber;
+      data = E[i$];
+      lineNumber = data.lineNumber, fileName = data.fileName, functionName = data.functionName, columnNumber = data.columnNumber;
       path = fileName.split("/");
       if (EMP(path)) {
         continue;
@@ -125,17 +135,27 @@ create_stack = function(take_only, paths, init_txt){
       if (functionName === 'Object.<anonymous>') {
         functionName = "";
       }
-      item = lit(["  - ", R.last(path), ":", lineNumber, " ", functionName, "\n    ", fileName + ":", lineNumber, ":" + columnNumber + "\n"], [0, c.warn, 0, c.er, 0, 0, 0, c.black, c.er, c.black]);
-      disp.push(item);
+      item = ["  - ", R.last(path), ":", lineNumber, " ", functionName, "\n    ", fileName + ":", lineNumber, ":" + columnNumber + "\n"];
+      c_item = R.join("", item);
+      disp.push(c_item);
     }
     if (disp.length === 0) {
       return;
     }
     return l(
     R.join("\n")(
+    function(x){
+      var fin, i$, to$, I;
+      fin = [];
+      for (i$ = 0, to$ = x.length; i$ < to$; ++i$) {
+        I = i$;
+        fin.push(cc[I % 2](x[I]));
+      }
+      return fin;
+    }(
     R.take(take_only)(
     R.reverse(
-    disp))));
+    disp)))));
   };
 };
 print_fail = function(filename){
@@ -165,7 +185,6 @@ ext = {
   l: l,
   c: c,
   zj: zj,
-  zn: zn,
   esp: esp,
   lit: lit,
   flat: flat,

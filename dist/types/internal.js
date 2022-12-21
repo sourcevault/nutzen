@@ -1,4 +1,4 @@
-var ref$, com, print, sig, tightloop, z, l, R, j, uic, deep_freeze, loopError, zj, oxo, x$, cache, assort, cato, y$, wrap, z$, guard, z1$, define, z2$, validate, props, initState, z3$, proto, key, val, F, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ref$, com, print, sig, tightloop, z, l, R, j, uic, deep_freeze, loopError, zj, oxo, x$, cache, assort, cato, y$, wrap, z$, guard, z1$, define, z2$, validate, props, initState, z3$, proto, i$, len$, val, F, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ref$ = require('./print.common'), com = ref$.com, print = ref$.print, sig = ref$.sig;
 tightloop = require('./tightloop');
 z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError, zj = com.zj;
@@ -38,9 +38,11 @@ cato = function(arg){
 y$ = wrap = {};
 y$.on = null;
 y$.rest = null;
+y$.bt = null;
 z$ = guard = {};
 z$.on = null;
 z$.rest = null;
+z$.bt = null;
 z1$ = define = {};
 z1$.and = null;
 z1$.or = null;
@@ -55,6 +57,9 @@ initState = {
   all: [],
   type: null,
   str: []
+};
+wrap.bt = function(){
+  return guard.bt(arguments, this[sig], 'bt');
 };
 wrap.rest = function(type){
   return function(){
@@ -74,13 +79,14 @@ proto.normal.wrap = function(){
     return F.auth.apply(F, arguments).value;
   };
 };
-for (key in props) {
-  val = props[key];
+for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
+  val = props[i$];
   F = wrap.rest(val);
   proto.normal[val] = F;
 }
 proto.normal.auth = tightloop;
 proto.normal[uic] = print.log;
+proto.normal.bt = wrap.bt;
 proto.functor = (import$({}, proto.normal));
 proto.functor.map = wrap.rest('map');
 proto.functor.forEach = wrap.rest('forEach');
@@ -134,7 +140,7 @@ define.on = function(type, args, state){
     put = ['on', ['single_array', array]];
   }
   block = define.and(state, [put]);
-  data = (ref$ = {}, import$(ref$, state), (ref$.phase = 'chain', ref$.all = block, ref$.str = state.str.concat('on'), ref$));
+  data = (ref$ = {}, import$(ref$, state), (ref$.all = block, ref$.str = state.str.concat('on'), ref$));
   return define.proto(data);
 };
 guard.on = oxo.unary.arn([1, 2], function(args, state){
@@ -289,6 +295,7 @@ validate.rest = function(funs, state, type){
     return false;
   }
 };
+guard.bt = oxo.def(loopError);
 guard.rest = oxo.wh(validate.rest, function(args, state, type){
   var funs, block, data, ref$;
   funs = cato(args);
@@ -357,26 +364,26 @@ define.basis = function(name, F){
   define.copy(F, data);
 };
 define.and = function(state, funs){
-  var all, last, init, nlast, block;
+  var all, init, last, nlast, block;
   all = state.all;
   switch (all.length % 2) {
   case 0:
     return all.concat([funs]);
   case 1:
-    last = R.last(all);
     init = R.init(all);
+    last = R.last(all);
     nlast = arrayFrom$(last).concat(arrayFrom$(funs));
     block = arrayFrom$(init).concat([nlast]);
     return block;
   }
 };
 define.or = function(state, funs){
-  var all, last, init, nlast, block;
+  var all, init, last, nlast, block;
   all = state.all;
   switch (all.length % 2) {
   case 0:
-    last = R.last(all);
     init = R.init(all);
+    last = R.last(all);
     nlast = arrayFrom$(last).concat(arrayFrom$(funs));
     block = arrayFrom$(init).concat([nlast]);
     return block;

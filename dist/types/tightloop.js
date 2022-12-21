@@ -1,7 +1,7 @@
-var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, execKey, execTop, map, forEach, upon, resolve, tightloop;
+var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, zj, sanatize, x$, apply, y$, z$, blunder, execKey, execTop, map, forEach, upon, resolve, tightloop;
 pc = require("./print.common");
 com = pc.com, pkgname = pc.pkgname, sig = pc.sig;
-l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
+l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack, zj = com.zj;
 sanatize = function(x, UFO){
   var unknown, path, npath, msg;
   switch (R.type(UFO)) {
@@ -522,62 +522,9 @@ resolve = function(fun, put, dtype, args){
   }
 };
 tightloop = function(x){
-  var state, all, type, I, put, nI, each, J, nJ, fun, patt, nput;
+  var state, all, type;
   state = this[sig];
   all = state.all, type = state.type;
-  I = 0;
-  put = {
-    'continue': true,
-    error: false,
-    value: x
-  };
-  nI = all.length;
-  while (I < nI) {
-    each = all[I];
-    switch (I % 2) {
-    case 0:
-      J = 0;
-      nJ = each.length;
-      do {
-        fun = each[J];
-        if (put.error) {
-          put = blunder(fun, put, arguments);
-        } else {
-          put = resolve(fun, put, type, arguments);
-        }
-        J += 1;
-      } while (J < nJ);
-      if (put.error) {
-        I += 1;
-      } else {
-        I += 2;
-      }
-      break;
-    case 1:
-      J = 0;
-      nJ = each.length;
-      put.message = [put.message];
-      do {
-        fun = each[J];
-        patt = fun[0];
-        nput = resolve(fun, put, type, arguments);
-        if (patt === 'alt' && nput['continue']) {
-          put = nput;
-          J = nJ;
-        } else if (nput['continue']) {
-          put = nput;
-          I = nI;
-          J = nJ;
-        } else {
-          if (!(nput.message === undefined)) {
-            put.message.push(nput.message);
-          }
-          J += 1;
-        }
-      } while (J < nJ);
-      I += 1;
-    }
-  }
-  return put;
+  zj(all);
 };
 module.exports = tightloop;

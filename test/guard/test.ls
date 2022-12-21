@@ -27,4 +27,3 @@ typeE   = -> z "argument type has to be number"
 
 add = (x,y) -> x + y
 
-z 'hello world'

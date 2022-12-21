@@ -1,6 +1,6 @@
 [makefile]
   tab_width = 2
-  indent_style = tab
+  indent_style = spaces
 
 [*.ls,*.yaml]
   charset = utf-8

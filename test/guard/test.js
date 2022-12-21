@@ -20,4 +20,3 @@ typeE = function(){
 add = function(x, y){
   return x + y;
 };
-z('hello world');

@@ -1,15 +1,16 @@
-var com, print, modflag, defacto, z, l, R, c, esp, create_stack, lit, version, help, show_stack, pkgname, arrange, show_chain, map_fname_to_ctypes, StrArgLen, StrEType, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var com, print, modflag, defacto, z, zj, j, l, R, c, esp, create_stack, lit, version, help, show_stack, object_name, pkgname, arrange, show_chain, map_fname_to_ctypes, StrArgLen, StrEType, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 com = require("../../dist/utils/main.js");
 print = {};
 out$.com = com = com;
 out$.print = print = print;
 out$.modflag = modflag = Symbol("self");
 out$.defacto = defacto = Symbol("default");
-z = com.z, l = com.l, R = com.R, c = com.c, esp = com.esp, create_stack = com.create_stack, lit = com.lit, version = com.version;
+z = com.z, zj = com.zj, j = com.j, l = com.l, R = com.R, c = com.c, esp = com.esp, create_stack = com.create_stack, lit = com.lit, version = com.version;
 print.log = {};
 help = c.grey("[  docs] " + com.homepage + "\n");
-show_stack = create_stack(3, [], help);
-pkgname = "v" + version + "|hoplon.guard";
+show_stack = create_stack(1, ['internal/modules/cjs', 'node:internal'], help);
+object_name = "hoplon.guard";
+pkgname = object_name + "#v" + version + "}";
 print.log.def_fault = function(){
   return c.er2("[error." + pkgname + "]");
 };
@@ -17,7 +18,7 @@ print.log.proto = function(){
   var state;
   state = this[modflag];
   if (state === undefined) {
-    return c.er1("[" + pkgname + "]") + c.er2("[state undefined]");
+    return c.pink("[" + pkgname + "]") + c.er2("[state undefined]");
   }
   return print.log.main(state);
 };
@@ -57,7 +58,7 @@ arrange = R.pipe(R.groupWith(R.equals), R.map(function(x){
 print.log.main = function(state){
   var str, clr, put, arr;
   if (state.fault) {
-    return c.er2("[" + pkgname + "|error]");
+    return c.pink("[" + object_name + "|error]");
   }
   str = "";
   if (state.immutable) {
@@ -70,7 +71,7 @@ print.log.main = function(state){
   if (state.apply) {
     str += "| apply";
   }
-  put = clr(("[" + pkgname) + str + "]");
+  put = clr(("[" + object_name) + str + "]");
   arr = arrange(state.str);
   str = put + " " + "[ " + arr + " ]";
   return str;
@@ -94,7 +95,7 @@ show_chain = function(inputStr, path, showArgs){
       }
       return results$;
     }()).join("");
-    str += lit(["(xx)", " <-- error within argument"], [c.er3, c.er1]);
+    str += lit(["(xx)", " <-- type error in argument"], [c.er3, c.er1]);
   } else {
     str += c.er2((function(){
       var i$, ref$, len$, results$ = [];
@@ -110,48 +111,48 @@ show_chain = function(inputStr, path, showArgs){
 };
 map_fname_to_ctypes = function(fname){
   switch (fname) {
-  case 'ma':
-    return 'ma';
   case 'ar':
   case 'arn':
     return 'ar';
   case 'wh':
   case 'whn':
+  case 'ma':
     return 'wh';
   case 'arwh':
   case 'arwhn':
   case 'arnwhn':
   case 'arma':
     return 'arwh';
-  case 'arpar':
-    return 'arpar';
+  default:
+    return fname;
   }
 };
 StrArgLen = function(fname, ctype, eType){
   var data;
   data = (function(){
     switch (ctype) {
-    case 'ma':
-      return [1, '(function|[fun....])'];
     case 'wh':
-      return [2, '(function,function|any)'];
+      return [2, 'FT,FA'];
     case 'ar':
-      return [2, '(number|[num...],function|any)'];
+      return [2, '(number|[num...]),FA'];
     case 'arwh':
-      return [3, '(number|[num...],function,function|any)'];
+      return [3, '(number|[num...]),FT,FA'];
+    case 'par':
+      return [3, 'FT,FA,FT'];
     case 'arpar':
-      return [4, '(number|[num...],function,function|any,function)'];
+      return [4, '(number|[num...]),FT,FA,F'];
     }
   }());
   switch (eType) {
   case 'many_args':
-    return [c.pink("too many arguments"), lit(["only " + data[0] + " arguments ", "\n\n " + fname, " :: " + data[1] + " "], [c.blue, c.ok, c.ok])];
+    return [c.er3("too many arguments"), lit(["only " + data[0] + " arguments ", "\n\n " + fname, " :: (" + data[1] + ") "], [c.blue, c.ok, c.ok])];
   case 'few_args':
-    return [c.pink("too few arguments"), lit(["requires " + data[0] + " arguments ", "\n\n " + fname, " :: " + data[1] + " "], [c.blue, c.ok, c.ok])];
+    return [c.er3("too few arguments"), lit(["requires " + data[0] + " arguments ", "\n\n " + fname, " :: (" + data[1] + ") "], [c.blue, c.ok, c.ok])];
   }
 };
-StrEType = function(fname, eType){
-  var ctype, init;
+StrEType = function(fname, data){
+  var eType, extra, ctype, init;
+  eType = data[0], extra = data[1];
   ctype = map_fname_to_ctypes(fname);
   switch (eType) {
   case 'many_args':
@@ -160,72 +161,97 @@ StrEType = function(fname, eType){
   }
   init = (function(){
     switch (ctype) {
-    case 'ma':
-      return lit(["function|[fun....],function|any"], [c.er2, c.ok]);
-    case 'arma':
-      switch (eType) {
-      case 'first':
-        return lit(["number", "|[num...],[fun....]"], [c.er2, c.ok]);
-      case 'array':
-        return lit(["number", "|[num..]", ",[fun....]"], [c.ok, c.er2, c.ok]);
-      case 'not_function':
-        return lit(["number|[num..]", ",[fun....]"], [c.ok, c.er2]);
-      }
-      break;
     case 'ar':
       switch (eType) {
       case 'first':
-        return lit(["number", "|[num...],function|any"], [c.er2, c.ok]);
+        return lit(["(", "number", "|[num...]),FA"], [c.ok, c.er2, c.ok]);
       case 'array':
-        return lit(["number", "|[num..]", ",function|any"], [c.ok, c.er2, c.ok]);
+        return lit(["(number", "|[num..]", "),FA"], [c.ok, c.er2, c.ok]);
+      case 'ob_not_object':
+        return lit(["(", "object", ")|((number|[num..]),FA)"], [c.ok, c.er2, c.ok]);
       }
       break;
     case 'wh':
       switch (eType) {
       case 'first':
-        return lit(["function", ",function|any"], [c.er2, c.ok]);
+        return lit(["FT", ",FA"], [c.er2, c.ok]);
       case 'second':
-        return lit(["function", "function|any"], [c.ok, c.er2]);
+        return lit(["FT", "FA"], [c.ok, c.er2]);
       }
       break;
     case 'arwh':
       switch (eType) {
       case 'num':
-        return lit(["number", "|[num..],function,function|any"], [c.er2, c.ok]);
+        return lit(["(", "number", "|[num..]),FT,FA"], [c.ok, c.er2, c.ok]);
       case 'array':
-        return lit(["number|", "[num..]", ",function,function|any"], [c.ok, c.er2, c.ok]);
+        return lit(["(number|", "[num..]", "),FT,FA"], [c.ok, c.er2, c.ok]);
       case 'second':
-        return lit(["number[num..],", "function", ",function|any"], [c.ok, c.er2, c.ok]);
+        return lit(["(number|[num..]),", "FT", ",FA"], [c.ok, c.er2, c.ok]);
+      case 'ob_not_object':
+        return lit(["(", "object", ")|((number|[num..]),FT,FA)"], [c.ok, c.er2, c.ok]);
+      case 'ob_inner_array':
+        return lit(["(object(", extra + ":...", "))"], [c.ok, c.er2, c.ok]);
+      case 'ob_inner_array_validator':
+        return lit(["(object(", extra + ":", "(", "FT", ",FA)))"], [c.ok, c.er2, c.ok, c.er2, c.ok]);
+      case 'ob_inner_not_array':
+        return lit(["(object(", extra + ":[..]", "))"], [c.ok, c.er2, c.ok]);
       }
       break;
     case 'arpar':
       switch (eType) {
       case 'num':
-        return lit(["number", "|[num..],function,function|any,function"], [c.er2, c.ok]);
-      case 'array':
-        return lit(["number|", "[num..]", ",function,function|any,function"], [c.ok, c.er2, c.ok]);
-      case 'second':
-        return lit(["number[num..],", "function", ",function|any,function"], [c.ok, c.er2, c.ok]);
-      case 'fourth':
-        return lit(["number[num..],function,function|any,", "function"], [c.ok, c.er2]);
+        return lit(["(", "number", "|[num..]),FT,FA,F"], [c.ok, c.er2, c.ok]);
+      case 'num_array':
+        return lit(["(number|", "[num..]", "),FT,FA,F"], [c.ok, c.er2, c.ok]);
+      case 'validator':
+        return lit(["(number|[num..]),", "FT", ",FA,F"], [c.ok, c.er2, c.ok]);
+      case 'lastview':
+        return lit(["(number|[num..]),F,FA,", "F"], [c.ok, c.er2]);
+      case 'ob_not_object':
+        return lit(["(", "object", ")|((number|[num..]),FT,FA,F)"], [c.ok, c.er2, c.ok]);
+      case 'ob_inner_not_array':
+        return lit(["(object(", extra + ":[..]", "))"], [c.ok, c.er2, c.ok]);
+      case 'ob_inner_array':
+        return lit(["(object(", extra + "", "))"], [c.ok, c.er2, c.ok]);
+      case 'ob_inner_array_validator':
+        return lit(["(object(", extra + ":", "(", "FT", ",FA,F)))"], [c.ok, c.er2, c.ok, c.er2, c.ok]);
+      case 'ob_inner_lastview':
+        return lit(["(object(", extra + ":", "(FT,FA,", "F", ")))"], [c.ok, c.er2, c.ok, c.er2, c.ok]);
+      }
+      break;
+    case 'par':
+      switch (eType) {
+      case 'validator':
+        return lit(["FT", ",FA,F"], [c.er2, c.ok]);
+      case 'lastview':
+        return lit(["FT,FA", ",F"], [c.ok, c.er2]);
       }
     }
   }());
-  init = lit(["(", init, ")"], [c.ok, 0, c.ok]);
-  return [init, c.pink('One of the argument is of the wrong type.')];
+  init = lit([fname + " :: ", init], [c.grey, 0]);
+  return [init, c.pink('one of the argument is of the wrong type.')];
 };
-print.typeError = function(data){
-  var ref$, E, fname, attribute, type_signature, comment;
-  ref$ = data, E = ref$[0], fname = ref$[1], attribute = ref$[2], data = ref$[3];
+print.typeError = function(ta){
+  var E, fname, attribute, data, ref$, type_signature, comment, legend, I;
+  E = ta[0], fname = ta[1], attribute = ta[2], data = ta[3];
   ref$ = StrEType(fname, attribute), type_signature = ref$[0], comment = ref$[1];
-  l(lit(["[" + packageJ.name + "]", "[typeError]", " ." + fname + "(", "...", ")"], [c.er1, c.er2, c.grey, c.er3, c.grey]));
-  l('\n', show_chain(data.str, [fname]), '\n\n', type_signature, '\n\n', comment, '\n');
+  legend = ["  F = function", "  FA = function|any", "  FT = function|hoplon.types"];
+  legend = (function(){
+    var i$, ref$, len$, results$ = [];
+    for (i$ = 0, len$ = (ref$ = legend).length; i$ < len$; ++i$) {
+      I = ref$[i$];
+      results$.push(c.blue(I));
+    }
+    return results$;
+  }()).join("\n");
+  l(lit(["[" + pkgname + "]", "[typeError]", " ." + fname + "(...)"], [c.pink, c.er2, c.er2]));
+  l('\n', show_chain(data.str, [fname]), '\n\n', legend, '\n\n', type_signature, '\n\n', comment, '\n');
   return show_stack(E);
 };
 print.unary_not_array = function(arg$){
   var E, data;
   E = arg$[0], data = arg$[1];
-  l(lit(["[" + packageJ.name + "]", "[typeError]"], [c.er1, c.er2]));
+  l(lit(["[" + pkgname + "]", "[typeError]"], [c.pink, c.er2]));
   l('\n', lit(['unary', show_chain(arrayFrom$(data.str).concat(['def']), [])], [c.warn, 0]), '\n');
   l(lit([" unary namespace requires first argument to be array like.", "\n"], [c.pink, 0]));
   return show_stack(E);
@@ -240,32 +266,32 @@ print.setting = function(arg$){
     case 'already_in_path':
       return "setting already enabled.";
     case 'not_in_opts':
-      return "undefined option.";
+      return "option not defined.";
     }
   }());
-  l(lit(["[" + pkgname + "][configError]", " " + msg], [c.er2, c.warn]));
-  l('\n', lit([vr.join("."), ".", key], [c.ok, c.ok, c.er]), '\n');
+  l(lit(["[" + pkgname + "]", "[configError]", " " + msg], [c.pink, c.er2, c.er1]));
+  l('\n', lit([vr.join("."), "." + key], [c.ok, c.er3]), '\n');
   return show_stack(E);
 };
 print.state_undef = function(arg$){
   var E, fname;
   E = arg$[0], fname = arg$[1];
-  l(lit(["[" + pkgname + "][Error]"], [c.er2]));
+  l(lit(["[" + pkgname + "]", "[Error]"], [c.pink, c.er1]));
   l(lit(["\n  ." + fname], [c.warn]));
   l(lit(["\n  Javascript does not allow referencing of .prototype function.\n"], [c.pink]));
   return show_stack(E);
 };
-print.arpar_not_array = function(arg$){
-  var E, data, type_signature;
-  E = arg$[0], data = arg$[1];
-  type_signature = StrEType('arpar', "second")[0];
-  l(lit(["[" + packageJ.name + "]", "[typeError]", " .arpar(", "...", ")"], [c.er1, c.er2, c.grey, c.er3, c.grey]));
-  l('\n', show_chain(data.str, ['arpar']), '\n\n', type_signature, '\n\n', c.pink(".arpar validator function requires return value to be array like."), '\n');
+print.validator_return_not_array = function(ta){
+  var E, ref$, type, loc, data, type_signature;
+  E = ta[0], ref$ = ta[1], type = ref$[0], loc = ref$[1], data = ta[2];
+  type_signature = StrEType(type, loc)[0];
+  l(lit(["[" + pkgname + "]", "[typeError]", " ." + type + "(", "...", ")"], [c.pink, c.er2, c.er2, c.er3, c.er2]));
+  l('\n', show_chain(R.init(data.str), [type]), '\n\n', type_signature, '\n\n', c.pink("validator function requires return value to be array like."), '\n');
   return show_stack(E);
 };
-print.route = function(arg$){
+print.route = function(ta){
   var ECLASS, data;
-  ECLASS = arg$[0], data = arg$[1];
+  ECLASS = ta[0], data = ta[1];
   switch (ECLASS) {
   case 'input':
     print.typeError(data);
@@ -276,8 +302,8 @@ print.route = function(arg$){
   case 'setting':
     print.setting(data);
     break;
-  case 'arpar_not_array':
-    print.arpar_not_array(data);
+  case 'validator_return_not_array':
+    print.validator_return_not_array(data);
     break;
   case 'state_undef':
     print.state_undef(data);

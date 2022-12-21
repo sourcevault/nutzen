@@ -9,7 +9,7 @@ print      = {}
 {l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack,version} = com
 
 
-pkgversion = "v#{version}"
+pkgversion = version
 
 pkgname    = "hoplon.types"
 
@@ -67,6 +67,8 @@ print.input_fault = ([method_name,data]) ->
   | \map      => fi.map data
   | \custom   => fi.custom data
   | \and,\or  => fi.andor data
+  | \bt       => fi.bt data
+
 
 show_chain = ([init,last]) ->
 
@@ -77,7 +79,7 @@ show_chain = ([init,last]) ->
 show_name = (extra,type = "[inputError] ") ->
 
   l lit do
-    ["[#{pkgversion}][#{pkgname}]", type,extra]
+    ["[#{pkgname}:v#{pkgversion}]", type,extra]
     [                        c.er1,c.er1,c.er1]
 
 print.input_fault.andor = ([type,info])->
@@ -134,8 +136,6 @@ print.input_fault.custom = ([patt,loc]) ->
 
   l ""
 
-
-
 print.input_fault.map = ([patt,loc]) ->
 
   show_name ".map"
@@ -157,6 +157,26 @@ print.input_fault.map = ([patt,loc]) ->
 
 
   l ""
+
+print.input_fault.bt = ([type,info]) ->
+
+  show_name ".bt"
+
+  l ""
+
+  show_chain info
+
+  l ""
+
+  l c.ok " accepted type signature :"
+
+  l ""
+
+  l type_color " - :: integer|undefined"
+
+  l ""
+
+
 
 on_dtype = {}
   ..string       = "(string|number,function)"

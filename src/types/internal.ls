@@ -58,10 +58,12 @@ cato = (arg) ->
 wrap      = {}
   ..on    = null
   ..rest  = null
+  ..bt    = null
 
 guard     = {}
   ..on    = null
   ..rest  = null
+  ..bt    = null
 
 define = {}
   ..and    = null
@@ -76,16 +78,18 @@ validate   = {}
 
 #---------------------------------------------------------
 
-props = [\and \or \alt \cont \tap \edit \err \jam \fix ]
+props = [\and \or \alt \cont \tap \edit \err \jam \fix]
 
 init-state =
   all  :[]
   type :null
   str  :[]
 
-wrap.rest  = (type) -> -> guard.rest arguments,@[sig],type
+wrap.bt = -> guard.bt arguments,@[sig],\bt
 
-wrap.on    = -> guard.on arguments,@[sig]
+wrap.rest = (type) -> -> guard.rest arguments,@[sig],type
+
+wrap.on = -> guard.on arguments,@[sig]
 
 proto       = {}
   ..normal  = {}
@@ -97,7 +101,7 @@ proto.normal.wrap = ->
 
   -> (F.auth.apply F,arguments).value
 
-for key,val of props
+for val in props
 
   F = wrap.rest val
 
@@ -106,6 +110,8 @@ for key,val of props
 proto.normal.auth      = tightloop
 
 proto.normal[uic]      = print.log
+
+proto.normal.bt        = wrap.bt
 
 proto.functor          = {...proto.normal}
 
@@ -189,7 +195,6 @@ define.on = (type,args,state) ->
   data = {
     ...state
     ...{
-      phase :\chain
       all   :block
       str   :state.str.concat \on
     }
@@ -394,7 +399,51 @@ validate.rest = (funs,state,type) ->
 
     return true
 
-  | otherwise => return false
+  | otherwise => false
+
+guard.bt = oxo
+
+
+
+# .ma do
+#   (args,state,type) ->
+
+#     first = args[0]
+
+#     switch R.type first
+
+#     | \Undefined => return Infinity
+#     | \Number    => return first
+#     | otherwise  =>
+
+#       A = do
+#         *new Error!
+#          \input.fault
+#          [type,[\not_function,[state.str,type]]]
+
+#       print.route A
+
+#       return false
+
+#   (n_arg,o_arg,state) ->
+
+#     all = state.all
+
+#     dna = [I.length for I in all by 2]
+#     ro = [all[K].length for K from 1 til all.length by 2]
+
+#     max = R.sum dna
+
+#     index = switch n_arg
+
+#     | Infinity  => 0
+#     | 0         => max
+#     | otherwise => max - n_arg
+
+
+.def loopError
+
+
 
 #-----------------------------------------------------------------------
 
@@ -497,9 +546,9 @@ define.and = (state,funs) ->
 
   | 1 =>
 
-    last = R.last all
-
     init = R.init all
+
+    last = R.last all
 
     nlast = [...last,...funs]
 
@@ -514,9 +563,9 @@ define.or = (state,funs) ->
   switch (all.length%2)
   | 0 =>
 
-    last = R.last all
-
     init = R.init all
+
+    last = R.last all
 
     nlast = [...last,...funs]
 

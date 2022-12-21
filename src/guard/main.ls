@@ -2,24 +2,15 @@ ext = require "./verify.print.common"
 
 {com,verify,modflag,defacto,print} = ext
 
-{l,z,R,uic,binapi} = com
+{l,z,zj,R,uic,binapi,j} = com
 
 #---------------------------------------------------
 
-init =
-  str      :[]
-  fns      :[]
-  def      :null
-  fault    :false
-  unary    :false
-  immutable:false
+j = j.o {indent:2}
 
 #---------------------------------------------------
-#---------------------------------------------------
-#---------------------------------------------------
-#---------------------------------------------------
 
-settle = (F,A) ->
+resolve = (F,A) ->
 
   [ftype,f] = F
 
@@ -28,7 +19,7 @@ settle = (F,A) ->
   | \v => f.auth ...A
   | \s => f
 
-mod-settle = (F,init,A) ->
+mod_resolve = (F,init,A) -> # when arguments require manipulation
 
   [ftype,f] = F
 
@@ -65,6 +56,271 @@ mod-settle = (F,init,A) ->
 
   | \s => f
 
+UNDEC = Symbol \undecided
+
+ob = (fn) -> (da,ta)->
+
+  pick = ta[da.arglen]
+
+  if not pick then return UNDEC
+
+  len = pick.length
+
+  I = 0
+
+  do
+
+    ka = pick[I]
+
+    val = fn da,ka
+
+    if val isnt UNDEC then return val
+
+    I++
+
+  while I < len
+
+  return UNDEC
+
+n = (fn) -> (da,ta) ->
+
+  [num,ka] = ta
+
+  if num is da.arglen
+
+    return fn da,ka
+
+  return UNDEC
+
+a = (fn) -> (da,ta) ->
+
+  [spans,ka] = ta
+
+  if spans[da.arglen]
+
+    return fn da,ka
+
+  return UNDEC
+
+core = {}
+
+core.wh = (da,ta) ->
+
+  [[vtype,vF],exec] = ta
+
+  switch vtype
+
+  | \f =>
+
+    cont = vF ...da.arg
+
+    if cont
+
+      return resolve exec,da.arg
+
+  | \v =>
+
+    vd = vF.auth da.arg
+
+    if vd.continue
+
+      return resolve exec,vd.value
+
+  UNDEC
+
+core.whn = (da,ta) ->
+
+  [[vtype,vF],exec] = ta
+
+  switch vtype
+
+  | \f =>
+
+    cont = vF ...da.arg
+
+    if not cont
+
+      return resolve exec,da.arg
+
+  | \v =>
+
+    vd = vF.auth da.arg
+
+    if vd.error
+
+      return resolve exec,vd.value
+
+  UNDEC
+
+# ---aux----
+
+core.arn = (da,ta) ->
+
+  [spans,exec] = ta
+
+  if spans[da.arglen] then return UNDEC
+
+  return resolve exec,da.arg
+
+arwhn = {}
+
+arwhn.ob = ob core.whn
+
+arwhn.n = n core.whn
+
+arwhn.a = a core.whn
+
+core.arwhn = (da,ta) -> arwhn[ta[0]] da,ta[1]
+
+core.arnwh = (da,ta) ->
+
+  [spans,exec] = ta
+
+  if spans[da.arglen] then return UNDEC
+
+  return core.wh da,exec
+
+core.arnwhn = (da,ta) ->
+
+  [spans,exec] = ta
+
+  if spans[da.arglen] then return UNDEC
+
+  return core.whn da,exec
+
+# -----
+
+core.ma = (da,ta) ->
+
+  [[vtype,vF],exec] = ta
+
+  switch vtype
+
+  | \f =>
+
+    msg = vF ...da.arg
+
+    if msg
+
+      return mod_resolve exec,msg,da.arg
+
+  | \v =>
+
+    vd = vF.auth da.arg
+
+    if vd.continue
+
+      return mod_resolve exec,vd.value,da.arg
+
+  UNDEC
+
+arma = {}
+
+arma.ob = ob core.ma
+
+arma.n = n core.ma
+
+arma.a = a core.ma
+
+core.arma = (da,ta) -> arma[ta[0]] da,ta[1]
+
+common_par = (fname)-> (da,ta) ->
+
+  [[vtype,vF],exec,lastview] = ta
+
+  switch vtype
+  | \f =>
+
+    ret = vF ...da.arg
+
+    if not (Array.isArray ret)
+      print.route do
+        [\validator_return_not_array,[(new Error!),[fname,[\validator]],da.state]]
+      return void
+
+    [cont,msg] = ret
+
+    if cont
+      return mod_resolve exec,msg,da.arg
+    else
+      ret = lastview msg
+      if (ret isnt void) then return ret
+
+  | \v => # hoplon validator
+
+    vd = vF.auth da.arg
+
+    if vd.continue
+      return mod_resolve exec,vd.value,da.arg
+    else
+      ret = lastview vd.message,vd.path
+      if (ret isnt void) then return ret
+
+
+  UNDEC
+
+core.par = common_par \par
+
+arpar = {}
+
+f_arpar = common_par \arpar
+
+arpar.ob = ob f_arpar
+
+arpar.n = n f_arpar
+
+arpar.a = a f_arpar
+
+core.arpar = (da,ta) -> arpar[ta[0]] da,ta[1]
+
+# .arwh  ------------
+
+arwh = {}
+
+arwh.ob = ob core.wh
+
+arwh.n = n core.wh
+
+arwh.a = a core.wh
+
+core.arwh = (da,ta) -> arwh[ta[0]] da,ta[1]
+
+# .ar  ------------
+
+ar = {}
+
+ar.ob = (da,ta) ->
+
+  pick = ta[da.arglen]
+
+  if not pick then return UNDEC
+
+  resolve pick,da.arg
+
+
+ar.n = (da,ta) ->
+
+  [num,exec] = ta
+
+  if num is da.arglen
+
+    return resolve exec,da.arg
+
+  return UNDEC
+
+ar.a = (da,ta) ->
+
+  [spans,exec] = ta
+
+  if spans[da.arglen]
+
+    return resolve exec,da.arg
+
+  return UNDEC
+
+core.ar = (da,ta) ->
+
+  ar[ta[0]] da,ta[1]
 
 tightloop = (state) -> ->
 
@@ -94,284 +350,15 @@ tightloop = (state) -> ->
 
   terminate = fns.length
 
+  da = {arglen:arglen,arg:arguments,state:state}
+
   while I < terminate
 
-    {fname,data} = fns[I]
+    elemento = fns[I]
 
-    switch fname
+    devolver = core[elemento[0]] da,elemento[1]
 
-    # --------------------------------------------
-
-    | \wh =>
-
-      [[vtype,validatorF],exec] = data
-
-      switch vtype
-
-      | \f =>
-
-        cont = validatorF ...arguments
-
-        if cont
-
-          return settle exec,arguments
-
-      | \v =>
-
-        vd = validatorF.auth arguments
-
-        if vd.continue
-
-          return (settle exec,vd.value)
-
-    # --------------------------------------------
-
-    | \whn =>
-
-      [[vtype,validatorF],exec] = data
-
-      switch vtype
-
-      | \f =>
-
-        cont = validatorF ...arguments
-
-        if not cont
-
-          return settle exec,arguments
-
-      | \v =>
-
-        vd = validatorF.auth arguments
-
-        if vd.error
-
-          return (settle exec,vd.value)
-
-    # --------------------------------------------
-
-    | \ar =>
-
-      [spans,exec] = data
-
-      if spans[arglen]
-
-        return settle exec,arguments
-
-    # --------------------------------------------
-
-    | \arn =>
-
-      [spans,exec] = data
-
-      if not spans[arglen]
-
-        return settle exec,arguments
-
-    # --------------------------------------------
-
-    | \arwh     =>
-
-      [spans,[vtype,validatorF],exec] = data
-
-      if spans[arglen]
-
-        switch vtype
-
-        | \f =>
-
-          cont = validatorF ...arguments
-
-          if cont
-
-            return settle exec,arguments
-
-        | \v =>
-
-          vd = validatorF.auth arguments
-
-          if vd.continue
-
-            return (settle exec,vd.value)
-
-    # --------------------------------------------
-
-    | \ma =>
-
-      [[vtype,validatorF],exec] = data
-
-      switch vtype
-
-      | \f =>
-
-        msg = validatorF ...arguments
-
-        if msg
-
-          return mod-settle exec,msg,arguments
-
-      | \v =>
-
-        vd = validatorF.auth arguments
-
-        if vd.continue
-
-          return mod-settle exec,vd.value,arguments
-
-    | \arma     =>
-
-      [spans,[vtype,validatorF],exec] = data
-
-      if spans[arglen]
-
-        switch vtype
-
-        | \f =>
-
-          msg = validatorF ...arguments
-
-          if msg
-
-            return mod-settle exec,msg,arguments
-
-        | \v =>
-
-          vd = validatorF.auth arguments
-
-          if vd.continue
-
-            return mod-settle exec,vd.value,arguments
-
-    # --------------------------------------------
-
-    | \arpar    =>
-
-      [spans,[vtype,validatorF],exec,lastview] = data
-
-      if not spans[arglen]
-        break
-
-      switch vtype
-
-      | \f =>
-
-        ret = validatorF ...arguments
-
-        if not (Array.isArray ret)
-
-          print.route [\arpar_not_array,[(new Error!),state]]
-
-          return void
-
-        [cont,msg] = ret
-
-        if cont
-
-          return mod-settle exec,msg,arguments
-
-        else
-
-          msg = switch R.type msg
-          | \Array    => msg
-          | \Undefined,\Null => []
-          | otherwise => msg
-
-          ret = lastview msg
-
-          if not (ret in [void,false,null]) then return ret
-
-      | \v => # hoplon validator
-
-        vd = validatorF.auth arguments
-
-        if vd.continue
-
-          return mod-settle exec,vd.value,arguments
-
-        else
-
-          ret = lastview vd.message,vd.path
-
-          if not (ret in [void,false,null]) then return ret
-
-
-    # --------------------------------------------
-
-    | \arwhn    =>
-
-      [spans,[vtype,validatorF],exec] = data
-
-      if spans[arglen]
-
-        switch vtype
-
-        | \f =>
-
-          cont = validatorF ...arguments
-
-          if not cont
-
-            return settle exec,arguments
-
-        | \v =>
-
-          vd = validatorF.auth arguments
-
-          if vd.error
-
-            return (settle exec,vd.value)
-
-    # --------------------------------------------
-
-    | \arnwh    =>
-
-      [spans,[vtype,validatorF],exec] = data
-
-      if not spans[arglen]
-
-        switch vtype
-
-        | \f =>
-
-          cont = validatorF ...arguments
-
-          if cont
-
-            return settle exec,arguments
-
-        | \v =>
-
-          vd = validatorF.auth arguments
-
-          if vd.continue
-
-            return (settle exec,vd.value)
-
-    # --------------------------------------------
-
-    | \arnwhn    =>
-
-      [spans,[vtype,validatorF],exec] = data
-
-      if not spans[arglen]
-
-        switch vtype
-
-        | \f =>
-
-          cont = validatorF ...arguments
-
-          if not cont
-
-            return settle exec,arguments
-
-        | \v =>
-
-          vd = validatorF.auth arguments
-
-          if vd.error
-
-            return (settle exec,vd.value)
+    if (devolver != UNDEC) then return devolver
 
     I += 1
 
@@ -379,7 +366,7 @@ tightloop = (state) -> ->
 
   def = state.def
 
-  if def then return settle def,arguments
+  if def then return resolve def,arguments
 
 
 #---------------------------------------------------
@@ -411,26 +398,33 @@ handle.fault = (self,data,fname) ->
 
   looper neo
 
+main.clone = ->
+
+  state = @[modflag]
+
+  neo = R.mergeRight state,{fns:[...state.fns],str:[...state.str]}
+
+  looper neo
 
 handle.ok = (self,data,fname)->
 
   state = self[modflag]
 
+  neo_data = [fname,data]
+
   if (state.immutable) or (state.str.length is 0)
 
-    fns = state.fns.concat {fname:fname,data:data}
+    fns = state.fns.concat [neo_data]
 
-    neo = Object.assign {},state,{fns:fns,str:(state.str.concat fname)}
+    neo = R.mergeRight state,{fns:fns,str:(state.str.concat fname)}
 
     looper neo
 
   else
 
-    state.fns.push {fname:fname,data:data}
+    state.fns.push neo_data
 
     state.str.push fname
-
-    neo = state
 
     self
 
@@ -444,8 +438,7 @@ handle.def.ok = (self,data) ->
 
   state = self[modflag]
 
-  neo = Object.assign do
-    {}
+  neo = R.mergeRight do
     state
     {
       def:data
@@ -465,15 +458,17 @@ genfun = (vfun,fname) -> ->
 
   state = @[modflag]
 
-  if state is undefined
+  if state is void
 
     print.route [\state_undef,[(new Error!),fname]]
 
-    return undefined
+    return void
 
   if state.fault then return @
 
-  [zone,data] = vfun arguments
+  out = vfun fname,arguments
+
+  [zone,data] = out
 
   handle[zone] @,data,fname
 
@@ -496,11 +491,23 @@ main.def =  ->
 
   if state.fault then return handle.def.fault
 
-  [zone,data] = verify.def arguments
+  [___,data] = verify.def arguments
 
   handle.def.ok @,data
 
-props = [\ma \arma \wh \ar \whn \arn \arwh \arnwh \arwhn \arnwhn \arpar]
+props =
+  *\ar
+   \wh
+   \ma
+   \arma
+   \par
+   \arpar
+   \whn
+   \arn
+   \arwh
+   \arwhn
+   \arnwh
+   \arnwhn
 
 #---------------------------------------------------
 
@@ -508,7 +515,9 @@ R.reduce do
 
   (ob,prop) ->
 
-    ob[prop] = genfun (verify.getvfun prop),prop
+    F = verify.getvfun prop
+
+    ob[prop] = genfun F,prop
 
     ob
 
@@ -521,11 +530,13 @@ cat = {}
 
 cat.opt = new Set [\unary,\immutable,\debug]
 
-cat.methods = new Set (props.concat ["def"])
+cat.methods = new Set props.concat [\def]
 
 # Set(12) {'ma', 'arma', 'wh', 'ar', 'whn', 'arn', 'arwh', 'arnwh', 'arwhn', 'arnwhn', 'arpar', 'def'}
 
-getter = ({path,lock,str,vr},key) ->
+getter = (data,key) ->
+
+  {path,lock,str,vr} = data
 
   if lock
 
@@ -553,7 +564,7 @@ getter = ({path,lock,str,vr},key) ->
 
     [true,{path:path,lock:true,str:str,vr:vr,key:key}]
 
-  else if key is \getdef
+  else if key is \symdef
 
     return [false,defacto]
 
@@ -564,6 +575,14 @@ getter = ({path,lock,str,vr},key) ->
     null
 
 topcache = {}
+
+init =
+  str      :[]
+  fns      :[]
+  def      :null
+  fault    :false
+  unary    :false
+  immutable:false
 
 entry = (data,args) ->
 
@@ -576,7 +595,7 @@ entry = (data,args) ->
 
   {path,lock,vr,key} = data
 
-  ob = {}
+  ob = {} # { debug: true },{debug: true, immutable:true}
 
   for ke in path
     ob[ke] = true
@@ -596,7 +615,3 @@ pkg = binapi do
 
 
 module.exports = pkg
-
-
-
-

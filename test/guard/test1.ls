@@ -18,11 +18,12 @@ pf = print_fail "test/#{proj}/#{name}.js"
 
 #-------------------------------------------------------------------------------
 
+
 V1 = guard
 .arpar 1,
   -> [false,"hello"]
   -> "world"
-  -> false
+  -> void
 
 .def "foobar"
 
@@ -38,7 +39,7 @@ V2 = guard
 .arpar 1,
   -> [false]
   ->
-  -> arguments[0]
+  -> []
 .def!
 
 empty_array = V2 1

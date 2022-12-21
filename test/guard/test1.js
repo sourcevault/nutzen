@@ -12,9 +12,7 @@ V1 = guard.arpar(1, function(){
   return [false, "hello"];
 }, function(){
   return "world";
-}, function(){
-  return false;
-}).def("foobar");
+}, function(){}).def("foobar");
 retorn = V1(1);
 if (!(retorn === "foobar")) {
   pf(".arpar / normal validator function");
@@ -22,7 +20,7 @@ if (!(retorn === "foobar")) {
 V2 = guard.arpar(1, function(){
   return [false];
 }, function(){}, function(){
-  return arguments[0];
+  return [];
 }).def();
 empty_array = V2(1);
 if (!(R.type(empty_array) === 'Array')) {

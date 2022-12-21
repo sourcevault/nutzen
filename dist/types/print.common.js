@@ -3,7 +3,7 @@ com = require('../utils/main');
 oxo = require('../guard/main');
 print = {};
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack, version = com.version;
-pkgversion = "v" + version;
+pkgversion = version;
 pkgname = "hoplon.types";
 out$.com = com = com;
 out$.print = print = print;
@@ -60,6 +60,8 @@ print.input_fault = function(arg$){
   case 'and':
   case 'or':
     return fi.andor(data);
+  case 'bt':
+    return fi.bt(data);
   }
 };
 show_chain = function(arg$){
@@ -69,7 +71,7 @@ show_chain = function(arg$){
 };
 show_name = function(extra, type){
   type == null && (type = "[inputError] ");
-  return l(lit(["[" + pkgversion + "][" + pkgname + "]", type, extra], [c.er1, c.er1, c.er1]));
+  return l(lit(["[" + pkgname + ":v" + pkgversion + "]", type, extra], [c.er1, c.er1, c.er1]));
 };
 print.input_fault.andor = function(arg$){
   var type, info;
@@ -119,6 +121,18 @@ print.input_fault.map = function(arg$){
   case 'not_function':
     l(c.grey("  first argument has to be a function."));
   }
+  return l("");
+};
+print.input_fault.bt = function(arg$){
+  var type, info;
+  type = arg$[0], info = arg$[1];
+  show_name(".bt");
+  l("");
+  show_chain(info);
+  l("");
+  l(c.ok(" accepted type signature :"));
+  l("");
+  l(type_color(" - :: integer|undefined"));
   return l("");
 };
 x$ = on_dtype = {};

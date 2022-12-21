@@ -8,9 +8,9 @@ name  = \test7
 
 path = (name) -> "../../dist/#{name}/main"
 
-oxo   = require path \guard
+xop   = require path \guard
 
-be    = require path \types
+# be    = require path \types
 
 com   = require path \utils
 
@@ -19,3 +19,23 @@ com   = require path \utils
 pf = print_fail "test/#{proj}/#{name}.js"
 
 #-------------------------------------------------------------------------------
+
+xop = xop.debug
+
+# vo = xop.arwh 3,-> true,-> 'hello world'
+
+A =
+  1: -> 4
+   # *-> false
+   #  3
+   # *-> true
+   #  4
+
+
+    
+  # 0:
+  #   -> false
+  #   -> "corruption"
+
+
+

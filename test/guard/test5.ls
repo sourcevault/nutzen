@@ -20,4 +20,4 @@ pf = print_fail "test/#{proj}/#{name}.js"
 
 #-------------------------------------------------------------------------------
 
-A = be.known.arr.forEach (__,x) -> console.log arguments
+# A = be.known.arr.forEach (__,x) -> console.log arguments

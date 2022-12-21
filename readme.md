@@ -62,20 +62,24 @@ hoplon.utils
     1. [Method Description](#method-descriptions)
         - [ar](#ar)
         - [wh](#wh)
-        - [whn](#whn)
         - [ma](#ma)
-        - [arn](#arn)
         - [arma](#arma)
-        - [arwh](#arwh)
-        - [arnwh](#arnwh)
-        - [arwhn](#arwhn)
-        - [arnwhn](#arnwhn)
+        - [par](#par)
         - [arpar](#arpar)
+        - [whn](#whn)
+        - [arn](#arn)
+        - [arwh](#arwh)
+        - [arwhn](#arwhn)
+        - [arnwh](#arnwh)
+        - [arnwhn](#arnwhn)
+        - [def](#def)
+        - [clone](#clone)
+
     1. [Description and Type in Table](#description-and-type-in-table)
     1. [Namespaces](#Namespaces)
         - [immutable](#immutable)
         - [unary](#unary)
-        - [debug](#dubug)
+        - [debug](#debug)
 1. [hoplon.utils](#hoplonutils)
 
   1. [hoplon.utils.binapi](#hoplonutilsbinapi)
@@ -458,7 +462,7 @@ console.log(ret) // ["127.0.0.1"]
 
 - `tap` is an operation specifically made for debugging / side effect.
 
-- for example, lets say we want to see what values are moving through our chain.
+- for example, lets say we want to see what values are moving through your chain.
 
 - we could use `cont` from above, but we need to make sure our return values are set correctly.
 
@@ -560,7 +564,7 @@ Some validators are common enough to be added in core.
 
 - `required` - accepts a list of strings and checks *if they are not undefined*  in an object.
 
-- `restricted` - checks if object has properties that are restricted to provided keys. examples
+- `restricted` - checks if object has properties that are restricted to provided keys.
 
 - `int` - checks if input is a integer
 
@@ -752,13 +756,18 @@ This now allows us to cover both `typeError` and `argumentError` for the adder f
 
 #### *Why ?*
 
-Guards are function wrappers that are commonly found in functional programming language, they help in making sure error handling code does not clutter core logic. They are especially useful in languages such as javascript that have virtually no type checks.
+Guards are wrappers that are commonly found in functional programming languages, which help in making sure error handling code does not clutter core procedures, these come especially handy in languages such as javascript that have virtually no type checks.
 
 They also encourage efficient use of pattern matching to structure code and external API.
 
 #### Method Descriptions
 
-The API surface is purposefully kept large to cover all types of niche pattern matching usecases :
+The API surface is purposefully kept large to cover all types of niche pattern matching usecases:
+
+```
+CORE   : ar,wh,arwh,ma,arma,par,arpar,def,clone
+EXTRAS : whn,arn,arwhn,arnwh,arnwhn
+```
 
 ### `ar`
 
@@ -784,7 +793,7 @@ first function should return a boolean, which determines if second function is r
 
 ➡️`:: (function,function|any)`
 
-There are times when the validator itself does some side-effects ( eg. finding a file in a directory ).
+There are times when the validator function does some side-effects ( eg. finding a file in a directory ).
 
 In situations like that we may need to ensure two things :
 
@@ -796,7 +805,7 @@ In situations like that we may need to ensure two things :
 
 -  return value of the validator function is sent to the execution function, as the first **argument**.
 
-If the validator function in `.ma` returns `false` or `undefined` then `hoplon` jumps to the next validator, in *any other value type including true* `hoplon` adds the value to the argument object to be provided to the execution function.
+If the validator function in `.ma` returns `null` then `hoplon` jumps to the next validator, in *any other value type including undefined and false*, `hoplon` **replaces** the value to the argument object to be provided to the execution function.
 
 ### `arma`
 
@@ -804,18 +813,22 @@ If the validator function in `.ma` returns `false` or `undefined` then `hoplon` 
 
 Combines `.ar` and `.ma`, first argument can be a number or a array of number just like in `.ar`.
 
+### `par`
+
+`par :: {spans} -> { validator } -> { execution } -> {handleError}`
+
+`.par` is exactly like `.ma` but accepts a final error handling function, it's validator also **only accepts** a tuple as return value.
+
+In the trivial case, validator functions return just `true` or `false`, but as we have to deal with more complicated situations, a better return signature would be a tuple, where the second value is relevant metadata (in case of error) or just data.
+
+If the `handleError` function returns `undefined` then `hoplon.guard` jumps to the next validator, *for any other value* **X** it terminates the loop and returns **X**.
+
+
 ### `arpar`
 
 `arpar :: {spans} -> { validator } -> { execution } -> {handleError}`
 
-`.arpar` is exactly like `.arma` but accepts a final error handling function and **only accepts** a tuple as return value for the validator.
-
-In the trivial case, validator functions return just `true` or `false`, but as we have to deal with more involved situations, a better return signature would be a tuple where, the second value is relevant metadata (in case of error) or just data :
-
-```
-[true,...]
-[false,...]
-```
+`.arpar` is `.par` but also matches against number of arguments.
 
 ### `whn`
 
@@ -839,19 +852,19 @@ A combination of `ar` and `wh` operators, first argument is number of argument w
 
 `arwhn :: (number|[num...],function,function|any)`
 
-Just like `arwh` but only runs if the validator function return false.
+Just like `arwh` but only runs if the validator function return `false`.
 
 ### `arnwh`
 
 `arnwh :: (number|[num...],function,function|any)`
 
-Just like `arwh` but only runs if the arguments do not match.
+Just like `arwh` but runs if the `ar` does not match and validator returns `true`.
 
 ### `arnwhn`
 
 `arnwhn :: (number|[num...],function,function|any)`
 
-Just like `arwhn` but runs if either conditions fails ( argument or function ), ( since the method name is quite a mouthful, its better to use the shorthand `.arnwhn`).
+Just like `arwh` but runs if both `ar` and `wh` do not match.
 
 ### `def`
 
@@ -861,6 +874,15 @@ In case `hoplon` is unable to match anything, the return value of the function a
 
 It's also possible to just provide a static value or object as default.
 
+### `clone`
+
+`clone ::`
+
+Alongside the `hoplon.guard.immutable` namespace, `hoplon.guard` also has a handy `.clone` operator in case there needs to be seperation in the validator chain.
+
+When using fluent API pattern, the underlying object is kept by default to be mutable, to aid in efficiency, but there are rare situations where validator chains share a common parent chain.
+
+
 #### `⛔️ Notes ⛔️`
 
 - Each `hoplon.guard` object **always** has to end with a `.def`.
@@ -869,9 +891,19 @@ It's also possible to just provide a static value or object as default.
 
 - `hoplon.guard` also accepts validators created using `hoplon.types`.
 
-- when creating large validator chains, sometimes you want to 'reach' / 'use' the `.def` value to *short circuit* your pattern matching, in situation like that `hoplon.guard.getdef` is provided, it allows using the `.def` function directly, it's important to note this is an purely an *optimization concern* - to keep `hoplon.guard` competitive with a native implementation.
+- when creating large validator chains, you may want to 'reach' / 'use' the `.def` value to *short circuit* your pattern matching, in situation like that `.symdef` is provided, it allows using the `.def` function directly, it's important to note this is purely an *optimization concern*.
+
+#### why introduce functions like `arwhn`, `arnwh` and `arnwhn` or even `arn` ?
+
+It's important to write as few simple functions as possible and reduce the overall number of `if..else`.
+
+These functions also completes the algebra of the core operators.
 
 ##### Description and Type in Table
+
+- `exec` - execution function - once all the conditions are met, this function is run. The return value of this function is the return value of the `hoplon.guard` object.
+
+- `errorfun` - error logic is expressed within this function.
 
 ```
 [ LEGENDS ]
@@ -879,6 +911,7 @@ It's also possible to just provide a static value or object as default.
 arglen      👉🏼       number | [num...]
 validator   👉🏼  ( -> bool ) | { hoplon.types object }
 exec        👉🏼    function  | any
+errorfun    👉🏼    function 
 
 🟢 Table 1 - method names and their types.
 
@@ -894,7 +927,9 @@ arwh         args when           arglen,validator,exec
 arnwh        args not when       arglen,validator,exec
 arwhn        args when not       arglen,validator,exec
 arnwhn       args not when not   arglen,validator,exec
-arpar        args par            arglen,validator,exec,function
+par          par                 validator,exec,errorfun
+arpar        args par            arglen,validator,exec,errorfun
+
 ----------------------------------------------------------------
 def          default             (function|any)
 ----------------------------------------------------------------
@@ -916,7 +951,9 @@ arma         arglen      validator   exec
 arnwh        arglen      validator   exec
 arwhn        arglen      validator   exec
 arnwhn       arglen      validator   exec
-arpar        arglen      validator   exec        function
+arpar        arglen      validator   exec        errorfun
+par          validator   exec        errorfun
+
 def          function|any
 ```
 
@@ -1032,6 +1069,8 @@ As shown above, we are using object properties as switches to turn "ON" certain 
 
 [colors](https://www.npmjs.com/package/colors) is a good example of module that follows this pattern.
 
+`hoplon.guard` namespaces also depends on `binapi`.
+
 `binapi` is a shorthand for binary APIs.
 
 .. **Features**
@@ -1119,7 +1158,6 @@ var out = compute(5)
 
 Internally `binapi` uses ES6 proxies allowing binding of custom log functions - providing us with the option of giving better object information when using `console.log`, custom log function is added as the 4rth argument.
 
-
 🟡 *..Example 4 - custom logger provided as 4rth argument..*
 
 ```js
@@ -1143,6 +1181,10 @@ console.log (tsf) // ( sync | flip )
 ```
 
 #### Update and API change
+
+◾️ `1.0.3` :
+  - bug fixes and `.par` added,
+  - `getdef` is now `symdef`, reflection the fact it's a symbol.
 
 ◾️ `0.1.26` -  added `.wrap` and `.err` now allows changing of path variable downstream, if a object is used instead of an array.
 

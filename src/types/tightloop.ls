@@ -4,7 +4,7 @@ pc = require "./print.common"
 
 {com,pkgname,sig} = pc
 
-{l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack} = com
+{l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack,zj} = com
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
@@ -532,88 +532,90 @@ tightloop = (x) !->
 
   {all,type} = state
 
-  I          = 0
+  zj all
 
-  put        = {continue:true,error:false,value:x}
+  # I          = 0
 
-  nI         = all.length
+  # put        = {continue:true,error:false,value:x}
 
-  while I < nI
+  # nI         = all.length
 
-    each = all[I]
+  # while I < nI
 
-    switch I%2
+  #   each = all[I]
 
-    | 0 => # and
+  #   switch I%2
 
-      J  = 0
+  #   | 0 => # and
 
-      nJ = each.length
+  #     J  = 0
 
-      do
+  #     nJ = each.length
 
-        fun = each[J]
+  #     do
 
-        if put.error
+  #       fun = each[J]
 
-          put = blunder fun,put,arguments
+  #       if put.error
 
-        else
+  #         put = blunder fun,put,arguments
 
-          put = resolve fun,put,type,arguments
+  #       else
 
-        J += 1
+  #         put = resolve fun,put,type,arguments
 
-      while J < nJ
+  #       J += 1
 
-      if put.error
+  #     while J < nJ
 
-        I += 1
+  #     if put.error
 
-      else
+  #       I += 1
 
-        I += 2
+  #     else
 
-    | 1 => # or
+  #       I += 2
 
-      J    = 0
+  #   | 1 => # or
 
-      nJ   = each.length
+  #     J    = 0
 
-      put.message = [put.message]
+  #     nJ   = each.length
 
-      do
+  #     put.message = [put.message]
 
-        fun = each[J]
+  #     do
 
-        [patt] = fun
+  #       fun = each[J]
 
-        nput = resolve fun,put,type,arguments
+  #       [patt] = fun
 
-        if (patt is \alt) and nput.continue
+  #       nput = resolve fun,put,type,arguments
 
-          put = nput
-          J   = nJ
+  #       if (patt is \alt) and nput.continue
 
-        else if nput.continue
+  #         put = nput
+  #         J   = nJ
 
-          put = nput
-          I   = nI # end entire loop
-          J   = nJ
+  #       else if nput.continue
 
-        else
+  #         put = nput
+  #         I   = nI # end entire loop
+  #         J   = nJ
 
-          if not (nput.message is undefined)
+  #       else
 
-            put.message.push nput.message
+  #         if not (nput.message is undefined)
 
-          J += 1
+  #           put.message.push nput.message
 
-      while J < nJ
+  #         J += 1
 
-      I += 1
+  #     while J < nJ
 
-  return put
+  #     I += 1
+
+  # return put
 
 
 module.exports = tightloop

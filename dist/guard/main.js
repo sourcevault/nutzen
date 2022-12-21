@@ -1,16 +1,11 @@
-var ext, com, verify, modflag, defacto, print, l, z, R, uic, binapi, init, settle, modSettle, tightloop, main, looper, handle, genfun, props, cat, getter, topcache, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ext, com, verify, modflag, defacto, print, l, z, zj, R, uic, binapi, j, resolve, mod_resolve, UNDEC, ob, n, a, core, arwhn, arma, common_par, arpar, f_arpar, arwh, ar, tightloop, main, looper, handle, genfun, props, cat, getter, topcache, init, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ext = require("./verify.print.common");
 com = ext.com, verify = ext.verify, modflag = ext.modflag, defacto = ext.defacto, print = ext.print;
-l = com.l, z = com.z, R = com.R, uic = com.uic, binapi = com.binapi;
-init = {
-  str: [],
-  fns: [],
-  def: null,
-  fault: false,
-  unary: false,
-  immutable: false
-};
-settle = function(F, A){
+l = com.l, z = com.z, zj = com.zj, R = com.R, uic = com.uic, binapi = com.binapi, j = com.j;
+j = j.o({
+  indent: 2
+});
+resolve = function(F, A){
   var ftype, f;
   ftype = F[0], f = F[1];
   switch (ftype) {
@@ -22,7 +17,7 @@ settle = function(F, A){
     return f;
   }
 };
-modSettle = function(F, init, A){
+mod_resolve = function(F, init, A){
   var ftype, f, modArg;
   ftype = F[0], f = F[1];
   switch (ftype) {
@@ -66,9 +61,222 @@ modSettle = function(F, init, A){
     return f;
   }
 };
+UNDEC = Symbol('undecided');
+ob = function(fn){
+  return function(da, ta){
+    var pick, len, I, ka, val;
+    pick = ta[da.arglen];
+    if (!pick) {
+      return UNDEC;
+    }
+    len = pick.length;
+    I = 0;
+    do {
+      ka = pick[I];
+      val = fn(da, ka);
+      if (val !== UNDEC) {
+        return val;
+      }
+      I++;
+    } while (I < len);
+    return UNDEC;
+  };
+};
+n = function(fn){
+  return function(da, ta){
+    var num, ka;
+    num = ta[0], ka = ta[1];
+    if (num === da.arglen) {
+      return fn(da, ka);
+    }
+    return UNDEC;
+  };
+};
+a = function(fn){
+  return function(da, ta){
+    var spans, ka;
+    spans = ta[0], ka = ta[1];
+    if (spans[da.arglen]) {
+      return fn(da, ka);
+    }
+    return UNDEC;
+  };
+};
+core = {};
+core.wh = function(da, ta){
+  var ref$, vtype, vF, exec, cont, vd;
+  ref$ = ta[0], vtype = ref$[0], vF = ref$[1], exec = ta[1];
+  switch (vtype) {
+  case 'f':
+    cont = vF.apply(null, da.arg);
+    if (cont) {
+      return resolve(exec, da.arg);
+    }
+    break;
+  case 'v':
+    vd = vF.auth(da.arg);
+    if (vd['continue']) {
+      return resolve(exec, vd.value);
+    }
+  }
+  return UNDEC;
+};
+core.whn = function(da, ta){
+  var ref$, vtype, vF, exec, cont, vd;
+  ref$ = ta[0], vtype = ref$[0], vF = ref$[1], exec = ta[1];
+  switch (vtype) {
+  case 'f':
+    cont = vF.apply(null, da.arg);
+    if (!cont) {
+      return resolve(exec, da.arg);
+    }
+    break;
+  case 'v':
+    vd = vF.auth(da.arg);
+    if (vd.error) {
+      return resolve(exec, vd.value);
+    }
+  }
+  return UNDEC;
+};
+core.arn = function(da, ta){
+  var spans, exec;
+  spans = ta[0], exec = ta[1];
+  if (spans[da.arglen]) {
+    return UNDEC;
+  }
+  return resolve(exec, da.arg);
+};
+arwhn = {};
+arwhn.ob = ob(core.whn);
+arwhn.n = n(core.whn);
+arwhn.a = a(core.whn);
+core.arwhn = function(da, ta){
+  return arwhn[ta[0]](da, ta[1]);
+};
+core.arnwh = function(da, ta){
+  var spans, exec;
+  spans = ta[0], exec = ta[1];
+  if (spans[da.arglen]) {
+    return UNDEC;
+  }
+  return core.wh(da, exec);
+};
+core.arnwhn = function(da, ta){
+  var spans, exec;
+  spans = ta[0], exec = ta[1];
+  if (spans[da.arglen]) {
+    return UNDEC;
+  }
+  return core.whn(da, exec);
+};
+core.ma = function(da, ta){
+  var ref$, vtype, vF, exec, msg, vd;
+  ref$ = ta[0], vtype = ref$[0], vF = ref$[1], exec = ta[1];
+  switch (vtype) {
+  case 'f':
+    msg = vF.apply(null, da.arg);
+    if (msg) {
+      return mod_resolve(exec, msg, da.arg);
+    }
+    break;
+  case 'v':
+    vd = vF.auth(da.arg);
+    if (vd['continue']) {
+      return mod_resolve(exec, vd.value, da.arg);
+    }
+  }
+  return UNDEC;
+};
+arma = {};
+arma.ob = ob(core.ma);
+arma.n = n(core.ma);
+arma.a = a(core.ma);
+core.arma = function(da, ta){
+  return arma[ta[0]](da, ta[1]);
+};
+common_par = function(fname){
+  return function(da, ta){
+    var ref$, vtype, vF, exec, lastview, ret, cont, msg, vd;
+    ref$ = ta[0], vtype = ref$[0], vF = ref$[1], exec = ta[1], lastview = ta[2];
+    switch (vtype) {
+    case 'f':
+      ret = vF.apply(null, da.arg);
+      if (!Array.isArray(ret)) {
+        print.route(['validator_return_not_array', [new Error(), [fname, ['validator']], da.state]]);
+        return;
+      }
+      cont = ret[0], msg = ret[1];
+      if (cont) {
+        return mod_resolve(exec, msg, da.arg);
+      } else {
+        ret = lastview(msg);
+        if (ret !== void 8) {
+          return ret;
+        }
+      }
+      break;
+    case 'v':
+      vd = vF.auth(da.arg);
+      if (vd['continue']) {
+        return mod_resolve(exec, vd.value, da.arg);
+      } else {
+        ret = lastview(vd.message, vd.path);
+        if (ret !== void 8) {
+          return ret;
+        }
+      }
+    }
+    return UNDEC;
+  };
+};
+core.par = common_par('par');
+arpar = {};
+f_arpar = common_par('arpar');
+arpar.ob = ob(f_arpar);
+arpar.n = n(f_arpar);
+arpar.a = a(f_arpar);
+core.arpar = function(da, ta){
+  return arpar[ta[0]](da, ta[1]);
+};
+arwh = {};
+arwh.ob = ob(core.wh);
+arwh.n = n(core.wh);
+arwh.a = a(core.wh);
+core.arwh = function(da, ta){
+  return arwh[ta[0]](da, ta[1]);
+};
+ar = {};
+ar.ob = function(da, ta){
+  var pick;
+  pick = ta[da.arglen];
+  if (!pick) {
+    return UNDEC;
+  }
+  return resolve(pick, da.arg);
+};
+ar.n = function(da, ta){
+  var num, exec;
+  num = ta[0], exec = ta[1];
+  if (num === da.arglen) {
+    return resolve(exec, da.arg);
+  }
+  return UNDEC;
+};
+ar.a = function(da, ta){
+  var spans, exec;
+  spans = ta[0], exec = ta[1];
+  if (spans[da.arglen]) {
+    return resolve(exec, da.arg);
+  }
+  return UNDEC;
+};
+core.ar = function(da, ta){
+  return ar[ta[0]](da, ta[1]);
+};
 tightloop = function(state){
   return function(){
-    var first, arglen, I, fns, terminate, ref$, fname, data, vtype, validatorF, exec, cont, vd, spans, msg, lastview, ret, def;
+    var first, arglen, I, fns, terminate, da, elemento, devolver, def;
     if (state.unary) {
       first = arguments[0];
       switch (R.type(first)) {
@@ -86,210 +294,22 @@ tightloop = function(state){
     I = 0;
     fns = state.fns;
     terminate = fns.length;
+    da = {
+      arglen: arglen,
+      arg: arguments,
+      state: state
+    };
     while (I < terminate) {
-      ref$ = fns[I], fname = ref$.fname, data = ref$.data;
-      switch (fname) {
-      case 'wh':
-        ref$ = data[0], vtype = ref$[0], validatorF = ref$[1], exec = data[1];
-        switch (vtype) {
-        case 'f':
-          cont = validatorF.apply(null, arguments);
-          if (cont) {
-            return settle(exec, arguments);
-          }
-          break;
-        case 'v':
-          vd = validatorF.auth(arguments);
-          if (vd['continue']) {
-            return settle(exec, vd.value);
-          }
-        }
-        break;
-      case 'whn':
-        ref$ = data[0], vtype = ref$[0], validatorF = ref$[1], exec = data[1];
-        switch (vtype) {
-        case 'f':
-          cont = validatorF.apply(null, arguments);
-          if (!cont) {
-            return settle(exec, arguments);
-          }
-          break;
-        case 'v':
-          vd = validatorF.auth(arguments);
-          if (vd.error) {
-            return settle(exec, vd.value);
-          }
-        }
-        break;
-      case 'ar':
-        spans = data[0], exec = data[1];
-        if (spans[arglen]) {
-          return settle(exec, arguments);
-        }
-        break;
-      case 'arn':
-        spans = data[0], exec = data[1];
-        if (!spans[arglen]) {
-          return settle(exec, arguments);
-        }
-        break;
-      case 'arwh':
-        spans = data[0], ref$ = data[1], vtype = ref$[0], validatorF = ref$[1], exec = data[2];
-        if (spans[arglen]) {
-          switch (vtype) {
-          case 'f':
-            cont = validatorF.apply(null, arguments);
-            if (cont) {
-              return settle(exec, arguments);
-            }
-            break;
-          case 'v':
-            vd = validatorF.auth(arguments);
-            if (vd['continue']) {
-              return settle(exec, vd.value);
-            }
-          }
-        }
-        break;
-      case 'ma':
-        ref$ = data[0], vtype = ref$[0], validatorF = ref$[1], exec = data[1];
-        switch (vtype) {
-        case 'f':
-          msg = validatorF.apply(null, arguments);
-          if (msg) {
-            return modSettle(exec, msg, arguments);
-          }
-          break;
-        case 'v':
-          vd = validatorF.auth(arguments);
-          if (vd['continue']) {
-            return modSettle(exec, vd.value, arguments);
-          }
-        }
-        break;
-      case 'arma':
-        spans = data[0], ref$ = data[1], vtype = ref$[0], validatorF = ref$[1], exec = data[2];
-        if (spans[arglen]) {
-          switch (vtype) {
-          case 'f':
-            msg = validatorF.apply(null, arguments);
-            if (msg) {
-              return modSettle(exec, msg, arguments);
-            }
-            break;
-          case 'v':
-            vd = validatorF.auth(arguments);
-            if (vd['continue']) {
-              return modSettle(exec, vd.value, arguments);
-            }
-          }
-        }
-        break;
-      case 'arpar':
-        spans = data[0], ref$ = data[1], vtype = ref$[0], validatorF = ref$[1], exec = data[2], lastview = data[3];
-        if (!spans[arglen]) {
-          break;
-        }
-        switch (vtype) {
-        case 'f':
-          ret = validatorF.apply(null, arguments);
-          if (!Array.isArray(ret)) {
-            print.route(['arpar_not_array', [new Error(), state]]);
-            return;
-          }
-          cont = ret[0], msg = ret[1];
-          if (cont) {
-            return modSettle(exec, msg, arguments);
-          } else {
-            msg = (fn$());
-            ret = lastview(msg);
-            if (!(ret === void 8 || ret === false || ret === null)) {
-              return ret;
-            }
-          }
-          break;
-        case 'v':
-          vd = validatorF.auth(arguments);
-          if (vd['continue']) {
-            return modSettle(exec, vd.value, arguments);
-          } else {
-            ret = lastview(vd.message, vd.path);
-            if (!(ret === void 8 || ret === false || ret === null)) {
-              return ret;
-            }
-          }
-        }
-        break;
-      case 'arwhn':
-        spans = data[0], ref$ = data[1], vtype = ref$[0], validatorF = ref$[1], exec = data[2];
-        if (spans[arglen]) {
-          switch (vtype) {
-          case 'f':
-            cont = validatorF.apply(null, arguments);
-            if (!cont) {
-              return settle(exec, arguments);
-            }
-            break;
-          case 'v':
-            vd = validatorF.auth(arguments);
-            if (vd.error) {
-              return settle(exec, vd.value);
-            }
-          }
-        }
-        break;
-      case 'arnwh':
-        spans = data[0], ref$ = data[1], vtype = ref$[0], validatorF = ref$[1], exec = data[2];
-        if (!spans[arglen]) {
-          switch (vtype) {
-          case 'f':
-            cont = validatorF.apply(null, arguments);
-            if (cont) {
-              return settle(exec, arguments);
-            }
-            break;
-          case 'v':
-            vd = validatorF.auth(arguments);
-            if (vd['continue']) {
-              return settle(exec, vd.value);
-            }
-          }
-        }
-        break;
-      case 'arnwhn':
-        spans = data[0], ref$ = data[1], vtype = ref$[0], validatorF = ref$[1], exec = data[2];
-        if (!spans[arglen]) {
-          switch (vtype) {
-          case 'f':
-            cont = validatorF.apply(null, arguments);
-            if (!cont) {
-              return settle(exec, arguments);
-            }
-            break;
-          case 'v':
-            vd = validatorF.auth(arguments);
-            if (vd.error) {
-              return settle(exec, vd.value);
-            }
-          }
-        }
+      elemento = fns[I];
+      devolver = core[elemento[0]](da, elemento[1]);
+      if (devolver !== UNDEC) {
+        return devolver;
       }
       I += 1;
     }
     def = state.def;
     if (def) {
-      return settle(def, arguments);
-    }
-    function fn$(){
-      switch (R.type(msg)) {
-      case 'Array':
-        return msg;
-      case 'Undefined':
-      case 'Null':
-        return [];
-      default:
-        return msg;
-      }
+      return resolve(def, arguments);
     }
   };
 };
@@ -311,26 +331,29 @@ handle.fault = function(self, data, fname){
   });
   return looper(neo);
 };
+main.clone = function(){
+  var state, neo;
+  state = this[modflag];
+  neo = R.mergeRight(state, {
+    fns: arrayFrom$(state.fns),
+    str: arrayFrom$(state.str)
+  });
+  return looper(neo);
+};
 handle.ok = function(self, data, fname){
-  var state, fns, neo;
+  var state, neo_data, fns, neo;
   state = self[modflag];
+  neo_data = [fname, data];
   if (state.immutable || state.str.length === 0) {
-    fns = state.fns.concat({
-      fname: fname,
-      data: data
-    });
-    neo = Object.assign({}, state, {
+    fns = state.fns.concat([neo_data]);
+    neo = R.mergeRight(state, {
       fns: fns,
       str: state.str.concat(fname)
     });
     return looper(neo);
   } else {
-    state.fns.push({
-      fname: fname,
-      data: data
-    });
+    state.fns.push(neo_data);
     state.str.push(fname);
-    neo = state;
     return self;
   }
 };
@@ -342,7 +365,7 @@ handle.def.fault[uic] = print.log.def_fault;
 handle.def.ok = function(self, data){
   var state, neo, F;
   state = self[modflag];
-  neo = Object.assign({}, state, {
+  neo = R.mergeRight(state, {
     def: data,
     str: state.str
   });
@@ -355,22 +378,23 @@ handle.def.ok = function(self, data){
 };
 genfun = function(vfun, fname){
   return function(){
-    var state, ref$, zone, data;
+    var state, out, zone, data;
     state = this[modflag];
-    if (state === undefined) {
+    if (state === void 8) {
       print.route(['state_undef', [new Error(), fname]]);
-      return undefined;
+      return;
     }
     if (state.fault) {
       return this;
     }
-    ref$ = vfun(arguments), zone = ref$[0], data = ref$[1];
+    out = vfun(fname, arguments);
+    zone = out[0], data = out[1];
     return handle[zone](this, data, fname);
   };
 };
 main[uic] = print.log.proto;
 main.def = function(){
-  var state, ref$, zone, data;
+  var state, ref$, ___, data;
   state = this[modflag];
   if (state === undefined) {
     print.route(['state_undef', [new Error(), 'def']]);
@@ -379,20 +403,22 @@ main.def = function(){
   if (state.fault) {
     return handle.def.fault;
   }
-  ref$ = verify.def(arguments), zone = ref$[0], data = ref$[1];
+  ref$ = verify.def(arguments), ___ = ref$[0], data = ref$[1];
   return handle.def.ok(this, data);
 };
-props = ['ma', 'arma', 'wh', 'ar', 'whn', 'arn', 'arwh', 'arnwh', 'arwhn', 'arnwhn', 'arpar'];
+props = ['ar', 'wh', 'ma', 'arma', 'par', 'arpar', 'whn', 'arn', 'arwh', 'arwhn', 'arnwh', 'arnwhn'];
 R.reduce(function(ob, prop){
-  ob[prop] = genfun(verify.getvfun(prop), prop);
+  var F;
+  F = verify.getvfun(prop);
+  ob[prop] = genfun(F, prop);
   return ob;
 }, main, props);
 cat = {};
 cat.opt = new Set(['unary', 'immutable', 'debug']);
-cat.methods = new Set(props.concat(["def"]));
-getter = function(arg$, key){
+cat.methods = new Set(props.concat(['def']));
+getter = function(data, key){
   var path, lock, str, vr, npath, sorted;
-  path = arg$.path, lock = arg$.lock, str = arg$.str, vr = arg$.vr;
+  path = data.path, lock = data.lock, str = data.str, vr = data.vr;
   if (lock) {
     print.route(['setting', [new Error(), 'path_locked', vr, key]]);
     return null;
@@ -423,7 +449,7 @@ getter = function(arg$, key){
         key: key
       }
     ];
-  } else if (key === 'getdef') {
+  } else if (key === 'symdef') {
     return [false, defacto];
   } else {
     print.route(['setting', [new Error(), 'not_in_opts', vr, key]]);
@@ -431,6 +457,14 @@ getter = function(arg$, key){
   }
 };
 topcache = {};
+init = {
+  str: [],
+  fns: [],
+  def: null,
+  fault: false,
+  unary: false,
+  immutable: false
+};
 entry = function(data, args){
   var str, has, path, lock, vr, key, ob, i$, len$, ke, put;
   str = data.str;
