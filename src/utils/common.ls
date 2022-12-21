@@ -10,8 +10,6 @@ flat             = vendor.flat
 
 advanced_pad     = vendor.pad
 
-jspc             = vendor.stringify
-
 deep_freeze      = vendor.deepFreeze
 
 alpha_sort       = vendor.alpha_sort
@@ -19,6 +17,8 @@ alpha_sort       = vendor.alpha_sort
 R                = require "ramda"
 
 esp              = require "error-stack-parser"
+
+_jspc            = vendor.stringify
 
 if (typeof window is "undefined") and (typeof module is "object")
 
@@ -32,34 +32,28 @@ else
 
 # --------------------------------------------------------------------------------------
 
-
 noop                      = !->
 
 noop[util_inspect_custom] = -> @[util_inspect_custom]
 
 # --------------------------------------------------------------------------------------
 
-jdef = {maxLength:30,margins:true}
+jspc_def = {maxLength:30,margins:true}
 
-j = (obj) -> jspc obj,jdef
-
-j.o = R.curry (opt,obj) ->
+jspc = (obj,opt) ->
 
   if opt is undefined
-    opt = jdef
+    opt = jspc_def
   else
-    opt = R.mergeRight jdef,opt
+    opt = R.mergeRight jspc_def,opt
 
-  jspc obj,opt
+  _jspc obj,opt
 
-# just like j, but shows console.log
+z = -> console.log ...arguments
 
-zj = (obj,y) ->
+jspc.r = R.curry (opt,obj) -> jspc obj,opt
 
-  if y
-    z y,(j obj)
-  else
-    z j obj
+z.j = (obj)-> console.log (jspc obj)
 
 z.n = ->
 
@@ -72,6 +66,7 @@ z.n = ->
 loopfault = ->
 
   loopError  = ->
+
   apply = -> new Proxy(loopError,{apply:apply,get:get})
   get   = -> new Proxy(loopError,{apply:apply,get:get})
 
@@ -199,10 +194,9 @@ wait = (t,f) -> setTimeout f,t
 
 ext =
   *z:z
-   j:j
    l:l
    c:c
-   zj:zj
+   z:z
    esp:esp
    lit:lit
    flat:flat
