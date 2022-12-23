@@ -22,7 +22,7 @@ show_stack = create_stack 1,['internal/modules/cjs','node:internal'],help
 
 object_name  = "hoplon.guard"
 
-pkgname      = "#{object_name}\#v#{version}}"
+pkgname      = "#{object_name}\#v#{version}"
 
 print.log.def_fault = -> c.er2 "[error.#{pkgname}]"
 
@@ -110,23 +110,23 @@ show_chain = (input-str,path = [],show-args = true)->
 
     str += [ c.warn ".#{I}" for I in path].join ""
 
-    str += lit ["(xx)"," <-- type error in argument"],[c.er3,c.er1]
+    str += lit ["(xx)"," <--"," type error in argument"],[c.er3,c.er3,c.er3]
 
   else
 
     str += c.er2 ([".#{I}" for I in path].join "")
 
-    str += c.er1 " <-- error here."
+    str += c.er3 " <-- error here."
 
   str
 
 map_fname_to_ctypes = (fname)->
 
   switch fname
-  | \ar,\arn                   => \ar
-  | \wh,\whn,\ma               => \wh
-  | \arwh,\arwhn,\arnwhn,\arma => \arwh
-  | otherwise                  => fname
+  | \ar,\arn                          => \ar
+  | \wh,\whn,\ma                      => \wh
+  | \arwh,\arnwh,\arwhn,\arnwhn,\arma => \arwh
+  | otherwise                         => fname
 
 StrArgLen = (fname,ctype,eType)->
 
@@ -143,14 +143,14 @@ StrArgLen = (fname,ctype,eType)->
       c.er3 "too many arguments"
       lit do
         ["only #{data[0]} arguments ","\n\n #{fname}"," :: (#{data[1]}) "]
-        [c.blue,c.ok,c.ok]
+        [c.er2,c.ok,c.ok]
     ]
   | \few_args  =>
     [
       c.er3 "too few arguments"
       lit do
         ["requires #{data[0]} arguments ","\n\n #{fname}"," :: (#{data[1]}) "]
-        [c.blue,c.ok,c.ok]
+        [c.er2,c.ok,c.ok]
     ]
 
 StrEType = (fname,data) ->
@@ -169,59 +169,63 @@ StrEType = (fname,data) ->
     switch eType
     | \first =>
 
-      lit ["(","number","|[num...]),FA"],[c.ok,c.er2,c.ok]
+      lit ["(","number","|[num...]),FA"],[c.ok,c.er3,c.ok]
 
     | \array =>
 
-      lit ["(number","|[num..]","),FA"],[c.ok,c.er2,c.ok]
+      lit ["(number","|[num..]","),FA"],[c.ok,c.er3,c.ok]
 
     | \ob_not_object =>
 
-      lit ["(","object",")|((number|[num..]),FA)"],[c.ok,c.er2,c.ok]
+      lit ["(","object",")|((number|[num..]),FA)"],[c.ok,c.er3,c.ok]
 
   | \wh =>
 
     switch eType
     | \first =>
 
-      lit ["FT",",FA"],[c.er2,c.ok]
+      lit ["FT",",FA"],[c.er3,c.ok]
 
     | \second =>
 
-      lit ["FT","FA"],[c.ok,c.er2]
+      lit ["FT","FA"],[c.ok,c.er3]
 
   | \arwh =>
 
     switch eType
+    | \first =>
+
+      lit ["(","number|[num..])",",FT,FA"],[c.ok,c.er3,c.ok]
+
     | \num =>
 
-      lit ["(","number","|[num..]),FT,FA"],[c.ok,c.er2,c.ok]
+      lit ["(","number","|[num..]),FT,FA"],[c.ok,c.er3,c.ok]
 
     | \array =>
 
-      lit ["(number|","[num..]","),FT,FA"],[c.ok,c.er2,c.ok]
+      lit ["(number|","[num..]","),FT,FA"],[c.ok,c.er3,c.ok]
 
     | \second =>
 
-      lit ["(number|[num..]),","FT",",FA"],[c.ok,c.er2,c.ok]
+      lit ["(number|[num..]),","FT",",FA"],[c.ok,c.er3,c.ok]
 
     | \ob_not_object =>
 
-      lit ["(","object",")|((number|[num..]),FT,FA)"],[c.ok,c.er2,c.ok]
+      lit ["(","object",")|((number|[num..]),FT,FA)"],[c.ok,c.er3,c.ok]
 
     | \ob_inner_array =>
 
-      lit ["(object(","#{extra}:...","))"],[c.ok,c.er2,c.ok]
+      lit ["(object(","#{extra}:xx","))"],[c.ok,c.er3,c.ok]
 
     | \ob_inner_array_validator =>
 
-      lit ["(object(","#{extra}:","(","FT",",FA)))"],[c.ok,c.er2,c.ok,c.er2,c.ok]
+      lit ["(object(","#{extra}:","(","FT",",FA)))"],[c.ok,c.er3,c.ok,c.er3,c.ok]
 
     | \ob_inner_not_array =>
 
       lit do
         ["(object(","#{extra}:[..]","))"]
-        [      c.ok,          c.er2,c.ok]
+        [      c.ok,          c.er3,c.ok]
 
 
   | \arpar =>
@@ -231,53 +235,53 @@ StrEType = (fname,data) ->
 
       lit do
         ["(","number","|[num..]),FT,FA,F"]
-        [c.ok,c.er2,c.ok]
+        [c.ok,c.er3,c.ok]
 
     | \num_array =>
 
       lit do
         ["(number|","[num..]","),FT,FA,F"]
-        [c.ok,c.er2,c.ok]
+        [c.ok,c.er3,c.ok]
 
     | \validator =>
 
       lit do
         ["(number|[num..]),","FT",",FA,F"]
-        [c.ok,c.er2,c.ok]
+        [c.ok,c.er3,c.ok]
 
     | \lastview =>
 
       lit do
         ["(number|[num..]),F,FA,","F"]
-        [c.ok,c.er2]
+        [c.ok,c.er3]
 
     | \ob_not_object =>
 
-      lit ["(","object",")|((number|[num..]),FT,FA,F)"],[c.ok,c.er2,c.ok]
+      lit ["(","object",")|((number|[num..]),FT,FA,F)"],[c.ok,c.er3,c.ok]
 
     | \ob_inner_not_array =>
 
       lit do
         ["(object(","#{extra}:[..]","))"]
-        [      c.ok,          c.er2,c.ok]
+        [      c.ok,          c.er3,c.ok]
 
     | \ob_inner_array =>
 
       lit do
         ["(object(","#{extra}","))"]
-        [      c.ok,     c.er2,c.ok]
+        [      c.ok,     c.er3,c.ok]
 
     | \ob_inner_array_validator =>
 
       lit do
         ["(object(","#{extra}:",  "(", "FT",",FA,F)))"]
-        [      c.ok,      c.er2, c.ok,c.er2,      c.ok]
+        [      c.ok,      c.er3, c.ok,c.er3,      c.ok]
 
     | \ob_inner_lastview =>
 
       lit do
         ["(object(","#{extra}:","(FT,FA,",  "F",")))"]
-        [      c.ok,      c.er2,     c.ok,c.er2,c.ok]
+        [      c.ok,      c.er3,     c.ok,c.er3,c.ok]
 
   | \par =>
 
@@ -287,17 +291,17 @@ StrEType = (fname,data) ->
 
       lit do
         ["FT",",FA,F"]
-        [c.er2,c.ok]
+        [c.er3,c.ok]
 
     | \lastview =>
 
       lit do
-        ["FT,FA",",F"]
-        [c.ok,c.er2]
+        ["FT,FA,","F"]
+        [c.ok,c.er3]
 
-  init = lit [fname + " :: ",init],[c.grey,0]
+  init = lit [fname + " :: ",init],[c.ok,0]
 
-  [init,(c.pink 'one of the argument is of the wrong type.')]
+  [init,(c.er1 'one of the argument is of the wrong type.')]
 
 
 print.typeError = (ta) ->
@@ -311,7 +315,7 @@ print.typeError = (ta) ->
        "  FA = function|any"
        "  FT = function|hoplon.types"
 
-  legend = [c.blue I for I in legend].join "\n"
+  legend = [c.grey I for I in legend].join "\n"
 
   l lit do
     ["[#{pkgname}]","[typeError]"," .#{fname}(...)"]

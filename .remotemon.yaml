@@ -26,7 +26,8 @@ gulpfile:
     - watch gulpfile.ls and run gulp default (only).
   local: &gulpfile
     - lsc -bco . src/gulpfile.ls
-    - gulp default --silent
+    # - gulp default --silent
+    - gulp default
 
 build:
   - gulp default --silent
@@ -62,6 +63,7 @@ test.file:
   description:
     - run a specific test file for proj=X which=Y.
   local:
+    # - time gulp default
     - gulp default --silent
     - node ./test/${proj}/${which}.js || exit 1
 
@@ -77,6 +79,7 @@ dev.install:
     - pnpm install gulp-yaml
     - pnpm install gulp-replace
     - pnpm install gulp-util
+    - pnpm install gulp-changed
 
 version.update:
   watch: false

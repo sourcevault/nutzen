@@ -8,7 +8,7 @@ name  = \test6
 
 path = (name) -> "../../dist/#{name}/main"
 
-oxo   = require path \guard
+xop   = require path \guard
 
 com   = require path \utils
 
@@ -26,18 +26,18 @@ typeE   = -> z "argument type has to be number"
 
 add2 = (x,y) -> x + y
 
-add = oxo
+add = xop
 .arwh do
-	2
-	-> true
-	add2
+  2
+  -> true
+  add2
 .def!
 
 ret = add 1,2
 
 if not (ret is 3)
 
-	p!
+  pf!
 
 
 

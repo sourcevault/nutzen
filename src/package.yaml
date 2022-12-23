@@ -21,6 +21,9 @@ devDependencies:
   "gulp-tap": "*"
   gulp-util: "*"
   gulp: "*"
+  "gulp-changed-in-place": "*"
+  "gulp-changed": "*"
+
 keywords:
   - "json-schema-validator"
   - "pattern matching"

@@ -14,15 +14,17 @@ replace         = require \gulp-replace
 
 gutil           = require \gulp-util
 
+gulp_changed    = require \gulp-changed
+
 fs              = require \fs
 
 wait = (t,f)-> setTimeout f,t
 
-z = console.log
-
 gulp.task \default,(done) ->
 
   gulp.src "./src/package.yaml"
+
+  # .pipe gulp_changed ".",(extension:'.json')
 
   .pipe gulp-yaml({schema:\DEFAULT_FULL_SCHEMA,space:2})
 
@@ -30,9 +32,11 @@ gulp.task \default,(done) ->
 
   .pipe gulp.dest "."
 
-  # ------------------------------
+  ## ------------------------------
 
   gulp.src "./src/gulpfile.ls"
+
+  # .pipe gulp_changed ".",(extension:'.js')
 
   .pipe gulp-livescript bare:true
 
@@ -42,9 +46,11 @@ gulp.task \default,(done) ->
 
   .pipe gulp.dest "."
 
-  # ------------------------------
+  ## ------------------------------
 
   gulp.src "./src/main.ls"
+
+  # .pipe gulp_changed "./dist",(extension:'.js')
 
   .pipe gulp-livescript bare:true
 
@@ -54,9 +60,11 @@ gulp.task \default,(done) ->
 
   .pipe gulp.dest "./dist"
 
-  # ------------------------------
+  ## ------------------------------
 
   ls = gulp.src "./src/*/*.ls"
+
+  # .pipe gulp_changed "./dist",(extension:'.js')
 
   .pipe gulp-livescript bare:true
 
@@ -80,9 +88,11 @@ gulp.task \default,(done) ->
 
     .pipe gulp.dest "./dist/utils/"
 
-  # ------------------------------
+  ## ------------------------------
 
   gulp.src "./test/*/*.ls"
+
+  # .pipe gulp_changed "./test",(extension:'.js')
 
   .pipe gulp-livescript bare:true
 

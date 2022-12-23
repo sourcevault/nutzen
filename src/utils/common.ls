@@ -2,8 +2,6 @@
 
 vendor           = require "./vendor"
 
-z                = console.log
-
 l                = console.log
 
 flat             = vendor.flat
@@ -196,7 +194,6 @@ ext =
   *z:z
    l:l
    c:c
-   z:z
    esp:esp
    lit:lit
    flat:flat

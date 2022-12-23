@@ -1,14 +1,13 @@
-var vendor, z, l, flat, advanced_pad, jspc, deep_freeze, alpha_sort, R, esp, util, util_inspect_custom, noop, jdef, j, zj, loopfault, x$, c, lit, rm_paths, create_stack, print_fail, wait, ext, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, util, util_inspect_custom, noop, jspc_def, jspc, z, loopfault, x$, c, lit, rm_paths, create_stack, print_fail, wait, ext, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 vendor = require("./vendor");
-z = console.log;
 l = console.log;
 flat = vendor.flat;
 advanced_pad = vendor.pad;
-jspc = vendor.stringify;
 deep_freeze = vendor.deepFreeze;
 alpha_sort = vendor.alpha_sort;
 R = require("ramda");
 esp = require("error-stack-parser");
+_jspc = vendor.stringify;
 if (typeof window === "undefined" && typeof module === "object") {
   util = require('util');
   util_inspect_custom = util.inspect.custom;
@@ -19,27 +18,26 @@ noop = function(){};
 noop[util_inspect_custom] = function(){
   return this[util_inspect_custom];
 };
-jdef = {
+jspc_def = {
   maxLength: 30,
   margins: true
 };
-j = function(obj){
-  return jspc(obj, jdef);
-};
-j.o = R.curry(function(opt, obj){
+jspc = function(obj, opt){
   if (opt === undefined) {
-    opt = jdef;
+    opt = jspc_def;
   } else {
-    opt = R.mergeRight(jdef, opt);
+    opt = R.mergeRight(jspc_def, opt);
   }
+  return _jspc(obj, opt);
+};
+z = function(){
+  return console.log.apply(console, arguments);
+};
+jspc.r = R.curry(function(opt, obj){
   return jspc(obj, opt);
 });
-zj = function(obj, y){
-  if (y) {
-    return z(y, j(obj));
-  } else {
-    return z(j(obj));
-  }
+z.j = function(obj){
+  return console.log(jspc(obj));
 };
 z.n = function(){
   var args;
@@ -181,10 +179,8 @@ wait = function(t, f){
 };
 ext = {
   z: z,
-  j: j,
   l: l,
   c: c,
-  zj: zj,
   esp: esp,
   lit: lit,
   flat: flat,

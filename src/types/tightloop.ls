@@ -4,7 +4,7 @@ pc = require "./print.common"
 
 {com,pkgname,sig} = pc
 
-{l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack,zj} = com
+{l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack} = com
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 

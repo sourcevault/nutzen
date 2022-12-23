@@ -27,5 +27,5 @@ dum2 = function(str){
 V = guard.ma(dum2, 'obj_or_map').def(null);
 out = V('obj');
 if (!(out === 'obj_or_map')) {
-  p();
+  pf();
 }

@@ -10,7 +10,7 @@ print.log = {};
 help = c.grey("[  docs] " + com.homepage + "\n");
 show_stack = create_stack(1, ['internal/modules/cjs', 'node:internal'], help);
 object_name = "hoplon.guard";
-pkgname = object_name + "#v" + version + "}";
+pkgname = object_name + "#v" + version;
 print.log.def_fault = function(){
   return c.er2("[error." + pkgname + "]");
 };
@@ -95,7 +95,7 @@ show_chain = function(inputStr, path, showArgs){
       }
       return results$;
     }()).join("");
-    str += lit(["(xx)", " <-- type error in argument"], [c.er3, c.er1]);
+    str += lit(["(xx)", " <--", " type error in argument"], [c.er3, c.er3, c.er3]);
   } else {
     str += c.er2((function(){
       var i$, ref$, len$, results$ = [];
@@ -105,7 +105,7 @@ show_chain = function(inputStr, path, showArgs){
       }
       return results$;
     }()).join(""));
-    str += c.er1(" <-- error here.");
+    str += c.er3(" <-- error here.");
   }
   return str;
 };
@@ -119,6 +119,7 @@ map_fname_to_ctypes = function(fname){
   case 'ma':
     return 'wh';
   case 'arwh':
+  case 'arnwh':
   case 'arwhn':
   case 'arnwhn':
   case 'arma':
@@ -145,9 +146,9 @@ StrArgLen = function(fname, ctype, eType){
   }());
   switch (eType) {
   case 'many_args':
-    return [c.er3("too many arguments"), lit(["only " + data[0] + " arguments ", "\n\n " + fname, " :: (" + data[1] + ") "], [c.blue, c.ok, c.ok])];
+    return [c.er3("too many arguments"), lit(["only " + data[0] + " arguments ", "\n\n " + fname, " :: (" + data[1] + ") "], [c.er2, c.ok, c.ok])];
   case 'few_args':
-    return [c.er3("too few arguments"), lit(["requires " + data[0] + " arguments ", "\n\n " + fname, " :: (" + data[1] + ") "], [c.blue, c.ok, c.ok])];
+    return [c.er3("too few arguments"), lit(["requires " + data[0] + " arguments ", "\n\n " + fname, " :: (" + data[1] + ") "], [c.er2, c.ok, c.ok])];
   }
 };
 StrEType = function(fname, data){
@@ -164,72 +165,74 @@ StrEType = function(fname, data){
     case 'ar':
       switch (eType) {
       case 'first':
-        return lit(["(", "number", "|[num...]),FA"], [c.ok, c.er2, c.ok]);
+        return lit(["(", "number", "|[num...]),FA"], [c.ok, c.er3, c.ok]);
       case 'array':
-        return lit(["(number", "|[num..]", "),FA"], [c.ok, c.er2, c.ok]);
+        return lit(["(number", "|[num..]", "),FA"], [c.ok, c.er3, c.ok]);
       case 'ob_not_object':
-        return lit(["(", "object", ")|((number|[num..]),FA)"], [c.ok, c.er2, c.ok]);
+        return lit(["(", "object", ")|((number|[num..]),FA)"], [c.ok, c.er3, c.ok]);
       }
       break;
     case 'wh':
       switch (eType) {
       case 'first':
-        return lit(["FT", ",FA"], [c.er2, c.ok]);
+        return lit(["FT", ",FA"], [c.er3, c.ok]);
       case 'second':
-        return lit(["FT", "FA"], [c.ok, c.er2]);
+        return lit(["FT", "FA"], [c.ok, c.er3]);
       }
       break;
     case 'arwh':
       switch (eType) {
+      case 'first':
+        return lit(["(", "number|[num..])", ",FT,FA"], [c.ok, c.er3, c.ok]);
       case 'num':
-        return lit(["(", "number", "|[num..]),FT,FA"], [c.ok, c.er2, c.ok]);
+        return lit(["(", "number", "|[num..]),FT,FA"], [c.ok, c.er3, c.ok]);
       case 'array':
-        return lit(["(number|", "[num..]", "),FT,FA"], [c.ok, c.er2, c.ok]);
+        return lit(["(number|", "[num..]", "),FT,FA"], [c.ok, c.er3, c.ok]);
       case 'second':
-        return lit(["(number|[num..]),", "FT", ",FA"], [c.ok, c.er2, c.ok]);
+        return lit(["(number|[num..]),", "FT", ",FA"], [c.ok, c.er3, c.ok]);
       case 'ob_not_object':
-        return lit(["(", "object", ")|((number|[num..]),FT,FA)"], [c.ok, c.er2, c.ok]);
+        return lit(["(", "object", ")|((number|[num..]),FT,FA)"], [c.ok, c.er3, c.ok]);
       case 'ob_inner_array':
-        return lit(["(object(", extra + ":...", "))"], [c.ok, c.er2, c.ok]);
+        return lit(["(object(", extra + ":xx", "))"], [c.ok, c.er3, c.ok]);
       case 'ob_inner_array_validator':
-        return lit(["(object(", extra + ":", "(", "FT", ",FA)))"], [c.ok, c.er2, c.ok, c.er2, c.ok]);
+        return lit(["(object(", extra + ":", "(", "FT", ",FA)))"], [c.ok, c.er3, c.ok, c.er3, c.ok]);
       case 'ob_inner_not_array':
-        return lit(["(object(", extra + ":[..]", "))"], [c.ok, c.er2, c.ok]);
+        return lit(["(object(", extra + ":[..]", "))"], [c.ok, c.er3, c.ok]);
       }
       break;
     case 'arpar':
       switch (eType) {
       case 'num':
-        return lit(["(", "number", "|[num..]),FT,FA,F"], [c.ok, c.er2, c.ok]);
+        return lit(["(", "number", "|[num..]),FT,FA,F"], [c.ok, c.er3, c.ok]);
       case 'num_array':
-        return lit(["(number|", "[num..]", "),FT,FA,F"], [c.ok, c.er2, c.ok]);
+        return lit(["(number|", "[num..]", "),FT,FA,F"], [c.ok, c.er3, c.ok]);
       case 'validator':
-        return lit(["(number|[num..]),", "FT", ",FA,F"], [c.ok, c.er2, c.ok]);
+        return lit(["(number|[num..]),", "FT", ",FA,F"], [c.ok, c.er3, c.ok]);
       case 'lastview':
-        return lit(["(number|[num..]),F,FA,", "F"], [c.ok, c.er2]);
+        return lit(["(number|[num..]),F,FA,", "F"], [c.ok, c.er3]);
       case 'ob_not_object':
-        return lit(["(", "object", ")|((number|[num..]),FT,FA,F)"], [c.ok, c.er2, c.ok]);
+        return lit(["(", "object", ")|((number|[num..]),FT,FA,F)"], [c.ok, c.er3, c.ok]);
       case 'ob_inner_not_array':
-        return lit(["(object(", extra + ":[..]", "))"], [c.ok, c.er2, c.ok]);
+        return lit(["(object(", extra + ":[..]", "))"], [c.ok, c.er3, c.ok]);
       case 'ob_inner_array':
-        return lit(["(object(", extra + "", "))"], [c.ok, c.er2, c.ok]);
+        return lit(["(object(", extra + "", "))"], [c.ok, c.er3, c.ok]);
       case 'ob_inner_array_validator':
-        return lit(["(object(", extra + ":", "(", "FT", ",FA,F)))"], [c.ok, c.er2, c.ok, c.er2, c.ok]);
+        return lit(["(object(", extra + ":", "(", "FT", ",FA,F)))"], [c.ok, c.er3, c.ok, c.er3, c.ok]);
       case 'ob_inner_lastview':
-        return lit(["(object(", extra + ":", "(FT,FA,", "F", ")))"], [c.ok, c.er2, c.ok, c.er2, c.ok]);
+        return lit(["(object(", extra + ":", "(FT,FA,", "F", ")))"], [c.ok, c.er3, c.ok, c.er3, c.ok]);
       }
       break;
     case 'par':
       switch (eType) {
       case 'validator':
-        return lit(["FT", ",FA,F"], [c.er2, c.ok]);
+        return lit(["FT", ",FA,F"], [c.er3, c.ok]);
       case 'lastview':
-        return lit(["FT,FA", ",F"], [c.ok, c.er2]);
+        return lit(["FT,FA,", "F"], [c.ok, c.er3]);
       }
     }
   }());
-  init = lit([fname + " :: ", init], [c.grey, 0]);
-  return [init, c.pink('one of the argument is of the wrong type.')];
+  init = lit([fname + " :: ", init], [c.ok, 0]);
+  return [init, c.er1('one of the argument is of the wrong type.')];
 };
 print.typeError = function(ta){
   var E, fname, attribute, data, ref$, type_signature, comment, legend, I;
@@ -240,7 +243,7 @@ print.typeError = function(ta){
     var i$, ref$, len$, results$ = [];
     for (i$ = 0, len$ = (ref$ = legend).length; i$ < len$; ++i$) {
       I = ref$[i$];
-      results$.push(c.blue(I));
+      results$.push(c.grey(I));
     }
     return results$;
   }()).join("\n");

@@ -1,30 +1,29 @@
-1. [hoplon.guard](#hoplonguard)
-    1. [Quick Example](#quick-examples-to-get-started)
-    1. [Introduction](#why-)
-    1. [Method Description](#method-descriptions)
-        - [ar](#ar)
-        - [wh](#wh)
-        - [ma](#ma)
-        - [arma](#arma)
-        - [par](#par)
-        - [arpar](#arpar)
-        - [whn](#whn)
-        - [arn](#arn)
-        - [arwh](#arwh)
-        - [arwhn](#arwhn)
-        - [arnwh](#arnwh)
-        - [arnwhn](#arnwhn)
-        - [def](#def)
-        - [clone](#clone)
+## `hoplon.guard`
 
-    1. [Description and Type in Table](#description-and-type-in-table)
-    1. [Namespaces](#Namespaces)
-        - [immutable](#immutable)
-        - [unary](#unary)
-        - [debug](#debug)
+- [Quick Example](#quick-examples-to-get-started)
+- [Introduction](#why-)
+- [Methods](#methods)
+     - [ar](#ar)
+     - [wh](#wh)
+     - [ma](#ma)
+     - [arma](#arma)
+     - [par](#par)
+     - [arpar](#arpar)
+     - [whn](#whn)
+     - [arn](#arn)
+     - [arwh](#arwh)
+     - [arwhn](#arwhn)
+     - [arnwh](#arnwh)
+     - [arnwhn](#arnwhn)
+     - [def](#def)
+     - [clone](#clone)
 
+1. [Description and type in table](#description-and-type-in-table)
+1. [Namespaces](#Namespaces)
+     - [immutable](#immutable)
+     - [unary](#unary)
+     - [debug](#debug)
 
-### `hoplon.guard`
 
 ##### ..quick examples to get started..
 
@@ -69,7 +68,7 @@ Guards are wrappers that are commonly found in functional programming languages,
 
 They also encourage efficient use of pattern matching to structure code and external API.
 
-#### Method Descriptions
+#### Methods
 
 The API surface is purposefully kept large to cover all types of niche pattern matching usecases:
 
@@ -185,7 +184,7 @@ It's also possible to just provide a static value or object as default.
 
 ### `clone`
 
-`clone ::`
+`clone :: void`
 
 Alongside the `hoplon.guard.immutable` namespace, `hoplon.guard` also has a handy `.clone` operator in case there needs to be seperation in the validator chain.
 
@@ -208,7 +207,7 @@ It's important to write as few simple functions as possible and reduce the overa
 
 These functions also completes the algebra of the core operators.
 
-##### Description and Type in Table
+##### Description and type in table
 
 - `exec` - execution function - once all the conditions are met, this function is run. The return value of this function is the return value of the `hoplon.guard` object.
 

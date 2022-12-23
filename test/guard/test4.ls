@@ -8,7 +8,7 @@ name  = \test4
 
 path = (name) -> "../../dist/#{name}/main"
 
-oxo   = require path \guard
+xop   = require path \guard
 
 com   = require path \utils
 
@@ -31,8 +31,8 @@ type_str = (x) ->
   |  otherwise => false
 
 
-V = oxo.ar 1,
-  oxo.ma do
+V = xop.ar 1,
+  xop.ma do
     type_num
     (x) -> x
   .def ["FROM UDEF"]
@@ -41,12 +41,12 @@ V = oxo.ar 1,
 out = V \integer
 
 if not (out is \int)
-  p!
+  pf ""
 
 out = V null
 
-if not ((R.type out) is \Array)
-  p!
+if ((R.type out) isnt \Array)
+  pf ".ar not working"
 
-if not (out[0] is "FROM UDEF")
-  p!
+if (out[0] isnt "FROM UDEF")
+  pf ""

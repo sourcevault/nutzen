@@ -19,23 +19,3 @@ com   = require path \utils
 pf = print_fail "test/#{proj}/#{name}.js"
 
 #-------------------------------------------------------------------------------
-
-xop = xop.debug
-
-# vo = xop.arwh 3,-> true,-> 'hello world'
-
-A =
-  1: -> 4
-   # *-> false
-   #  3
-   # *-> true
-   #  4
-
-
-    
-  # 0:
-  #   -> false
-  #   -> "corruption"
-
-
-

@@ -1,8 +1,8 @@
-var ref$, com, print, sig, tightloop, z, l, R, j, uic, deep_freeze, loopError, zj, oxo, x$, cache, assort, cato, y$, wrap, z$, guard, z1$, define, z2$, validate, props, initState, z3$, proto, i$, len$, val, F, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ref$, com, print, sig, tightloop, z, l, R, j, uic, deep_freeze, loopError, zj, xop, x$, cache, assort, cato, y$, wrap, z$, guard, z1$, define, z2$, validate, props, initState, z3$, proto, i$, len$, val, F, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ref$ = require('./print.common'), com = ref$.com, print = ref$.print, sig = ref$.sig;
 tightloop = require('./tightloop');
 z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError, zj = com.zj;
-oxo = require('../guard/main');
+xop = require('../guard/main');
 x$ = cache = {};
 x$.def = new Set();
 x$.ins = new Set();
@@ -96,7 +96,7 @@ handleError = function(info){
   print.route(info);
   return loopError();
 };
-custom = oxo.arn(1, function(){
+custom = xop.arn(1, function(){
   return handleError([new Error(), 'input.fault', ['custom', ['arg_count']]]);
 }).whn(function(f){
   return R.type(f) === 'Function' || f[sig];
@@ -143,7 +143,7 @@ define.on = function(type, args, state){
   data = (ref$ = {}, import$(ref$, state), (ref$.all = block, ref$.str = state.str.concat('on'), ref$));
   return define.proto(data);
 };
-guard.on = oxo.unary.arn([1, 2], function(args, state){
+guard.on = xop.unary.arn([1, 2], function(args, state){
   return handleError([new Error(), 'input.fault', ['on', ['arg_count', [state.str, 'on']]]]);
 }).arpar(1, function(args, state){
   var maybe_object, type, I, val, ok, clean, error_msg, i$, len$, each, fields, F, field_type, j$, len1$, ref$, wF, inner_error;
@@ -225,7 +225,6 @@ guard.on = oxo.unary.arn([1, 2], function(args, state){
   if (data[1] === 'input.fault') {
     return handleError(data);
   }
-  return false;
 }).arma(2, function(arg$, state){
   var first, second, i$, len$, I;
   first = arg$[0], second = arg$[1];
@@ -295,8 +294,8 @@ validate.rest = function(funs, state, type){
     return false;
   }
 };
-guard.bt = oxo.def(loopError);
-guard.rest = oxo.wh(validate.rest, function(args, state, type){
+guard.bt = xop.def(loopError);
+guard.rest = xop.wh(validate.rest, function(args, state, type){
   var funs, block, data, ref$;
   funs = cato(args);
   block = (function(){

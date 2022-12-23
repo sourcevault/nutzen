@@ -6,7 +6,7 @@ tightloop = require \./tightloop
 
 {z,l,R,j,uic,deep_freeze,loopError,zj} = com
 
-oxo = require \../guard/main
+xop = require \../guard/main
 
 cache = {}
   ..def = new Set!
@@ -131,7 +131,7 @@ handleError = (info) ->
 
   loopError!
 
-custom = oxo
+custom = xop
 
 .arn 1, -> handleError [(new Error!),\input.fault,[\custom [\arg_count]]]
 
@@ -205,7 +205,7 @@ define.on = (type,args,state) ->
 #-----------------------------------------------------------------------
 
 
-guard.on = oxo.unary
+guard.on = xop.unary
 
 .arn [1,2],
 
@@ -401,7 +401,7 @@ validate.rest = (funs,state,type) ->
 
   | otherwise => false
 
-guard.bt = oxo
+guard.bt = xop
 
 
 
@@ -447,7 +447,7 @@ guard.bt = oxo
 
 #-----------------------------------------------------------------------
 
-guard.rest = oxo
+guard.rest = xop
 .wh do
   validate.rest
   (args,state,type) ->

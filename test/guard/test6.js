@@ -1,10 +1,10 @@
-var proj, name, path, oxo, com, l, zj, z, c, binapi, print_fail, create_stack, R, pf, bothNum, argE, typeE, add2, add, ret;
+var proj, name, path, xop, com, l, zj, z, c, binapi, print_fail, create_stack, R, pf, bothNum, argE, typeE, add2, add, ret;
 proj = 'guard';
 name = 'test6';
 path = function(name){
   return "../../dist/" + name + "/main";
 };
-oxo = require(path('guard'));
+xop = require(path('guard'));
 com = require(path('utils'));
 l = com.l, zj = com.zj, z = com.z, c = com.c, binapi = com.binapi, print_fail = com.print_fail, create_stack = com.create_stack, R = com.R;
 pf = print_fail("test/" + proj + "/" + name + ".js");
@@ -20,10 +20,10 @@ typeE = function(){
 add2 = function(x, y){
   return x + y;
 };
-add = oxo.arwh(2, function(){
+add = xop.arwh(2, function(){
   return true;
 }, add2).def();
 ret = add(1, 2);
 if (!(ret === 3)) {
-  p();
+  pf();
 }

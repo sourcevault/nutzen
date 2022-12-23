@@ -65,20 +65,25 @@ multi_object = (fun2map,ob)->
 
   for index,item of ob
 
-    if not (Array.isArray item) then return [\fault,[\ob_inner_array,index]]
+    switch R.type item
+    | \Array     =>
+      a_item = item
+    | \Function  =>
+      a_item = [item]
+    | otherwise  => return [\fault,[\ob_inner_array,index]]
 
-    if Array.isArray item[0]
-      clean = item
+    if Array.isArray a_item[0]
+      clean = a_item
     else
-      clean = [item]
+      clean = [a_item]
 
     tup = []
 
     for k,item_inner of clean
 
-      id = fun2map item_inner,index,k
+      id = fun2map item_inner
 
-      if id[0] is \fault then return id
+      if id[0] is \fault then return [\fault,[id[1],(index+'.'+k)]]
 
       tup.push id
 
@@ -88,12 +93,22 @@ multi_object = (fun2map,ob)->
 
 fun2map = {}
 
-fun2map.arwh_ob = (item_inner,index,k) ->
+fun2map.arwh_ob = (item_inner) ->
 
   if not (Array.isArray item_inner)
-    return [\fault,[\ob_inner_not_array,(index+'.'+k)]]
 
-  [validator,whatdo] = item_inner
+    return [\fault,\ob_inner_not_array]
+
+  switch item_inner.length
+  | 1 =>
+
+    [whatdo] = item_inner
+
+    validator = void
+
+  | otherwise =>
+
+    [validator,whatdo] = item_inner
 
   tup = []
 
@@ -101,7 +116,9 @@ fun2map.arwh_ob = (item_inner,index,k) ->
 
   | \Function     => tup.push [\f,validator]
   | \htypes       => tup.push [\v,validator]
-  | otherwise     => return [\fault,[\ob_inner_array_validator,(index+'.'+k)]]
+  | \Undefined    => tup.push [\b,true]
+  | \Boolean      => tup.push [\b,validator]
+  | otherwise     => return [\fault,\ob_inner_array_validator]
 
   switch customTypeoOf whatdo
 
@@ -113,12 +130,17 @@ fun2map.arwh_ob = (item_inner,index,k) ->
 
 ret_void = -> void
 
-fun2map.arpar_ob = (item_inner,index,k) ->
+fun2map.arpar_ob = (item_inner) ->
 
   if not (Array.isArray item_inner)
-    return [\fault,[\ob_inner_not_array,(index+'.'+k)]]
+    return [\fault,\ob_inner_not_array]
 
-  [validator,whatdo,lastview] = item_inner
+  switch item_inner.length
+  | 2 =>
+    [whatdo,lastview] = item_inner
+    validator = true
+  | otherwise =>
+    [validator,whatdo,lastview] = item_inner
 
   tup = []
 
@@ -126,7 +148,9 @@ fun2map.arpar_ob = (item_inner,index,k) ->
 
   | \Function     => tup.push [\f,validator]
   | \htypes       => tup.push [\v,validator]
-  | otherwise     => return [\fault,[\ob_inner_array_validator,(index+'.'+k)]]
+  | \Undefined    => tup.push [\b,true]
+  | \Boolean      => tup.push [\b,validator]
+  | otherwise     => return [\fault,\ob_inner_array_validator]
 
   switch customTypeoOf whatdo
 
@@ -137,11 +161,13 @@ fun2map.arpar_ob = (item_inner,index,k) ->
   switch R.type lastview
   | \Function        => tup.push lastview
   | \Undefined       => tup.push ret_void
-  | otherwise        => return [\fault,[\ob_inner_lastview,(index+'.'+k)]]
+  | otherwise        => return [\fault,\ob_inner_lastview]
 
   tup
 
-V.arwh_ob = (ob) -> multi_object fun2map.arwh_ob,ob
+V.arwh_ob = (ob) ->
+
+  multi_object fun2map.arwh_ob,ob
 
 V.ar_ob = (ob)->
 

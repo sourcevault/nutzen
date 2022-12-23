@@ -1,10 +1,7 @@
-var ext, com, verify, modflag, defacto, print, l, z, zj, R, uic, binapi, j, resolve, mod_resolve, UNDEC, ob, n, a, core, arwhn, arma, common_par, arpar, f_arpar, arwh, ar, tightloop, main, looper, handle, genfun, props, cat, getter, topcache, init, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ext, com, verify, modflag, defacto, print, l, z, R, uic, binapi, resolve, mod_resolve, UNDEC, ob, n, a, core, n_n, n_a, arn, arwhn, arnwh, arnwhn, arma, common_par, arpar, f_arpar, arwh, ar, tightloop, main, looper, handle, genfun, props, cat, getter, topcache, init, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ext = require("./verify.print.common");
 com = ext.com, verify = ext.verify, modflag = ext.modflag, defacto = ext.defacto, print = ext.print;
-l = com.l, z = com.z, zj = com.zj, R = com.R, uic = com.uic, binapi = com.binapi, j = com.j;
-j = j.o({
-  indent: 2
-});
+l = com.l, z = com.z, R = com.R, uic = com.uic, binapi = com.binapi;
 resolve = function(F, A){
   var ftype, f;
   ftype = F[0], f = F[1];
@@ -118,6 +115,11 @@ core.wh = function(da, ta){
     if (vd['continue']) {
       return resolve(exec, vd.value);
     }
+    break;
+  case 'b':
+    if (vF) {
+      return resolve(exec, da.arg);
+    }
   }
   return UNDEC;
 };
@@ -136,16 +138,53 @@ core.whn = function(da, ta){
     if (vd.error) {
       return resolve(exec, vd.value);
     }
+    break;
+  case 'b':
+    if (!vF) {
+      return resolve(exec, da.arg);
+    }
   }
   return UNDEC;
 };
-core.arn = function(da, ta){
+n_n = function(fn){
+  return function(da, ta){
+    var num, ka;
+    num = ta[0], ka = ta[1];
+    if (num === da.arglen) {
+      return UNDEC;
+    }
+    return fn(da, ka);
+  };
+};
+n_a = function(fn){
+  return function(da, ta){
+    var spans, ka;
+    spans = ta[0], ka = ta[1];
+    if (spans[da.arglen]) {
+      return UNDEC;
+    }
+    return fn(da, ka);
+  };
+};
+arn = {};
+arn.a = function(da, ta){
   var spans, exec;
   spans = ta[0], exec = ta[1];
   if (spans[da.arglen]) {
     return UNDEC;
   }
   return resolve(exec, da.arg);
+};
+arn.n = function(da, ta){
+  var num, exec;
+  num = ta[0], exec = ta[1];
+  if (da.arglen === num) {
+    return UNDEC;
+  }
+  return resolve(exec, da.arg);
+};
+core.arn = function(da, ta){
+  return arn[ta[0]](da, ta[1]);
 };
 arwhn = {};
 arwhn.ob = ob(core.whn);
@@ -154,21 +193,17 @@ arwhn.a = a(core.whn);
 core.arwhn = function(da, ta){
   return arwhn[ta[0]](da, ta[1]);
 };
+arnwh = {};
+arnwh.n = n_n(core.wh);
+arnwh.a = n_a(core.wh);
 core.arnwh = function(da, ta){
-  var spans, exec;
-  spans = ta[0], exec = ta[1];
-  if (spans[da.arglen]) {
-    return UNDEC;
-  }
-  return core.wh(da, exec);
+  return arnwh[ta[0]](da, ta[1]);
 };
+arnwhn = {};
+arnwhn.n = n_n(core.whn);
+arnwhn.a = n_a(core.whn);
 core.arnwhn = function(da, ta){
-  var spans, exec;
-  spans = ta[0], exec = ta[1];
-  if (spans[da.arglen]) {
-    return UNDEC;
-  }
-  return core.whn(da, exec);
+  return arnwhn[ta[0]](da, ta[1]);
 };
 core.ma = function(da, ta){
   var ref$, vtype, vF, exec, msg, vd;
@@ -184,6 +219,11 @@ core.ma = function(da, ta){
     vd = vF.auth(da.arg);
     if (vd['continue']) {
       return mod_resolve(exec, vd.value, da.arg);
+    }
+    break;
+  case 'b':
+    if (vF) {
+      return mod_resolve(exec, void 8, da.arg);
     }
   }
   return UNDEC;
@@ -222,6 +262,16 @@ common_par = function(fname){
         return mod_resolve(exec, vd.value, da.arg);
       } else {
         ret = lastview(vd.message, vd.path);
+        if (ret !== void 8) {
+          return ret;
+        }
+      }
+      break;
+    case 'b':
+      if (vF) {
+        return mod_resolve(exec, void 8, da.arg);
+      } else {
+        ret = lastview();
         if (ret !== void 8) {
           return ret;
         }

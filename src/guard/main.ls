@@ -2,11 +2,7 @@ ext = require "./verify.print.common"
 
 {com,verify,modflag,defacto,print} = ext
 
-{l,z,zj,R,uic,binapi,j} = com
-
-#---------------------------------------------------
-
-j = j.o {indent:2}
+{l,z,R,uic,binapi} = com
 
 #---------------------------------------------------
 
@@ -126,6 +122,12 @@ core.wh = (da,ta) ->
 
       return resolve exec,vd.value
 
+  | \b =>
+
+    if vF
+
+      return resolve exec,da.arg
+
   UNDEC
 
 core.whn = (da,ta) ->
@@ -150,17 +152,51 @@ core.whn = (da,ta) ->
 
       return resolve exec,vd.value
 
+  | \b =>
+
+    if not vF
+
+      return resolve exec,da.arg
+
   UNDEC
 
 # ---aux----
 
-core.arn = (da,ta) ->
+n_n = (fn) -> (da,ta) -> # not num
+
+  [num,ka] = ta
+
+  if num is da.arglen then return UNDEC
+
+  return fn da,ka
+
+n_a = (fn) -> (da,ta) -> # not array
+
+  [spans,ka] = ta
+
+  if spans[da.arglen] then return UNDEC
+
+  return fn da,ka
+
+arn = {}
+
+arn.a = (da,ta) ->
 
   [spans,exec] = ta
 
   if spans[da.arglen] then return UNDEC
 
   return resolve exec,da.arg
+
+arn.n = (da,ta)  ->
+
+  [num,exec] = ta
+
+  if (da.arglen is num) then return UNDEC
+
+  return resolve exec,da.arg
+
+core.arn = (da,ta) -> arn[ta[0]] da,ta[1]
 
 arwhn = {}
 
@@ -172,21 +208,21 @@ arwhn.a = a core.whn
 
 core.arwhn = (da,ta) -> arwhn[ta[0]] da,ta[1]
 
-core.arnwh = (da,ta) ->
+arnwh = {}
 
-  [spans,exec] = ta
+arnwh.n = n_n core.wh
 
-  if spans[da.arglen] then return UNDEC
+arnwh.a = n_a core.wh
 
-  return core.wh da,exec
+core.arnwh = (da,ta) -> arnwh[ta[0]] da,ta[1]
 
-core.arnwhn = (da,ta) ->
+arnwhn = {}
 
-  [spans,exec] = ta
+arnwhn.n = n_n core.whn
 
-  if spans[da.arglen] then return UNDEC
+arnwhn.a = n_a core.whn
 
-  return core.whn da,exec
+core.arnwhn = (da,ta) -> arnwhn[ta[0]] da,ta[1]
 
 # -----
 
@@ -211,6 +247,12 @@ core.ma = (da,ta) ->
     if vd.continue
 
       return mod_resolve exec,vd.value,da.arg
+
+  | \b =>
+
+    if vF
+
+      return mod_resolve exec,void,da.arg
 
   UNDEC
 
@@ -255,6 +297,15 @@ common_par = (fname)-> (da,ta) ->
     else
       ret = lastview vd.message,vd.path
       if (ret isnt void) then return ret
+
+  | \b =>
+
+    if vF
+      return mod_resolve exec,void,da.arg
+    else
+      ret = lastview!
+      if (ret isnt void) then return ret
+
 
 
   UNDEC

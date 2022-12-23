@@ -38,4 +38,4 @@ V = guard
 out = V \obj
 
 if not (out is \obj_or_map)
-  p!
+  pf!

@@ -8,7 +8,7 @@ name  = \test1
 
 path = (name) -> "../../dist/#{name}/main"
 
-guard = require path \guard
+xop = require path \guard
 
 com   = require path \utils
 
@@ -19,7 +19,7 @@ pf = print_fail "test/#{proj}/#{name}.js"
 #-------------------------------------------------------------------------------
 
 
-V1 = guard
+V1 = xop
 .arpar 1,
   -> [false,"hello"]
   -> "world"
@@ -35,7 +35,7 @@ if not (retorn is "foobar")
 
 # check if default empty array is provided.
 
-V2 = guard
+V2 = xop
 .arpar 1,
   -> [false]
   ->
@@ -47,4 +47,22 @@ empty_array = V2 1
 if not ((R.type empty_array) is \Array)
 
   pf ".arpar error handling not being done correctly"
+
+
+V2 = xop
+.par -> [false],null,-> void
+.def 39
+
+
+if V2! isnt 39
+
+  pf ".par error"
+
+
+
+
+
+
+
+
 

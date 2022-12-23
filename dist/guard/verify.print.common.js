@@ -60,27 +60,34 @@ array2obj = function(arr){
   return ob;
 };
 multi_object = function(fun2map, ob){
-  var ret, index, item, clean, tup, k, item_inner, id;
+  var ret, index, item, a_item, clean, tup, k, item_inner, id;
   if (!(customTypeoOf(ob) === 'Object')) {
     return ['fault', ['ob_not_object']];
   }
   ret = {};
   for (index in ob) {
     item = ob[index];
-    if (!Array.isArray(item)) {
+    switch (R.type(item)) {
+    case 'Array':
+      a_item = item;
+      break;
+    case 'Function':
+      a_item = [item];
+      break;
+    default:
       return ['fault', ['ob_inner_array', index]];
     }
-    if (Array.isArray(item[0])) {
-      clean = item;
+    if (Array.isArray(a_item[0])) {
+      clean = a_item;
     } else {
-      clean = [item];
+      clean = [a_item];
     }
     tup = [];
     for (k in clean) {
       item_inner = clean[k];
-      id = fun2map(item_inner, index, k);
+      id = fun2map(item_inner);
       if (id[0] === 'fault') {
-        return id;
+        return ['fault', [id[1], index + '.' + k]];
       }
       tup.push(id);
     }
@@ -89,12 +96,19 @@ multi_object = function(fun2map, ob){
   return ['ok', ['ob', ret]];
 };
 fun2map = {};
-fun2map.arwh_ob = function(item_inner, index, k){
-  var validator, whatdo, tup;
+fun2map.arwh_ob = function(item_inner){
+  var whatdo, validator, tup;
   if (!Array.isArray(item_inner)) {
-    return ['fault', ['ob_inner_not_array', index + '.' + k]];
+    return ['fault', 'ob_inner_not_array'];
   }
-  validator = item_inner[0], whatdo = item_inner[1];
+  switch (item_inner.length) {
+  case 1:
+    whatdo = item_inner[0];
+    validator = void 8;
+    break;
+  default:
+    validator = item_inner[0], whatdo = item_inner[1];
+  }
   tup = [];
   switch (customTypeoOf(validator)) {
   case 'Function':
@@ -103,8 +117,14 @@ fun2map.arwh_ob = function(item_inner, index, k){
   case 'htypes':
     tup.push(['v', validator]);
     break;
+  case 'Undefined':
+    tup.push(['b', true]);
+    break;
+  case 'Boolean':
+    tup.push(['b', validator]);
+    break;
   default:
-    return ['fault', ['ob_inner_array_validator', index + '.' + k]];
+    return ['fault', 'ob_inner_array_validator'];
   }
   switch (customTypeoOf(whatdo)) {
   case 'Function':
@@ -119,12 +139,19 @@ fun2map.arwh_ob = function(item_inner, index, k){
   return tup;
 };
 ret_void = function(){};
-fun2map.arpar_ob = function(item_inner, index, k){
-  var validator, whatdo, lastview, tup;
+fun2map.arpar_ob = function(item_inner){
+  var whatdo, lastview, validator, tup;
   if (!Array.isArray(item_inner)) {
-    return ['fault', ['ob_inner_not_array', index + '.' + k]];
+    return ['fault', 'ob_inner_not_array'];
   }
-  validator = item_inner[0], whatdo = item_inner[1], lastview = item_inner[2];
+  switch (item_inner.length) {
+  case 2:
+    whatdo = item_inner[0], lastview = item_inner[1];
+    validator = true;
+    break;
+  default:
+    validator = item_inner[0], whatdo = item_inner[1], lastview = item_inner[2];
+  }
   tup = [];
   switch (customTypeoOf(validator)) {
   case 'Function':
@@ -133,8 +160,14 @@ fun2map.arpar_ob = function(item_inner, index, k){
   case 'htypes':
     tup.push(['v', validator]);
     break;
+  case 'Undefined':
+    tup.push(['b', true]);
+    break;
+  case 'Boolean':
+    tup.push(['b', validator]);
+    break;
   default:
-    return ['fault', ['ob_inner_array_validator', index + '.' + k]];
+    return ['fault', 'ob_inner_array_validator'];
   }
   switch (customTypeoOf(whatdo)) {
   case 'Function':
@@ -154,7 +187,7 @@ fun2map.arpar_ob = function(item_inner, index, k){
     tup.push(ret_void);
     break;
   default:
-    return ['fault', ['ob_inner_lastview', index + '.' + k]];
+    return ['fault', 'ob_inner_lastview'];
   }
   return tup;
 };

@@ -23,7 +23,9 @@
     "livescript": "*",
     "gulp-tap": "*",
     "gulp-util": "*",
-    "gulp": "*"
+    "gulp": "*",
+    "gulp-changed-in-place": "*",
+    "gulp-changed": "*"
   },
   "keywords": [
     "json-schema-validator",
