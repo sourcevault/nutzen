@@ -1,6 +1,6 @@
 com = require \../utils/main
 
-oxo = require \../guard/main
+xop = require \../guard/main
 
 print      = {}
 
@@ -11,7 +11,7 @@ print      = {}
 
 pkgversion = version
 
-pkgname    = "hoplon.types"
+pkgname    = \hoplon.types
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
 
@@ -29,11 +29,11 @@ help       = c.grey "[  docs] #{com.homepage}\n"
 
 # -------------------------------------------------------------------
 
-show_stack = create_stack 2,['internal/modules/cjs','node:internal'],help
+show_stack = create_stack 1,['internal/modules/cjs','node:internal'],help
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - -
 
-type_color = c.pink
+type_color = c.ok
 
 print.resreq = ([cat,type]) ->
 
@@ -66,23 +66,44 @@ print.input_fault = ([method_name,data]) ->
   | \on       => fi.on data
   | \map      => fi.map data
   | \custom   => fi.custom data
-  | \and,\or  => fi.andor data
+  | \and,\or  => fi.andor data,method_name
   | \bt       => fi.bt data
 
 
-show_chain = ([init,last]) ->
+show_chain = (data) ->
+
+  [init,last] = data
+
+  middle = R.tail init
+
+  if middle.length
+
+    start_chain = middle
+    |> R.map (each) -> ".#{each}(..)"
+    |> R.splitEvery 4
+    |> (bulk) -> (bulk[0].unshift init[0]);bulk
+    |> R.map (line) -> (line.unshift ' '); line
+    |> R.tap (x) ->
+    |> R.map R.join ""
+    |> R.join "\n"
+
+
+  else
+
+    start_chain = ' ' + init[0]
+
 
   l lit do
-    ["  ",((init).join "."),("."  + last),"(xx)"," <-- error here"]
-    [0,c.ok,c.er2,c.er3,c.er2]
+    [start_chain,("."  + last),"(xx)"," <-- error here"]
+    [c.grey,c.warn,c.er3,c.er3]
 
 show_name = (extra,type = "[inputError] ") ->
 
   l lit do
     ["[#{pkgname}:v#{pkgversion}]", type,extra]
-    [                        c.er1,c.er1,c.er1]
+    [                       c.er2, c.er2,c.er2]
 
-print.input_fault.andor = ([type,info])->
+print.input_fault.andor = ([type,info],method_name)->
 
   show_name ".#{info[1]}"
 
@@ -95,11 +116,9 @@ print.input_fault.andor = ([type,info])->
   switch type
   | \arg_count =>
 
-    l c.grey do
-      "  no value passed."
-      "\n\n"
+    l c.pink do
+      " no value passed.\n\n"
       " minimum of 1 argument of function type is needed."
-
 
   | \not_function =>
 
@@ -107,11 +126,11 @@ print.input_fault.andor = ([type,info])->
 
   l ""
 
-  l c.ok " accepted type signature :"
+  l c.grey " expected type signature :"
 
   l ""
 
-  l type_color " - :: fun|[fun,..],..,.."
+  l type_color " #{method_name} :: ((fun|[fun,..]),..,..)"
 
   l ""
 
@@ -168,11 +187,11 @@ print.input_fault.bt = ([type,info]) ->
 
   l ""
 
-  l c.ok " accepted type signature :"
+  l c.white " expected type signature :"
 
   l ""
 
-  l type_color " - :: integer|undefined"
+  l type_color " bt :: (integer|undefined)"
 
   l ""
 
@@ -259,14 +278,17 @@ sort = (x) -> x.sort(alpha_sort.ascending)
 
 print.log = ->
 
-  prop = sort (getprop @)
+  # prop = sort (getprop @)
 
-  lit ["{.*} ",prop.join " "],[c.warn,c.grey]
+  # lit ["{.*} ",prop.join " "],[c.warn,c.grey]
+
+  lit [pkgname],[c.warn]
+
 
 
 same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit','tap','forEach','wrap']
 
-myflat = oxo
+myflat = xop
 .wh do
   (ob) ->
     switch (R.type ob)

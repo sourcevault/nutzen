@@ -12,24 +12,147 @@ int = require \./internal
 
 be = custom
 
-# V = be.num
+#-------------------------------------------------------------------
 
-# .and be.int.pos
+# first column is the function name, second column is error message.
 
-# .and be.int.neg
+props =
+  [\obj \Object]
+  [\arr \Array]
+  [\undef \Undefined]
+  [\null \Null]
+  [\num \Number]
+  [\str \String]
+  [\fun \Function]
+  [\bool \Boolean]
+  [\objerr \Error]
+
+nonmap = R.map do
+  ([name]) -> name
+  R.drop 2,props
+
+base = (type) -> (UFO) ->
+
+  if ((R.type UFO) is type)
+
+    {continue:true,error:false,value:UFO}
+
+  else
+
+    str = R.toLower "not #{type}"
+
+    {error:true,continue:false,message:str,value:UFO}
+
+not_base = (type) -> (UFO) ->
+
+  if ((R.type UFO) is type)
+
+    str = R.toLower "is #{type}"
+
+    {error:true,continue:false,message:str,value:UFO}
+
+  else
+
+    {continue:true,error:false,value:UFO}
+
+# ------------------------------------------------------
+
+undefnull = (UFO) ->
+
+  if ((R.type UFO) in [\Undefined \Null])
+
+    return {continue:true,error:false,value:UFO}
+  else
+
+    return {continue:false,error:true,message:"not undefined or null",value:UFO}
+
+cache.def.add undefnull
+
+#--------------------------------------------------------
+
+F = base "Arguments"
+
+define.basis \arg,F
+
+be.arg = F
+
+#-----------------------------
+
+pop = (msg) -> msg.pop! ; msg
+
+#-----------------------------
+
+be.not = (F) ->
+
+  V = be F
+
+  be (x) -> not (V.auth x).continue
+
+#--------------------------------------------------------
+
+be.undefnull = be undefnull
+
+be.not.undefnull = be.not undefnull
+
+#--------------------------------------------------------
+
+be.maybe = (F) -> ((be F).or be.undef).err pop
+
+#-----------------------------
+
+be.list  = (F) -> be.arr.map F
+
+be.not[uic] = print.inner
+
+be.list[uic] = print.inner
+
+be.maybe[uic] = print.inner
+
+#-----------------------------
+
+be.known = {}
+
+for [name,type] in props
+
+  A = base type
+
+  base name,A
+
+  define.basis name,A
+
+  be[name] = A
+
+  #----------------------------
+
+  B = not_base type
+
+  define.basis name,B
+
+  be.not[name] = B
+
+  #----------------------------
+
+  C = {}
+
+  define.basis name,C
+
+  be.known[name] = C
+
+#----------------------------
+
+#--------------------------------------------------------
+
+V = be.arr
+.and noop
+.or noop
+.map noop
+.edit noop
+.edit noop
+.and noop
+.and noop
+.bt -5
 
 
-
-# V = be ->
-
-# z "hoplon/src/types/main.ls be(->) :",V
-
-# .and noop
-# .and noop
-# .or noop
-# .and noop
-# .and noop
-# .bt 0
 
 # .on 2,noop
 # .on 3,noop
@@ -62,136 +185,9 @@ be = custom
 #     [\alt,[\remotefold,\remotehost],be.undefnull]
 #    ]
 
-
-# #-------------------------------------------------------------------
-
-# # first column is the function name, second column is error message.
-
-# props =
-#   [\obj \Object]
-#   [\arr \Array]
-#   [\undef \Undefined]
-#   [\null \Null]
-#   [\num \Number]
-#   [\str \String]
-#   [\fun \Function]
-#   [\bool \Boolean]
-#   [\objerr \Error]
-
-# nonmap = R.map do
-#   ([name]) -> name
-#   R.drop 2,props
-
-# base = (type) -> (UFO) ->
-
-#   if ((R.type UFO) is type)
-
-#     {continue:true,error:false,value:UFO}
-
-#   else
-
-#     str = R.toLower "not #{type}"
-
-#     {error:true,continue:false,message:str,value:UFO}
-
 # # ------------------------------------------------------------------
 
-# not_base = (type) -> (UFO) ->
 
-#   if ((R.type UFO) is type)
-
-#     str = R.toLower "is #{type}"
-
-#     {error:true,continue:false,message:str,value:UFO}
-
-#   else
-
-#     {continue:true,error:false,value:UFO}
-
-# # ------------------------------------------------------
-
-# undefnull = (UFO) ->
-
-#   if ((R.type UFO) in [\Undefined \Null])
-
-#     return {continue:true,error:false,value:UFO}
-#   else
-
-#     return {continue:false,error:true,message:"not undefined or null",value:UFO}
-
-# cache.def.add undefnull
-
-# #--------------------------------------------------------
-
-# F = base "Arguments"
-
-# define.basis \arg,F
-
-# be.arg = F
-
-# #-----------------------------
-
-# pop = (msg) -> msg.pop! ; msg
-
-# #-----------------------------
-
-# be.not = (F) ->
-
-#   V = be F
-
-#   be (x) -> not (V.auth x).continue
-
-# #--------------------------------------------------------
-
-# be.undefnull = be undefnull
-
-# be.not.undefnull = be.not undefnull
-
-# #--------------------------------------------------------
-
-# be.maybe = (F) -> ((be F).or be.undef).err pop
-
-# #-----------------------------
-
-# be.list  = (F) -> be.arr.map F
-
-# be.not[uic] = print.inner
-
-# be.list[uic] = print.inner
-
-# be.maybe[uic] = print.inner
-
-# #-----------------------------
-
-# be.known = {}
-
-# for [name,type] in props
-
-#   A = base type
-
-#   base name,A
-
-#   define.basis name,A
-
-#   be[name] = A
-
-#   #----------------------------
-
-#   B = not_base type
-
-#   define.basis name,B
-
-#   be.not[name] = B
-
-#   #----------------------------
-
-#   C = {}
-
-#   define.basis name,C
-
-#   be.known[name] = C
-
-# #----------------------------
 
 # for name in nonmap
 

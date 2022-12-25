@@ -525,6 +525,5 @@ tightloop = function(x){
   var state, all, type;
   state = this[sig];
   all = state.all, type = state.type;
-  zj(all);
 };
 module.exports = tightloop;

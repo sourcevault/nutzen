@@ -8,7 +8,7 @@ out$.defacto = defacto = Symbol("default");
 z = com.z, zj = com.zj, j = com.j, l = com.l, R = com.R, c = com.c, esp = com.esp, create_stack = com.create_stack, lit = com.lit, version = com.version;
 print.log = {};
 help = c.grey("[  docs] " + com.homepage + "\n");
-show_stack = create_stack(1, ['internal/modules/cjs', 'node:internal'], help);
+show_stack = create_stack(2, ['internal/modules/cjs', 'node:internal'], help);
 object_name = "hoplon.guard";
 pkgname = object_name + "#v" + version;
 print.log.def_fault = function(){

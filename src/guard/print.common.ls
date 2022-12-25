@@ -18,7 +18,7 @@ print.log  = {}
 
 help       = c.grey "[  docs] #{com.homepage}\n"
 
-show_stack = create_stack 1,['internal/modules/cjs','node:internal'],help
+show_stack = create_stack 2,['internal/modules/cjs','node:internal'],help
 
 object_name  = "hoplon.guard"
 

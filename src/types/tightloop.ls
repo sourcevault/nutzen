@@ -532,7 +532,7 @@ tightloop = (x) !->
 
   {all,type} = state
 
-  zj all
+  # zj all
 
   # I          = 0
 

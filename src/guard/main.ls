@@ -236,7 +236,7 @@ core.ma = (da,ta) ->
 
     msg = vF ...da.arg
 
-    if msg
+    if msg isnt false
 
       return mod_resolve exec,msg,da.arg
 
@@ -250,9 +250,9 @@ core.ma = (da,ta) ->
 
   | \b =>
 
-    if vF
+    if vF isnt false
 
-      return mod_resolve exec,void,da.arg
+      return mod_resolve exec,vF,da.arg
 
   UNDEC
 

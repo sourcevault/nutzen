@@ -1,4 +1,4 @@
-var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, util, util_inspect_custom, noop, jspc_def, jspc, z, loopfault, x$, c, lit, rm_paths, create_stack, print_fail, wait, ext, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, util, util_inspect_custom, noop, jspc_def, jspc, z, loopfault, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, ext, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 vendor = require("./vendor");
 l = console.log;
 flat = vendor.flat;
@@ -64,7 +64,7 @@ loopfault = function(){
     get: get
   });
 };
-x$ = c = {};
+x$ = cc = {};
 x$.ok = function(txt){
   return "\x1B[38;5;2m" + txt + "\x1B[39m";
 };
@@ -92,6 +92,16 @@ x$.blue = function(txt){
 x$.white = function(txt){
   return "\x1B[37m" + txt + "\x1B[39m";
 };
+c = {};
+aj = function(func){
+  return function(){
+    return func(arrayFrom$(arguments).join(""));
+  };
+};
+for (name in cc) {
+  func = cc[name];
+  c[name] = aj(func);
+}
 lit = R.pipe(R.zipWith(function(x, f){
   switch (R.type(f)) {
   case 'Function':
@@ -123,6 +133,7 @@ create_stack = function(take_only, paths, init_txt){
     }
     disp = [];
     cc = [c.blue, c.grey];
+    cc = [c.grey, c.grey];
     for (i$ = 0, len$ = E.length; i$ < len$; ++i$) {
       data = E[i$];
       lineNumber = data.lineNumber, fileName = data.fileName, functionName = data.functionName, columnNumber = data.columnNumber;

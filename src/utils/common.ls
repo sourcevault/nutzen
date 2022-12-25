@@ -72,7 +72,7 @@ loopfault = ->
 
 # --------------------------------------------------------------------------------------
 
-c = {}
+cc = {}
   ..ok    = (txt) -> "\x1B[38;5;2m#{txt}\x1B[39m"
   ..er1   = (txt) -> "\x1B[38;5;3m#{txt}\x1B[39m"
   ..er2   = (txt) -> "\x1B[38;5;13m#{txt}\x1B[39m"
@@ -82,6 +82,16 @@ c = {}
   ..grey  = (txt) -> "\x1B[38;5;8m#{txt}\x1B[39m"
   ..blue  = (txt) -> "\x1B[38;5;12m#{txt}\x1B[39m"
   ..white = (txt) -> "\x1B[37m#{txt}\x1B[39m"
+
+c = {}
+
+aj = (func) -> -> func ([...arguments].join "")
+
+for name,func of cc
+
+  c[name] = aj func
+
+
 
 # --------------------------------------------------------------------------------------
 
@@ -124,6 +134,10 @@ create_stack = (take_only,paths = [],init_txt) ->
     disp = []
 
     cc = [c.blue,c.grey]
+
+    # cc = [c.white,c.grey]
+
+    cc = [c.grey,c.grey]
 
     for data in E
 

@@ -4,7 +4,7 @@ tightloop = require \./tightloop
 
 # ------------------------------------------------------------------
 
-{z,l,R,j,uic,deep_freeze,loopError,zj} = com
+{z,l,R,j,uic,deep_freeze,loopError} = com
 
 xop = require \../guard/main
 
@@ -80,10 +80,12 @@ validate   = {}
 
 props = [\and \or \alt \cont \tap \edit \err \jam \fix]
 
-init-state =
+init_state =
   all  :[]
   type :null
   str  :[]
+  and_size:0
+  and_view:[]
 
 wrap.bt = -> guard.bt arguments,@[sig],\bt
 
@@ -147,11 +149,12 @@ custom = xop
 
   G = cato F
 
-  data = {
-      type  : \custom
-      all   : [[G]]
-      str   : ["{..}"]
-  }
+  data =
+     *type    : \custom
+      all     : [[G]]
+      str     : ["{..}"]
+      and_size: 1
+      and_view: [1]
 
   define.proto data
 
@@ -190,15 +193,17 @@ define.on = (type,args,state) ->
 
     put = [\on,[\single_array,array]]
 
-  block = define.and state,[put]
+  [block,av] = define.and state,[put]
 
-  data = {
-    ...state
-    ...{
-      all   :block
-      str   :state.str.concat \on
-    }
-  }
+  av[av.length - 1] = (R.last av) + 1
+
+  data =
+    *type     : state.type
+     all      : block
+     str      : state.str.concat \on
+     and_size : state.and_size + 1
+     and_view : av
+
 
   define.proto data
 
@@ -313,7 +318,7 @@ guard.on = xop.unary
 
     if (data[1] is \input.fault) then return handleError data
 
-    void
+    null
 
 .arma 2,
 
@@ -403,42 +408,105 @@ validate.rest = (funs,state,type) ->
 
 guard.bt = xop
 
+.ma do
+  (args,state,type) ->
+
+    first = args[0]
+
+    switch R.type first
+
+    | \Undefined => return 0
+
+    | \Number    =>
+
+      switch first
+      |  Infinity => return state.and_size
+      | -Infinity => return 0
+      | otherwise =>
+
+        if first < 0
+
+          return state.and_size + first
+
+        else return first
+
+    | otherwise  =>
+
+      A = do
+        *new Error!
+         \input.fault
+         [type,[\not_function,[state.str,type]]]
+
+      print.route A
+
+      false
+
+  (raw_pos,o_arg,state) ->
+
+    current = raw_pos
+
+    for item,K in state.and_view
+
+      current = current - item
+
+      if current < 0
+
+        short_y_index = K
+        short_x_index = item + current
+
+        break
+
+    y_index = short_y_index*2
+
+    all = state.all
+
+    line = all[y_index]
+
+    current = short_x_index
+
+    x_index = 0
+
+    I = 0
+
+    while current
+
+      [type] = line[I]
+
+      switch type
+      | \i,\d,\f,\on,\map,\and =>
+        --current
+
+      ++x_index
+      ++I
 
 
-# .ma do
-#   (args,state,type) ->
+    init = [all[I] for I from 0 til y_index]
 
-#     first = args[0]
+    final = [all[K] for K from (y_index + 1) til all.length]
 
-#     switch R.type first
+    fini = all.length - 1
 
-#     | \Undefined => return Infinity
-#     | \Number    => return first
-#     | otherwise  =>
+    out = R.insert do
+      x_index
+      [\bt,[fini,(all[fini].length - 1)]]
+      line
 
-#       A = do
-#         *new Error!
-#          \input.fault
-#          [type,[\not_function,[state.str,type]]]
+    neo_all = [...init,out,...final]
 
-#       print.route A
 
-#       return false
+    z.j neo_all
 
-#   (n_arg,o_arg,state) ->
 
-#     all = state.all
 
-#     dna = [I.length for I in all by 2]
-#     ro = [all[K].length for K from 1 til all.length by 2]
 
-#     max = R.sum dna
 
-#     index = switch n_arg
 
-#     | Infinity  => 0
-#     | 0         => max
-#     | otherwise => max - n_arg
+
+
+
+
+
+
 
 
 .def loopError
@@ -456,20 +524,26 @@ guard.rest = xop
 
     funs = cato args
 
-    block = switch type
+    [block,av] = switch type
     | \and                             => define.and state,funs
     | \or                              => define.or state,funs
     | \alt                             => define.or state,[[\alt,funs]]
     | \map,\forEach                    => define.and state,[[type,funs[0]]]
     | \err,\fix,\cont,\jam,\edit,\tap  => define.and state,[[type,args[0]]]
 
-    data = {
-      ...state
-      ...{
-        all   :block
-        str   :state.str.concat type
-      }
-    }
+    switch type
+    | \and,\map =>
+      av[av.length - 1] = (R.last av) + 1
+      as = state.and_size + 1
+    | otherwise =>
+      as = state.and_size
+
+    data =
+      *type:state.type
+       all:block
+       str:state.str.concat type
+       and_size:as
+       and_view:av
 
     define.proto data
 
@@ -519,14 +593,12 @@ define.basis = (name,F) ->
 
   cache.def.add F
 
-  data = {
-    ...init-state
-    ...{
-      type  :name
-      str   :[name]
-      all   :inner
-    }
-  }
+  data =
+    *type     : name
+     str      : [name]
+     all      : inner
+     and_size : 1
+     and_view : [1]
 
   define.copy F,data
 
@@ -542,7 +614,7 @@ define.and = (state,funs) ->
   switch (all.length%2)
   | 0 =>
 
-    all.concat [funs]
+    [(all.concat [funs]),(state.and_view.concat 0)]
 
   | 1 =>
 
@@ -554,7 +626,7 @@ define.and = (state,funs) ->
 
     block = [...init,nlast]
 
-    block
+    [block,state.and_view]
 
 define.or = (state,funs) ->
 
@@ -571,11 +643,11 @@ define.or = (state,funs) ->
 
     block = [...init,nlast]
 
-    block
+    [block,state.and_view]
 
   | 1 =>
 
-    all.concat [funs]
+    [(all.concat [funs]),state.and_view]
 
 #-----------------------------------------------------------------------
 

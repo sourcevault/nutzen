@@ -211,7 +211,7 @@ core.ma = function(da, ta){
   switch (vtype) {
   case 'f':
     msg = vF.apply(null, da.arg);
-    if (msg) {
+    if (msg !== false) {
       return mod_resolve(exec, msg, da.arg);
     }
     break;
@@ -222,8 +222,8 @@ core.ma = function(da, ta){
     }
     break;
   case 'b':
-    if (vF) {
-      return mod_resolve(exec, void 8, da.arg);
+    if (vF !== false) {
+      return mod_resolve(exec, vF, da.arg);
     }
   }
   return UNDEC;
