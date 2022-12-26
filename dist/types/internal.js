@@ -1,4 +1,4 @@
-var ref$, com, print, sig, tightloop, z, l, R, j, uic, deep_freeze, loopError, xop, x$, cache, assort, cato, y$, wrap, z$, guard, z1$, define, z2$, validate, props, init_state, z3$, proto, i$, len$, val, F, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ref$, com, print, sig, tightloop, z, l, R, j, uic, deep_freeze, loopError, xop, x$, cache, assort, cato, y$, wrap, z$, guard, z1$, define, z2$, validate, props, init_state, z3$, proto, i$, len$, val, F, handleError, custom, _try, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ref$ = require('./print.common'), com = ref$.com, print = ref$.print, sig = ref$.sig;
 tightloop = require('./tightloop');
 z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError;
@@ -38,11 +38,13 @@ cato = function(arg){
 y$ = wrap = {};
 y$.on = null;
 y$.rest = null;
-y$.bt = null;
+y$['try'] = null;
+y$['catch'] = null;
 z$ = guard = {};
 z$.on = null;
 z$.rest = null;
-z$.bt = null;
+z$['try'] = null;
+z$['catch'] = null;
 z1$ = define = {};
 z1$.and = null;
 z1$.or = null;
@@ -57,11 +59,7 @@ init_state = {
   all: [],
   type: null,
   str: [],
-  and_size: 0,
-  and_view: []
-};
-wrap.bt = function(){
-  return guard.bt(arguments, this[sig], 'bt');
+  mode: 'normal'
 };
 wrap.rest = function(type){
   return function(){
@@ -88,7 +86,9 @@ for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
 }
 proto.normal.auth = tightloop;
 proto.normal[uic] = print.log;
-proto.normal.bt = wrap.bt;
+proto.normal['try'] = function(){
+  return _try(this[sig]);
+};
 proto.functor = (import$({}, proto.normal));
 proto.functor.map = wrap.rest('map');
 proto.functor.forEach = wrap.rest('forEach');
@@ -110,15 +110,13 @@ custom = xop.arn(1, function(){
   data = {
     type: 'custom',
     all: [[G]],
-    str: ["{..}"],
-    and_size: 1,
-    and_view: [1]
+    str: ["{..}"]
   };
   return define.proto(data);
 });
 custom[uic] = print.inner;
 define.on = function(type, args, state){
-  var props, F, put, key, ob, fun, res$, val, array, ref$, block, av, data;
+  var props, F, put, key, ob, fun, res$, val, array, block, data;
   switch (type[0]) {
   case 'array':
     props = args[0], F = args[1];
@@ -143,14 +141,11 @@ define.on = function(type, args, state){
     array = type[1];
     put = ['on', ['single_array', array]];
   }
-  ref$ = define.and(state, [put]), block = ref$[0], av = ref$[1];
-  av[av.length - 1] = R.last(av) + 1;
+  block = define.and(state, [put]);
   data = {
     type: state.type,
     all: block,
-    str: state.str.concat('on'),
-    and_size: state.and_size + 1,
-    and_view: av
+    str: state.str.concat('on')
   };
   return define.proto(data);
 };
@@ -306,84 +301,13 @@ validate.rest = function(funs, state, type){
     return false;
   }
 };
-guard.bt = xop.ma(function(args, state, type){
-  var first, A;
-  first = args[0];
-  switch (R.type(first)) {
-  case 'Undefined':
-    return 0;
-  case 'Number':
-    switch (first) {
-    case Infinity:
-      return state.and_size;
-    case -Infinity:
-      return 0;
-    default:
-      if (first < 0) {
-        return state.and_size + first;
-      } else {
-        return first;
-      }
-    }
-  default:
-    A = [new Error(), 'input.fault', [type, ['not_function', [state.str, type]]]];
-    print.route(A);
-    return false;
-  }
-}, function(raw_pos, o_arg, state){
-  var current, i$, ref$, len$, K, item, short_y_index, short_x_index, y_index, all, line, x_index, I, type, init, res$, final, to$, fini, out, neo_all;
-  current = raw_pos;
-  for (i$ = 0, len$ = (ref$ = state.and_view).length; i$ < len$; ++i$) {
-    K = i$;
-    item = ref$[i$];
-    current = current - item;
-    if (current < 0) {
-      short_y_index = K;
-      short_x_index = item + current;
-      break;
-    }
-  }
-  y_index = short_y_index * 2;
-  all = state.all;
-  line = all[y_index];
-  current = short_x_index;
-  x_index = 0;
-  I = 0;
-  while (current) {
-    type = line[I][0];
-    switch (type) {
-    case 'i':
-    case 'd':
-    case 'f':
-    case 'on':
-    case 'map':
-    case 'and':
-      --current;
-    }
-    ++x_index;
-    ++I;
-  }
-  res$ = [];
-  for (i$ = 0; i$ < y_index; ++i$) {
-    I = i$;
-    res$.push(all[I]);
-  }
-  init = res$;
-  res$ = [];
-  for (i$ = y_index + 1, to$ = all.length; i$ < to$; ++i$) {
-    K = i$;
-    res$.push(all[K]);
-  }
-  final = res$;
-  fini = all.length - 1;
-  out = R.insert(x_index, ['bt', [fini, all[fini].length - 1]], line);
-  neo_all = arrayFrom$(init).concat([out], arrayFrom$(final));
-  return z.j(neo_all);
-}).def(loopError);
+_try = function(state){
+  return z('hello world');
+};
 guard.rest = xop.wh(validate.rest, function(args, state, type){
-  var funs, ref$, block, av, as, data;
+  var funs, block, data;
   funs = cato(args);
-  ref$ = (function(){
+  block = (function(){
     switch (type) {
     case 'and':
       return define.and(state, funs);
@@ -402,22 +326,11 @@ guard.rest = xop.wh(validate.rest, function(args, state, type){
     case 'tap':
       return define.and(state, [[type, args[0]]]);
     }
-  }()), block = ref$[0], av = ref$[1];
-  switch (type) {
-  case 'and':
-  case 'map':
-    av[av.length - 1] = R.last(av) + 1;
-    as = state.and_size + 1;
-    break;
-  default:
-    as = state.and_size;
-  }
+  }());
   data = {
     type: state.type,
     all: block,
-    str: state.str.concat(type),
-    and_size: as,
-    and_view: av
+    str: state.str.concat(type)
   };
   return define.proto(data);
 }).def(loopError);
@@ -463,23 +376,20 @@ define.basis = function(name, F){
     type: name,
     str: [name],
     all: inner,
-    and_size: 1,
-    and_view: [1]
+    mode: 'normal'
   };
   define.copy(F, data);
 };
 define.and = function(state, funs){
-  var all, init, last, nlast, block;
+  var all, mode;
   all = state.all;
+  mode = state.mode;
   switch (all.length % 2) {
   case 0:
-    return [all.concat([funs]), state.and_view.concat(0)];
+    return all.concat([funs]);
   case 1:
-    init = R.init(all);
-    last = R.last(all);
-    nlast = arrayFrom$(last).concat(arrayFrom$(funs));
-    block = arrayFrom$(init).concat([nlast]);
-    return [block, state.and_view];
+    z(mode);
+    return [];
   }
 };
 define.or = function(state, funs){
@@ -491,9 +401,9 @@ define.or = function(state, funs){
     last = R.last(all);
     nlast = arrayFrom$(last).concat(arrayFrom$(funs));
     block = arrayFrom$(init).concat([nlast]);
-    return [block, state.and_view];
+    return block;
   case 1:
-    return [all.concat([funs]), state.and_view];
+    return all.concat([funs]);
   }
 };
 module.exports = {

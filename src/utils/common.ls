@@ -55,7 +55,7 @@ z.j = (obj)-> console.log (jspc obj)
 
 z.n = ->
 
-  args = ['\n--\n',...arguments,'\n--\n']
+  args = ['\n',...arguments,'\n']
 
   console.log ...args
 

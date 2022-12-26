@@ -1,18 +1,17 @@
-var gulp, tap, livescript, gulpLivescript, gulpRename, gulpYaml, replace, gutil, gulp_changed, fs, wait;
+var gulp, tap, gulpLivescript, gulpRename, gulpYaml, replace, gutil, fs, cp, wait, def;
 gulp = require('gulp');
 tap = require('gulp-tap');
-livescript = require('livescript');
 gulpLivescript = require('gulp-livescript');
 gulpRename = require('gulp-rename');
 gulpYaml = require('gulp-yaml');
 replace = require('gulp-replace');
 gutil = require('gulp-util');
-gulp_changed = require('gulp-changed');
 fs = require('fs');
+cp = require('child_process');
 wait = function(t, f){
   return setTimeout(f, t);
 };
-gulp.task('default', function(done){
+def = function(done){
   var ls;
   gulp.src("./src/package.yaml").pipe(gulpYaml({
     schema: 'DEFAULT_FULL_SCHEMA',
@@ -39,12 +38,21 @@ gulp.task('default', function(done){
     var rawJson, version_number;
     rawJson = JSON.parse(fs.readFileSync('./package.json').toString());
     version_number = rawJson.version;
-    return gulp.src("./dist/utils/main.js").pipe(replace('__VERSION__', version_number)).pipe(gulp.dest("./dist/utils/"));
+    gulp.src("./dist/utils/main.js").pipe(replace('__VERSION__', version_number)).pipe(gulp.dest("./dist/utils/"));
+    return done();
   });
-  gulp.src("./test/*/*.ls").pipe(gulpLivescript({
+  return gulp.src("./test/*/*.ls").pipe(gulpLivescript({
     bare: true
   })).on('error', gutil.log).on('error', function(it){
     throw it;
   }).pipe(gulp.dest("./test"));
-  return done();
+};
+gulp.task('default', def);
+gulp.task('watch', function(){
+  return gulp.watch(["./src", "./test/*.ls"], gulp.series('default', function(done){
+    var ta;
+    ta = cp.execSync("node ./test/types/test10.js || exit 1");
+    process.stdout.write(ta.toString());
+    return done();
+  }));
 });

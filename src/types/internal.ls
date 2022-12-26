@@ -58,12 +58,14 @@ cato = (arg) ->
 wrap      = {}
   ..on    = null
   ..rest  = null
-  ..bt    = null
+  ..try   = null
+  ..catch = null
 
 guard     = {}
   ..on    = null
   ..rest  = null
-  ..bt    = null
+  ..try   = null
+  ..catch = null
 
 define = {}
   ..and    = null
@@ -84,10 +86,7 @@ init_state =
   all  :[]
   type :null
   str  :[]
-  and_size:0
-  and_view:[]
-
-wrap.bt = -> guard.bt arguments,@[sig],\bt
+  mode : \normal
 
 wrap.rest = (type) -> -> guard.rest arguments,@[sig],type
 
@@ -113,7 +112,7 @@ proto.normal.auth      = tightloop
 
 proto.normal[uic]      = print.log
 
-proto.normal.bt        = wrap.bt
+proto.normal.try       = -> _try @[sig]
 
 proto.functor          = {...proto.normal}
 
@@ -153,8 +152,6 @@ custom = xop
      *type    : \custom
       all     : [[G]]
       str     : ["{..}"]
-      and_size: 1
-      and_view: [1]
 
   define.proto data
 
@@ -193,22 +190,17 @@ define.on = (type,args,state) ->
 
     put = [\on,[\single_array,array]]
 
-  [block,av] = define.and state,[put]
-
-  av[av.length - 1] = (R.last av) + 1
+  block = define.and state,[put]
 
   data =
     *type     : state.type
      all      : block
      str      : state.str.concat \on
-     and_size : state.and_size + 1
-     and_view : av
 
 
   define.proto data
 
 #-----------------------------------------------------------------------
-
 
 guard.on = xop.unary
 
@@ -406,112 +398,11 @@ validate.rest = (funs,state,type) ->
 
   | otherwise => false
 
-guard.bt = xop
+_try = (state) ->
 
-.ma do
-  (args,state,type) ->
+  z 'hello world'
 
-    first = args[0]
-
-    switch R.type first
-
-    | \Undefined => return 0
-
-    | \Number    =>
-
-      switch first
-      |  Infinity => return state.and_size
-      | -Infinity => return 0
-      | otherwise =>
-
-        if first < 0
-
-          return state.and_size + first
-
-        else return first
-
-    | otherwise  =>
-
-      A = do
-        *new Error!
-         \input.fault
-         [type,[\not_function,[state.str,type]]]
-
-      print.route A
-
-      false
-
-  (raw_pos,o_arg,state) ->
-
-    current = raw_pos
-
-    for item,K in state.and_view
-
-      current = current - item
-
-      if current < 0
-
-        short_y_index = K
-        short_x_index = item + current
-
-        break
-
-    y_index = short_y_index*2
-
-    all = state.all
-
-    line = all[y_index]
-
-    current = short_x_index
-
-    x_index = 0
-
-    I = 0
-
-    while current
-
-      [type] = line[I]
-
-      switch type
-      | \i,\d,\f,\on,\map,\and =>
-        --current
-
-      ++x_index
-      ++I
-
-
-    init = [all[I] for I from 0 til y_index]
-
-    final = [all[K] for K from (y_index + 1) til all.length]
-
-    fini = all.length - 1
-
-    out = R.insert do
-      x_index
-      [\bt,[fini,(all[fini].length - 1)]]
-      line
-
-    neo_all = [...init,out,...final]
-
-
-    z.j neo_all
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.def loopError
-
-
+  # z.n state.all
 
 #-----------------------------------------------------------------------
 
@@ -524,26 +415,17 @@ guard.rest = xop
 
     funs = cato args
 
-    [block,av] = switch type
+    block = switch type
     | \and                             => define.and state,funs
     | \or                              => define.or state,funs
     | \alt                             => define.or state,[[\alt,funs]]
     | \map,\forEach                    => define.and state,[[type,funs[0]]]
     | \err,\fix,\cont,\jam,\edit,\tap  => define.and state,[[type,args[0]]]
 
-    switch type
-    | \and,\map =>
-      av[av.length - 1] = (R.last av) + 1
-      as = state.and_size + 1
-    | otherwise =>
-      as = state.and_size
-
     data =
       *type:state.type
        all:block
        str:state.str.concat type
-       and_size:as
-       and_view:av
 
     define.proto data
 
@@ -597,13 +479,11 @@ define.basis = (name,F) ->
     *type     : name
      str      : [name]
      all      : inner
-     and_size : 1
-     and_view : [1]
+     mode     : \normal
 
   define.copy F,data
 
   void
-
 
 # ------------------------------------------------------------------
 
@@ -611,22 +491,55 @@ define.and = (state,funs) ->
 
   all = state.all
 
+  mode = state.mode
+
   switch (all.length%2)
   | 0 =>
 
-    [(all.concat [funs]),(state.and_view.concat 0)]
+    all.concat [funs]
 
   | 1 =>
 
-    init = R.init all
+    z mode
 
-    last = R.last all
+    # init = R.init all
 
-    nlast = [...last,...funs]
+    # compartment_and = all[all.length - 1]
 
-    block = [...init,nlast]
+    # and_init = R.init compartment_and
 
-    [block,state.and_view]
+    # and_last = R.last compartment_and
+
+    # z and_init,and_last
+
+    # and_last.push funs
+
+    # z funs
+
+    # z and_last
+
+    # inner_last = outer_last |> R.last
+
+    # n_inner_last = inner_last.concat funs
+
+    # z funs
+
+    # z all
+
+    # z inner_last
+
+    # z outer_last
+
+
+    # (R.init outer_last).push n_inner_last
+
+    # nlast = [...last,...funs]
+
+    # block = [...init,nlast]
+
+    # block
+
+    []
 
 define.or = (state,funs) ->
 
@@ -643,11 +556,11 @@ define.or = (state,funs) ->
 
     block = [...init,nlast]
 
-    [block,state.and_view]
+    block
 
   | 1 =>
 
-    [(all.concat [funs]),state.and_view]
+    all.concat [funs]
 
 #-----------------------------------------------------------------------
 

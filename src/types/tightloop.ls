@@ -619,3 +619,4 @@ tightloop = (x) !->
 
 
 module.exports = tightloop
+

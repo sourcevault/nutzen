@@ -2,8 +2,6 @@ gulp            = require \gulp
 
 tap             = require \gulp-tap
 
-livescript      = require \livescript
-
 gulp-livescript = require \gulp-livescript
 
 gulp-rename     = require \gulp-rename
@@ -14,17 +12,15 @@ replace         = require \gulp-replace
 
 gutil           = require \gulp-util
 
-gulp_changed    = require \gulp-changed
-
 fs              = require \fs
+
+cp              = require \child_process
 
 wait = (t,f)-> setTimeout f,t
 
-gulp.task \default,(done) ->
+def = (done) ->
 
   gulp.src "./src/package.yaml"
-
-  # .pipe gulp_changed ".",(extension:'.json')
 
   .pipe gulp-yaml({schema:\DEFAULT_FULL_SCHEMA,space:2})
 
@@ -35,8 +31,6 @@ gulp.task \default,(done) ->
   ## ------------------------------
 
   gulp.src "./src/gulpfile.ls"
-
-  # .pipe gulp_changed ".",(extension:'.js')
 
   .pipe gulp-livescript bare:true
 
@@ -50,8 +44,6 @@ gulp.task \default,(done) ->
 
   gulp.src "./src/main.ls"
 
-  # .pipe gulp_changed "./dist",(extension:'.js')
-
   .pipe gulp-livescript bare:true
 
   .on \error,gutil.log
@@ -63,8 +55,6 @@ gulp.task \default,(done) ->
   ## ------------------------------
 
   ls = gulp.src "./src/*/*.ls"
-
-  # .pipe gulp_changed "./dist",(extension:'.js')
 
   .pipe gulp-livescript bare:true
 
@@ -88,11 +78,12 @@ gulp.task \default,(done) ->
 
     .pipe gulp.dest "./dist/utils/"
 
+    done!
+
+
   ## ------------------------------
 
   gulp.src "./test/*/*.ls"
-
-  # .pipe gulp_changed "./test",(extension:'.js')
 
   .pipe gulp-livescript bare:true
 
@@ -102,4 +93,26 @@ gulp.task \default,(done) ->
 
   .pipe gulp.dest "./test"
 
-  done!
+
+gulp.task \default, def
+
+gulp.task \watch,->
+
+  gulp.watch do
+    ["./src","./test/*.ls"]
+    gulp.series \default,(done)->
+
+      ta = cp.execSync "node ./test/types/test10.js || exit 1"
+      process.stdout.write ta.toString!
+
+      done!
+
+
+
+
+
+
+
+
+
+

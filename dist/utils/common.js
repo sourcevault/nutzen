@@ -41,7 +41,7 @@ z.j = function(obj){
 };
 z.n = function(){
   var args;
-  args = ['\n--\n'].concat(arrayFrom$(arguments), ['\n--\n']);
+  args = ['\n'].concat(arrayFrom$(arguments), ['\n']);
   return console.log.apply(console, args);
 };
 loopfault = function(){
