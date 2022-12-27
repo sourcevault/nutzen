@@ -88,6 +88,8 @@ init_state =
 
 wrap.rest = (type) -> -> guard.rest arguments,@[sig],type
 
+wrap.catch = -> guard.catch arguments,@[sig]
+
 wrap.on = -> guard.on arguments,@[sig]
 
 proto       = {}
@@ -111,6 +113,8 @@ proto.normal.auth      = tightloop
 proto.normal[uic]      = print.log
 
 proto.normal.try       = -> _try @[sig]
+
+proto.normal.catch       = wrap.catch
 
 proto.functor          = {...proto.normal}
 
@@ -186,9 +190,7 @@ define.on = (type,args,state) ->
 
     put = [\single_array,array]
 
-  # block = define.block state,\on,[put]
-
-  block = []
+  block = define.block state,\on,[put]
 
   data =
     *type     : state.type
@@ -198,6 +200,7 @@ define.on = (type,args,state) ->
 
   define.proto data
 
+#-----------------------------------------------------------------------
 #-----------------------------------------------------------------------
 
 guard.on = xop.unary
@@ -400,16 +403,25 @@ _try = (state) ->
 
   neo_all = state.all.concat [\try]
 
-  z neo_all
-
   neo =
-    *all:neo_all
-     type:state.type
+    *type:state.type
+     all:neo_all
      str:state.str.concat \try
 
-  neo
+  define.proto neo
 
 
+guard.catch = xop.unary
+
+.ar 1,
+  ([F],state) ->
+
+    define.proto state
+    # neo_all = state.all.concat [\try]
+
+
+
+.def loopError!
 
 #-----------------------------------------------------------------------
 
@@ -438,16 +450,15 @@ define.copy = (F,data,type = data.type) ->
   switch type
   | \obj,\arr,\arg =>
 
-    Object.assign F,proto.functor
+    Object.setPrototypeOf F,proto.functor
 
   | otherwise =>
 
-    Object.assign F,proto.normal
+    Object.setPrototypeOf F,proto.normal
 
   F[sig] = data
 
   cache.ins.add F
-
 
 define.proto = (data,type = data.type) ->
 
@@ -463,50 +474,82 @@ define.proto = (data,type = data.type) ->
 
   put
 
-define.basis = (name,F) ->
-
-  if ((typeof F) is \object)
-
-    inner = []
-
-  else
-
-    inner = [\and,[\d,F]]
-
-  cache.def.add F
+define.basis = (name,F) !->
 
   data =
     *type     : name
      str      : [name]
-     all      : inner
+     all      : [\and,[\d,F]]
 
-  define.copy F,data
+  switch type
+  | \obj,\arr,\arg =>
+
+    Object.setPrototypeOf F,proto.functor
+
+  | otherwise =>
+
+    Object.setPrototypeOf F,proto.normal
+
+  F[sig] = data
+
+  cache.ins.add F
+
+  cache.def.add F
 
   void
+
+define.basis.empty = (name) ->
+
+  data =
+    *type     : name
+     str      : [name]
+     all      : []
+
+  inherited = switch name
+
+  | \obj,\arr,\arg =>
+
+    Object.create proto.functor
+
+  | otherwise =>
+
+    Object.create proto.normal
+
+  inherited
+
 
 # ------------------------------------------------------------------
 
 define.block = (state,type,args) ->
 
-  z "hello world"
-
-  funs = cato args
-
-  z funs
-
   all = state.all
 
   neo_all = switch type
-  | \map,\forEach                    => all.concat [type,funs[0]]
-  | \err,\fix,\cont,\jam,\edit,\tap  => all.concat [type,args[0]]
-  | otherwise                        =>
+  | \map,\forEach =>
+
+    F = cato args[0]
+
+    all.concat [type,F]
+
+  | \err,\fix,\cont,\jam,\edit,\tap  =>
+
+    all.concat [type,args[0]]
+
+  | \and,\alt,\or =>
 
     inn = all.concat!
+
+    funs = cato args
 
     for I in funs
       inn.push type,I
 
     inn
+
+  | \on => all.concat \on,args
+
+  | \on_or => all.concat \on_or,args
+
 
   neo_all
 

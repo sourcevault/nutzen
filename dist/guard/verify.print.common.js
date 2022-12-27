@@ -364,7 +364,6 @@ V.arpar = function(fname, args){
   }
   arg4 = args[3];
   ret = data[1][1];
-  z("hello woloo");
   switch (R.type(arg4)) {
   case 'Function':
     ret.push(arg4);

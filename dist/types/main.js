@@ -1,4 +1,4 @@
-var ref$, com, print, z, l, R, j, deep_freeze, uic, loopError, noop, oxo, int, custom, define, cache, be, props, nonmap, base, not_base, undefnull, F, pop, i$, len$, name, type, A, B, C, V;
+var ref$, com, print, z, l, R, j, deep_freeze, uic, loopError, noop, oxo, int, custom, define, cache, be, props, nonmap, base, not_base, undefnull, F, pop, i$, len$, name, type, A, B, V;
 ref$ = require('./print.common'), com = ref$.com, print = ref$.print;
 z = com.z, l = com.l, R = com.R, j = com.j, deep_freeze = com.deep_freeze, uic = com.uic, loopError = com.loopError, noop = com.noop;
 oxo = require('../guard/main');
@@ -104,10 +104,9 @@ for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
   B = not_base(type);
   define.basis(name, B);
   be.not[name] = B;
-  C = {};
-  define.basis(name, C);
+  define.basis.empty(name);
   be.known[name] = C;
 }
-V = be.arr.and(noop, noop).map(noop).on('foo', noop);
+V = be.arr.and(noop, noop).map(noop).on(['foo'], noop)['try']().and(noop)['try']().and(noop)['catch'](noop);
 be = deep_freeze(be);
 module.exports = be;

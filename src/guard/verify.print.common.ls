@@ -318,7 +318,6 @@ V.arpar = (fname,args) ->
 
   ret = data[1][1]
 
-  z "hello woloo"
   switch R.type arg4
   | \Function        => ret.push arg4
   | \Undefined       => ret.push ret_void

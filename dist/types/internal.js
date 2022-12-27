@@ -64,6 +64,9 @@ wrap.rest = function(type){
     return guard.rest(arguments, this[sig], type);
   };
 };
+wrap['catch'] = function(){
+  return guard['catch'](arguments, this[sig]);
+};
 wrap.on = function(){
   return guard.on(arguments, this[sig]);
 };
@@ -87,6 +90,7 @@ proto.normal[uic] = print.log;
 proto.normal['try'] = function(){
   return _try(this[sig]);
 };
+proto.normal['catch'] = wrap['catch'];
 proto.functor = (import$({}, proto.normal));
 proto.functor.map = wrap.rest('map');
 proto.functor.forEach = wrap.rest('forEach');
@@ -138,7 +142,7 @@ define.on = function(type, args, state){
     array = type[1];
     put = ['single_array', array];
   }
-  block = [];
+  block = define.block(state, 'on', [put]);
   data = {
     type: state.type,
     all: block,
@@ -301,14 +305,18 @@ validate.rest = function(funs, state, type){
 _try = function(state){
   var neo_all, neo;
   neo_all = state.all.concat(['try']);
-  z(neo_all);
   neo = {
-    all: neo_all,
     type: state.type,
+    all: neo_all,
     str: state.str.concat('try')
   };
-  return neo;
+  return define.proto(neo);
 };
+guard['catch'] = xop.unary.ar(1, function(arg$, state){
+  var F;
+  F = arg$[0];
+  return define.proto(state);
+}).def(loopError());
 guard.rest = xop.wh(validate.rest, function(args, state, type){
   var block, data;
   block = define.block(state, type, args);
@@ -325,10 +333,22 @@ define.copy = function(F, data, type){
   case 'obj':
   case 'arr':
   case 'arg':
-    Object.assign(F, proto.functor);
+    switch (R.type(F)) {
+    case 'Object':
+      F = Object.create(proto.functor);
+      break;
+    case 'Function':
+      Object.setPrototypeOf(F, proto.functor);
+    }
     break;
   default:
-    Object.assign(F, proto.normal);
+    switch (R.type(F)) {
+    case 'Object':
+      F = Object.create(proto.normal);
+      break;
+    case 'Function':
+      Object.setPrototypeOf(F, proto.normal);
+    }
   }
   F[sig] = data;
   return cache.ins.add(F);
@@ -365,17 +385,15 @@ define.basis = function(name, F){
   define.copy(F, data);
 };
 define.block = function(state, type, args){
-  var funs, all, neo_all, inn, I;
-  z("hello world");
-  funs = cato(args);
-  z(funs);
+  var all, neo_all, F, inn, funs, I;
   all = state.all;
   neo_all = (function(){
     var i$, ref$, len$;
     switch (type) {
     case 'map':
     case 'forEach':
-      return all.concat([type, funs[0]]);
+      F = cato(args[0]);
+      return all.concat([type, F]);
     case 'err':
     case 'fix':
     case 'cont':
@@ -383,13 +401,20 @@ define.block = function(state, type, args){
     case 'edit':
     case 'tap':
       return all.concat([type, args[0]]);
-    default:
+    case 'and':
+    case 'alt':
+    case 'or':
       inn = all.concat();
+      funs = cato(args);
       for (i$ = 0, len$ = (ref$ = funs).length; i$ < len$; ++i$) {
         I = ref$[i$];
         inn.push(type, I);
       }
       return inn;
+    case 'on':
+      return all.concat('on', args);
+    case 'on_or':
+      return all.concat('on_or', args);
     }
   }());
   return neo_all;

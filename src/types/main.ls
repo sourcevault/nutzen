@@ -132,9 +132,7 @@ for [name,type] in props
 
   #----------------------------
 
-  C = {}
-
-  define.basis name,C
+  C = define.basis.empty name
 
   be.known[name] = C
 
@@ -146,21 +144,28 @@ V = be.arr
 
 .and noop,noop
 .map noop
-.on \foo,noop
+.on [\foo],noop
 # .or noop
 # .and noop
-# .try!
+.try!
 
-# .and noop
+.and noop
+.try!
+
+.and noop
+.catch noop
+
 # .map noop
 # .edit noop
 # .edit noop'
 # .and noop
 
+# B = be.arr.and noop
+
+# console.dir B
 
 # .on 2,noop
 # .on 3,noop
-
 
 # z V
 
