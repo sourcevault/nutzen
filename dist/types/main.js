@@ -108,6 +108,6 @@ for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
   define.basis(name, C);
   be.known[name] = C;
 }
-V = be.arr.and(noop);
+V = be.arr.and(noop, noop).map(noop).on('foo', noop);
 be = deep_freeze(be);
 module.exports = be;

@@ -60,13 +60,16 @@ array2obj = function(arr){
   return ob;
 };
 multi_object = function(fun2map, ob){
-  var ret, index, item, a_item, clean, tup, k, item_inner, id;
+  var ret, index, item, a_item, clean, tup, i$, to$, k, item_inner, id;
   if (!(customTypeoOf(ob) === 'Object')) {
     return ['fault', ['ob_not_object']];
   }
   ret = {};
   for (index in ob) {
     item = ob[index];
+    if (!Number.isInteger(Number(index))) {
+      continue;
+    }
     switch (R.type(item)) {
     case 'Array':
       a_item = item;
@@ -83,7 +86,8 @@ multi_object = function(fun2map, ob){
       clean = [a_item];
     }
     tup = [];
-    for (k in clean) {
+    for (i$ = 0, to$ = clean.length; i$ < to$; ++i$) {
+      k = i$;
       item_inner = clean[k];
       id = fun2map(item_inner);
       if (id[0] === 'fault') {
@@ -202,6 +206,9 @@ V.ar_ob = function(ob){
   ret = {};
   for (index in ob) {
     item = ob[index];
+    if (!Number.isInteger(Number(index))) {
+      continue;
+    }
     to_add = (fn$());
     ret[index] = to_add;
   }
@@ -357,6 +364,7 @@ V.arpar = function(fname, args){
   }
   arg4 = args[3];
   ret = data[1][1];
+  z("hello woloo");
   switch (R.type(arg4)) {
   case 'Function':
     ret.push(arg4);

@@ -143,14 +143,19 @@ for [name,type] in props
 #--------------------------------------------------------
 
 V = be.arr
-.and noop
+
+.and noop,noop
+.map noop
+.on \foo,noop
 # .or noop
-# .map noop
-# .edit noop
-# .edit noop
-# .and noop
 # .and noop
 # .try!
+
+# .and noop
+# .map noop
+# .edit noop
+# .edit noop'
+# .and noop
 
 
 # .on 2,noop

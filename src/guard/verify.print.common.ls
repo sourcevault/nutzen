@@ -65,6 +65,9 @@ multi_object = (fun2map,ob)->
 
   for index,item of ob
 
+    if not (Number.isInteger Number index)
+      continue
+
     switch R.type item
     | \Array     =>
       a_item = item
@@ -79,7 +82,9 @@ multi_object = (fun2map,ob)->
 
     tup = []
 
-    for k,item_inner of clean
+    for k from 0 til clean.length
+
+      item_inner = clean[k]
 
       id = fun2map item_inner
 
@@ -178,6 +183,9 @@ V.ar_ob = (ob)->
   ret = {}
 
   for index,item of ob
+
+    if not (Number.isInteger Number index)
+      continue
 
     to_add = switch customTypeoOf item
     | \Function     => [\f,item]
@@ -310,6 +318,7 @@ V.arpar = (fname,args) ->
 
   ret = data[1][1]
 
+  z "hello woloo"
   switch R.type arg4
   | \Function        => ret.push arg4
   | \Undefined       => ret.push ret_void

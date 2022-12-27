@@ -58,13 +58,11 @@ cato = (arg) ->
 wrap      = {}
   ..on    = null
   ..rest  = null
-  ..try   = null
   ..catch = null
 
 guard     = {}
   ..on    = null
   ..rest  = null
-  ..try   = null
   ..catch = null
 
 define = {}
@@ -73,6 +71,7 @@ define = {}
   ..proto  = null
   ..on     = null
   ..basis  = null
+  ..block  = null
 
 validate   = {}
   ..on     = null
@@ -86,7 +85,6 @@ init_state =
   all  :[]
   type :null
   str  :[]
-  mode : \normal
 
 wrap.rest = (type) -> -> guard.rest arguments,@[sig],type
 
@@ -150,7 +148,7 @@ custom = xop
 
   data =
      *type    : \custom
-      all     : [[G]]
+      all     : [\and,G]
       str     : ["{..}"]
 
   define.proto data
@@ -166,15 +164,13 @@ define.on = (type,args,state) ->
 
     [props,F] = args
 
-    put = [\on,[\array,[(R.uniq props),...(cato F)]]]
+    put = [\array,[(R.uniq props),...(cato F)]]
 
   | \string =>
 
     [key,F] = args
 
-    put = [\on,[\string,[key,...(cato F)]]]
-
-    put
+    put = [\string,[key,...(cato F)]]
 
   | \object =>
 
@@ -182,15 +178,17 @@ define.on = (type,args,state) ->
 
     fun   = [[key,...(cato val)] for key,val of ob]
 
-    put = [\on,[\object,fun]]
+    put = [\object,fun]
 
   | \single_array =>
 
     array = type[1]
 
-    put = [\on,[\single_array,array]]
+    put = [\single_array,array]
 
-  block = define.and state,[put]
+  # block = define.block state,\on,[put]
+
+  block = []
 
   data =
     *type     : state.type
@@ -400,9 +398,18 @@ validate.rest = (funs,state,type) ->
 
 _try = (state) ->
 
-  z 'hello world'
+  neo_all = state.all.concat [\try]
 
-  # z.n state.all
+  z neo_all
+
+  neo =
+    *all:neo_all
+     type:state.type
+     str:state.str.concat \try
+
+  neo
+
+
 
 #-----------------------------------------------------------------------
 
@@ -413,14 +420,7 @@ guard.rest = xop
 
     #----------------------------------
 
-    funs = cato args
-
-    block = switch type
-    | \and                             => define.and state,funs
-    | \or                              => define.or state,funs
-    | \alt                             => define.or state,[[\alt,funs]]
-    | \map,\forEach                    => define.and state,[[type,funs[0]]]
-    | \err,\fix,\cont,\jam,\edit,\tap  => define.and state,[[type,args[0]]]
+    block = define.block state,type,args
 
     data =
       *type:state.type
@@ -471,7 +471,7 @@ define.basis = (name,F) ->
 
   else
 
-    inner = [[[\d,F]]]
+    inner = [\and,[\d,F]]
 
   cache.def.add F
 
@@ -479,7 +479,6 @@ define.basis = (name,F) ->
     *type     : name
      str      : [name]
      all      : inner
-     mode     : \normal
 
   define.copy F,data
 
@@ -487,80 +486,29 @@ define.basis = (name,F) ->
 
 # ------------------------------------------------------------------
 
-define.and = (state,funs) ->
+define.block = (state,type,args) ->
+
+  z "hello world"
+
+  funs = cato args
+
+  z funs
 
   all = state.all
 
-  mode = state.mode
+  neo_all = switch type
+  | \map,\forEach                    => all.concat [type,funs[0]]
+  | \err,\fix,\cont,\jam,\edit,\tap  => all.concat [type,args[0]]
+  | otherwise                        =>
 
-  switch (all.length%2)
-  | 0 =>
+    inn = all.concat!
 
-    all.concat [funs]
+    for I in funs
+      inn.push type,I
 
-  | 1 =>
+    inn
 
-    z mode
-
-    # init = R.init all
-
-    # compartment_and = all[all.length - 1]
-
-    # and_init = R.init compartment_and
-
-    # and_last = R.last compartment_and
-
-    # z and_init,and_last
-
-    # and_last.push funs
-
-    # z funs
-
-    # z and_last
-
-    # inner_last = outer_last |> R.last
-
-    # n_inner_last = inner_last.concat funs
-
-    # z funs
-
-    # z all
-
-    # z inner_last
-
-    # z outer_last
-
-
-    # (R.init outer_last).push n_inner_last
-
-    # nlast = [...last,...funs]
-
-    # block = [...init,nlast]
-
-    # block
-
-    []
-
-define.or = (state,funs) ->
-
-  all = state.all
-
-  switch (all.length%2)
-  | 0 =>
-
-    init = R.init all
-
-    last = R.last all
-
-    nlast = [...last,...funs]
-
-    block = [...init,nlast]
-
-    block
-
-  | 1 =>
-
-    all.concat [funs]
+  neo_all
 
 #-----------------------------------------------------------------------
 

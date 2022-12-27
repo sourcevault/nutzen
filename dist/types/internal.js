@@ -38,12 +38,10 @@ cato = function(arg){
 y$ = wrap = {};
 y$.on = null;
 y$.rest = null;
-y$['try'] = null;
 y$['catch'] = null;
 z$ = guard = {};
 z$.on = null;
 z$.rest = null;
-z$['try'] = null;
 z$['catch'] = null;
 z1$ = define = {};
 z1$.and = null;
@@ -51,6 +49,7 @@ z1$.or = null;
 z1$.proto = null;
 z1$.on = null;
 z1$.basis = null;
+z1$.block = null;
 z2$ = validate = {};
 z2$.on = null;
 z2$.rest = null;
@@ -58,8 +57,7 @@ props = ['and', 'or', 'alt', 'cont', 'tap', 'edit', 'err', 'jam', 'fix'];
 init_state = {
   all: [],
   type: null,
-  str: [],
-  mode: 'normal'
+  str: []
 };
 wrap.rest = function(type){
   return function(){
@@ -109,7 +107,7 @@ custom = xop.arn(1, function(){
   G = cato(F);
   data = {
     type: 'custom',
-    all: [[G]],
+    all: ['and', G],
     str: ["{..}"]
   };
   return define.proto(data);
@@ -120,12 +118,11 @@ define.on = function(type, args, state){
   switch (type[0]) {
   case 'array':
     props = args[0], F = args[1];
-    put = ['on', ['array', [R.uniq(props)].concat(arrayFrom$(cato(F)))]];
+    put = ['array', [R.uniq(props)].concat(arrayFrom$(cato(F)))];
     break;
   case 'string':
     key = args[0], F = args[1];
-    put = ['on', ['string', [key].concat(arrayFrom$(cato(F)))]];
-    put;
+    put = ['string', [key].concat(arrayFrom$(cato(F)))];
     break;
   case 'object':
     ob = args[0];
@@ -135,13 +132,13 @@ define.on = function(type, args, state){
       res$.push([key].concat(arrayFrom$(cato(val))));
     }
     fun = res$;
-    put = ['on', ['object', fun]];
+    put = ['object', fun];
     break;
   case 'single_array':
     array = type[1];
-    put = ['on', ['single_array', array]];
+    put = ['single_array', array];
   }
-  block = define.and(state, [put]);
+  block = [];
   data = {
     type: state.type,
     all: block,
@@ -302,31 +299,19 @@ validate.rest = function(funs, state, type){
   }
 };
 _try = function(state){
-  return z('hello world');
+  var neo_all, neo;
+  neo_all = state.all.concat(['try']);
+  z(neo_all);
+  neo = {
+    all: neo_all,
+    type: state.type,
+    str: state.str.concat('try')
+  };
+  return neo;
 };
 guard.rest = xop.wh(validate.rest, function(args, state, type){
-  var funs, block, data;
-  funs = cato(args);
-  block = (function(){
-    switch (type) {
-    case 'and':
-      return define.and(state, funs);
-    case 'or':
-      return define.or(state, funs);
-    case 'alt':
-      return define.or(state, [['alt', funs]]);
-    case 'map':
-    case 'forEach':
-      return define.and(state, [[type, funs[0]]]);
-    case 'err':
-    case 'fix':
-    case 'cont':
-    case 'jam':
-    case 'edit':
-    case 'tap':
-      return define.and(state, [[type, args[0]]]);
-    }
-  }());
+  var block, data;
+  block = define.block(state, type, args);
   data = {
     type: state.type,
     all: block,
@@ -369,42 +354,45 @@ define.basis = function(name, F){
   if (typeof F === 'object') {
     inner = [];
   } else {
-    inner = [[['d', F]]];
+    inner = ['and', ['d', F]];
   }
   cache.def.add(F);
   data = {
     type: name,
     str: [name],
-    all: inner,
-    mode: 'normal'
+    all: inner
   };
   define.copy(F, data);
 };
-define.and = function(state, funs){
-  var all, mode;
+define.block = function(state, type, args){
+  var funs, all, neo_all, inn, I;
+  z("hello world");
+  funs = cato(args);
+  z(funs);
   all = state.all;
-  mode = state.mode;
-  switch (all.length % 2) {
-  case 0:
-    return all.concat([funs]);
-  case 1:
-    z(mode);
-    return [];
-  }
-};
-define.or = function(state, funs){
-  var all, init, last, nlast, block;
-  all = state.all;
-  switch (all.length % 2) {
-  case 0:
-    init = R.init(all);
-    last = R.last(all);
-    nlast = arrayFrom$(last).concat(arrayFrom$(funs));
-    block = arrayFrom$(init).concat([nlast]);
-    return block;
-  case 1:
-    return all.concat([funs]);
-  }
+  neo_all = (function(){
+    var i$, ref$, len$;
+    switch (type) {
+    case 'map':
+    case 'forEach':
+      return all.concat([type, funs[0]]);
+    case 'err':
+    case 'fix':
+    case 'cont':
+    case 'jam':
+    case 'edit':
+    case 'tap':
+      return all.concat([type, args[0]]);
+    default:
+      inn = all.concat();
+      for (i$ = 0, len$ = (ref$ = funs).length; i$ < len$; ++i$) {
+        I = ref$[i$];
+        inn.push(type, I);
+      }
+      return inn;
+    }
+  }());
+  return neo_all;
 };
 module.exports = {
   custom: custom,
