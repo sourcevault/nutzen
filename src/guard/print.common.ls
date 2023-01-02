@@ -135,7 +135,7 @@ StrArgLen = (fname,ctype,eType)->
   | \ar    => [2,'(number|[num...]),FA']
   | \arwh  => [3,'(number|[num...]),FT,FA']
   | \par   => [3,'FT,FA,FT']
-  | \arpar => [4,'(number|[num...]),FT,FA,F']
+  | \arpar => [4,'(number|[num...]),FT,F,FA']
 
   switch eType
   | \many_args =>
@@ -234,30 +234,30 @@ StrEType = (fname,data) ->
     | \num =>
 
       lit do
-        ["(","number","|[num..]),FT,FA,F"]
+        ["(","number","|[num..]),FT,F,FA"]
         [c.ok,c.er3,c.ok]
 
     | \num_array =>
 
       lit do
-        ["(number|","[num..]","),FT,FA,F"]
+        ["(number|","[num..]","),FT,F,FA"]
         [c.ok,c.er3,c.ok]
 
     | \validator =>
 
       lit do
-        ["(number|[num..]),","FT",",FA,F"]
+        ["(number|[num..]),","FT","F,FA"]
         [c.ok,c.er3,c.ok]
 
     | \lastview =>
 
       lit do
-        ["(number|[num..]),F,FA,","F"]
-        [c.ok,c.er3]
+        ["(number|[num..]),F,","F",",FA"]
+        [c.ok,c.er3,c.ok]
 
     | \ob_not_object =>
 
-      lit ["(","object",")|((number|[num..]),FT,FA,F)"],[c.ok,c.er3,c.ok]
+      lit ["(","object",")|((number|[num..]),FT,F,FA)"],[c.ok,c.er3,c.ok]
 
     | \ob_inner_not_array =>
 
@@ -280,8 +280,8 @@ StrEType = (fname,data) ->
     | \ob_inner_lastview =>
 
       lit do
-        ["(object(","#{extra}:","(FT,FA,",  "F",")))"]
-        [      c.ok,      c.er3,     c.ok,c.er3,c.ok]
+        ["(object(","#{extra}:",   "(FT,", "FA",  ",F",")))"]
+        [      c.ok,      c.er3,     c.ok,c.er3,  c.ok, c.ok]
 
   | \par =>
 
@@ -290,14 +290,14 @@ StrEType = (fname,data) ->
     | \validator =>
 
       lit do
-        ["FT",",FA,F"]
+        ["FT","F,FA"]
         [c.er3,c.ok]
 
     | \lastview =>
 
       lit do
-        ["FT,FA,","F"]
-        [c.ok,c.er3]
+        ["FT","F",",FA"]
+        [c.ok,c.er3,c.ok]
 
   init = lit [fname + " :: ",init],[c.ok,0]
 
@@ -400,7 +400,7 @@ print.validator_return_not_array = (ta) ->
 
   l do
     '\n'
-    show_chain (R.init data.str),[type]
+    c.er1 ([ ".#{I}(~)" for I in data.str].join "")
     '\n\n'
     type_signature
     '\n\n'

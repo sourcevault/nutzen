@@ -141,7 +141,7 @@ StrArgLen = function(fname, ctype, eType){
     case 'par':
       return [3, 'FT,FA,FT'];
     case 'arpar':
-      return [4, '(number|[num...]),FT,FA,F'];
+      return [4, '(number|[num...]),FT,F,FA'];
     }
   }());
   switch (eType) {
@@ -203,15 +203,15 @@ StrEType = function(fname, data){
     case 'arpar':
       switch (eType) {
       case 'num':
-        return lit(["(", "number", "|[num..]),FT,FA,F"], [c.ok, c.er3, c.ok]);
+        return lit(["(", "number", "|[num..]),FT,F,FA"], [c.ok, c.er3, c.ok]);
       case 'num_array':
-        return lit(["(number|", "[num..]", "),FT,FA,F"], [c.ok, c.er3, c.ok]);
+        return lit(["(number|", "[num..]", "),FT,F,FA"], [c.ok, c.er3, c.ok]);
       case 'validator':
-        return lit(["(number|[num..]),", "FT", ",FA,F"], [c.ok, c.er3, c.ok]);
+        return lit(["(number|[num..]),", "FT", "F,FA"], [c.ok, c.er3, c.ok]);
       case 'lastview':
-        return lit(["(number|[num..]),F,FA,", "F"], [c.ok, c.er3]);
+        return lit(["(number|[num..]),F,", "F", ",FA"], [c.ok, c.er3, c.ok]);
       case 'ob_not_object':
-        return lit(["(", "object", ")|((number|[num..]),FT,FA,F)"], [c.ok, c.er3, c.ok]);
+        return lit(["(", "object", ")|((number|[num..]),FT,F,FA)"], [c.ok, c.er3, c.ok]);
       case 'ob_inner_not_array':
         return lit(["(object(", extra + ":[..]", "))"], [c.ok, c.er3, c.ok]);
       case 'ob_inner_array':
@@ -219,15 +219,15 @@ StrEType = function(fname, data){
       case 'ob_inner_array_validator':
         return lit(["(object(", extra + ":", "(", "FT", ",FA,F)))"], [c.ok, c.er3, c.ok, c.er3, c.ok]);
       case 'ob_inner_lastview':
-        return lit(["(object(", extra + ":", "(FT,FA,", "F", ")))"], [c.ok, c.er3, c.ok, c.er3, c.ok]);
+        return lit(["(object(", extra + ":", "(FT,", "FA", ",F", ")))"], [c.ok, c.er3, c.ok, c.er3, c.ok, c.ok]);
       }
       break;
     case 'par':
       switch (eType) {
       case 'validator':
-        return lit(["FT", ",FA,F"], [c.er3, c.ok]);
+        return lit(["FT", "F,FA"], [c.er3, c.ok]);
       case 'lastview':
-        return lit(["FT,FA,", "F"], [c.ok, c.er3]);
+        return lit(["FT", "F", ",FA"], [c.ok, c.er3, c.ok]);
       }
     }
   }());
@@ -285,11 +285,18 @@ print.state_undef = function(arg$){
   return show_stack(E);
 };
 print.validator_return_not_array = function(ta){
-  var E, ref$, type, loc, data, type_signature;
+  var E, ref$, type, loc, data, type_signature, I;
   E = ta[0], ref$ = ta[1], type = ref$[0], loc = ref$[1], data = ta[2];
   type_signature = StrEType(type, loc)[0];
   l(lit(["[" + pkgname + "]", "[typeError]", " ." + type + "(", "...", ")"], [c.pink, c.er2, c.er2, c.er3, c.er2]));
-  l('\n', show_chain(R.init(data.str), [type]), '\n\n', type_signature, '\n\n', c.pink("validator function requires return value to be array like."), '\n');
+  l('\n', c.er1((function(){
+    var i$, ref$, len$, results$ = [];
+    for (i$ = 0, len$ = (ref$ = data.str).length; i$ < len$; ++i$) {
+      I = ref$[i$];
+      results$.push("." + I + "(~)");
+    }
+    return results$;
+  }()).join("")), '\n\n', type_signature, '\n\n', c.pink("validator function requires return value to be array like."), '\n');
   return show_stack(E);
 };
 print.route = function(ta){

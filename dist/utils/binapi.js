@@ -46,7 +46,7 @@ get = function(__, ukey, ___){
     return ret;
   }
   sortir = this.uget(this.state, ukey);
-  if (R.type(sortir) === 'Array') {
+  if (Array.isArray(sortir)) {
     cont = sortir[0], state = sortir[1];
     if (!cont) {
       return state;

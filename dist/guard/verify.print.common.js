@@ -144,17 +144,22 @@ fun2map.arwh_ob = function(item_inner){
 };
 ret_void = function(){};
 fun2map.arpar_ob = function(item_inner){
-  var whatdo, lastview, validator, tup;
+  var whatdo, validator, lastview, tup;
   if (!Array.isArray(item_inner)) {
     return ['fault', 'ob_inner_not_array'];
   }
   switch (item_inner.length) {
+  case 1:
+    whatdo = item_inner[0];
+    validator = true;
+    lastview = ret_void;
+    break;
   case 2:
-    whatdo = item_inner[0], lastview = item_inner[1];
+    lastview = item_inner[0], whatdo = item_inner[1];
     validator = true;
     break;
   default:
-    validator = item_inner[0], whatdo = item_inner[1], lastview = item_inner[2];
+    validator = item_inner[0], lastview = item_inner[1], whatdo = item_inner[2];
   }
   tup = [];
   switch (customTypeoOf(validator)) {
@@ -173,6 +178,13 @@ fun2map.arpar_ob = function(item_inner){
   default:
     return ['fault', 'ob_inner_array_validator'];
   }
+  switch (R.type(lastview)) {
+  case 'Function':
+    tup.push(lastview);
+    break;
+  default:
+    return ['fault', 'ob_inner_lastview'];
+  }
   switch (customTypeoOf(whatdo)) {
   case 'Function':
     tup.push(['f', whatdo]);
@@ -182,16 +194,6 @@ fun2map.arpar_ob = function(item_inner){
     break;
   default:
     tup.push(['s', whatdo]);
-  }
-  switch (R.type(lastview)) {
-  case 'Function':
-    tup.push(lastview);
-    break;
-  case 'Undefined':
-    tup.push(ret_void);
-    break;
-  default:
-    return ['fault', 'ob_inner_lastview'];
   }
   return tup;
 };
@@ -348,33 +350,76 @@ V.arpar_ob = function(ob){
   return multi_object(fun2map.arpar_ob, ob);
 };
 V.arpar = function(fname, args){
-  var ref$, cont, data, arg4, ret;
+  var raw_num, whatdo, validator, lastview, type, num, ret, out;
   if (args.length === 1) {
     return V.arpar_ob(args[0]);
   }
-  if (args.length < 3) {
+  if (args.length < 2) {
     return ['fault', ['few_args']];
   }
   if (args.length > 4) {
     return ['fault', ['many_args']];
   }
-  ref$ = numfunfun(args), cont = ref$[0], data = ref$[1];
-  if (cont === 'fault') {
-    return ret;
+  switch (args.length) {
+  case 2:
+    raw_num = args[0], whatdo = args[1];
+    validator = true;
+    lastview = ret_void;
+    break;
+  case 3:
+    raw_num = args[0], validator = args[1], whatdo = args[2];
+    lastview = ret_void;
+    break;
+  case 4:
+    raw_num = args[0], validator = args[1], lastview = args[2], whatdo = args[3];
   }
-  arg4 = args[3];
-  ret = data[1][1];
-  switch (R.type(arg4)) {
+  switch (V.num(raw_num)) {
+  case 'num':
+    type = 'n';
+    num = raw_num;
+    break;
+  case 'array':
+    type = 'a';
+    num = array2obj(raw_num);
+    break;
+  case 'fault':
+    return ['fault', ['first']];
+  case 'fault.array':
+    return ['fault', ['array']];
+  }
+  ret = [];
+  switch (customTypeoOf(validator)) {
   case 'Function':
-    ret.push(arg4);
+    ret.push(['f', validator]);
+    break;
+  case 'htypes':
+    ret.push(['v', validator]);
     break;
   case 'Undefined':
-    ret.push(ret_void);
+    ret.push(['b', true]);
+    break;
+  case 'Boolean':
+    ret.push(['b', validator]);
     break;
   default:
-    return ['fault', ['fourth']];
+    return ['fault', ['second']];
   }
-  return ['ok', data];
+  switch (customTypeoOf(lastview)) {
+  case 'Function':
+    ret.push(lastview);
+    break;
+  default:
+    return ['fault', 'ob_inner_lastview'];
+  }
+  switch (customTypeoOf(whatdo)) {
+  case 'Function':
+    ret.push(['f', whatdo]);
+    break;
+  default:
+    ret.push(['s', whatdo]);
+  }
+  out = ['ok', [type, [num, ret]]];
+  return out;
 };
 V.par = function(fname, args){
   var validator, ap, lastview, ret, type;

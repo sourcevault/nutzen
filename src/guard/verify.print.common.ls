@@ -141,11 +141,15 @@ fun2map.arpar_ob = (item_inner) ->
     return [\fault,\ob_inner_not_array]
 
   switch item_inner.length
+  | 1 =>
+    [whatdo] = item_inner
+    validator = true
+    lastview  = ret_void
   | 2 =>
-    [whatdo,lastview] = item_inner
+    [lastview,whatdo] = item_inner
     validator = true
   | otherwise =>
-    [validator,whatdo,lastview] = item_inner
+    [validator,lastview,whatdo] = item_inner
 
   tup = []
 
@@ -157,16 +161,16 @@ fun2map.arpar_ob = (item_inner) ->
   | \Boolean      => tup.push [\b,validator]
   | otherwise     => return [\fault,\ob_inner_array_validator]
 
+
+  switch R.type lastview
+  | \Function        => tup.push lastview
+  | otherwise        => return [\fault,\ob_inner_lastview]
+
   switch customTypeoOf whatdo
 
   | \Function     => tup.push [\f,whatdo]
   | \htypes       => tup.push [\v,whatdo]
   | otherwise     => tup.push [\s,whatdo]
-
-  switch R.type lastview
-  | \Function        => tup.push lastview
-  | \Undefined       => tup.push ret_void
-  | otherwise        => return [\fault,\ob_inner_lastview]
 
   tup
 
@@ -304,26 +308,59 @@ V.arpar = (fname,args) ->
 
     return V.arpar_ob args[0]
 
-  if (args.length < 3)
+  if (args.length < 2)
     return [\fault,[\few_args]]
 
   if (args.length > 4)
     return [\fault,[\many_args]]
 
-  [cont,data] = numfunfun args
 
-  if (cont is \fault) then return ret
+  switch args.length
+  | 2 =>
+    [raw_num,whatdo] = args
+    validator = true
+    lastview = ret_void
+  | 3 =>
+    [raw_num,validator,whatdo] = args
+    lastview = ret_void
+  | 4 =>
+    [raw_num,validator,lastview,whatdo] = args
 
-  arg4 = args[3]
+  switch V.num raw_num
+  | \num          =>
+    type = \n
+    num = raw_num
+  | \array        =>
+    type = \a
+    num = array2obj raw_num
+  | \fault        => return [\fault,[\first]]
+  | \fault.array  => return [\fault,[\array]]
 
-  ret = data[1][1]
+  ret = []
 
-  switch R.type arg4
-  | \Function        => ret.push arg4
-  | \Undefined       => ret.push ret_void
-  | otherwise        => return [\fault,[\fourth]]
+  switch customTypeoOf validator
+  | \Function     => ret.push [\f,validator]
+  | \htypes       => ret.push [\v,validator]
+  | \Undefined    => ret.push [\b,true]
+  | \Boolean      => ret.push [\b,validator]
+  | otherwise     => return [\fault,[\second]]
 
-  [\ok,data]
+  switch customTypeoOf lastview
+  | \Function     => ret.push lastview
+  | otherwise        => return [\fault,\ob_inner_lastview]
+
+  switch customTypeoOf whatdo
+  | \Function     => ret.push [\f,whatdo]
+  | otherwise     => ret.push [\s,whatdo]
+
+  out = 
+    *\ok
+     *type
+       *num
+        ret
+
+  out
+
 
 V.par = (fname,args) ->
 

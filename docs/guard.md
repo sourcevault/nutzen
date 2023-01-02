@@ -117,13 +117,13 @@ If the validator function in `.ma` returns `null` then `hoplon` jumps to the nex
 
 ### `arma`
 
-`arma :: {spans} -> { validator } -> { execution }`
+`arma :: {spans},{ validator },{ execution }`
 
 Combines `.ar` and `.ma`, first argument can be a number or a array of number just like in `.ar`.
 
 ### `par`
 
-`par :: {spans} -> { validator } -> { execution } -> {handleError}`
+`par :: {spans},{ validator },{ execution },{handleError}`
 
 `.par` is exactly like `.ma` but accepts a final error handling function, it's validator also **only accepts** a tuple as return value.
 
@@ -134,7 +134,7 @@ If the `handleError` function returns `undefined` then `hoplon.guard` jumps to t
 
 ### `arpar`
 
-`arpar :: {spans} -> { validator } -> { execution } -> {handleError}`
+`arpar :: {spans},{ validator },{ execution },{handleError}`
 
 `.arpar` is `.par` but also matches against number of arguments.
 

@@ -67,7 +67,7 @@ print.input_fault = ([method_name,data]) ->
   | \map      => fi.map data
   | \custom   => fi.custom data
   | \and,\or  => fi.andor data,method_name
-  | \bt       => fi.bt data
+  | \catch    => fi.catch data
 
 
 show_chain = (data) ->
@@ -80,7 +80,7 @@ show_chain = (data) ->
 
     start_chain = middle
     |> R.map (each) -> ".#{each}(..)"
-    |> R.splitEvery 4
+    |> R.splitEvery 2
     |> (bulk) -> (bulk[0].unshift init[0]);bulk
     |> R.map (line) -> (line.unshift ' '); line
     |> R.tap (x) ->
@@ -177,9 +177,9 @@ print.input_fault.map = ([patt,loc]) ->
 
   l ""
 
-print.input_fault.bt = ([type,info]) ->
+print.input_fault.catch = ([type,info]) ->
 
-  show_name ".bt"
+  show_name ".catch"
 
   l ""
 
@@ -191,7 +191,7 @@ print.input_fault.bt = ([type,info]) ->
 
   l ""
 
-  l type_color " bt :: (integer|undefined)"
+  l type_color " catch :: (function|undefined)"
 
   l ""
 

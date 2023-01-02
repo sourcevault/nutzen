@@ -1,4 +1,4 @@
-var gulp, tap, gulpLivescript, gulpRename, gulpYaml, replace, gutil, fs, cp, wait, def;
+var gulp, tap, gulpLivescript, gulpRename, gulpYaml, replace, gutil, fs, cp, z, wait, def;
 gulp = require('gulp');
 tap = require('gulp-tap');
 gulpLivescript = require('gulp-livescript');
@@ -8,6 +8,7 @@ replace = require('gulp-replace');
 gutil = require('gulp-util');
 fs = require('fs');
 cp = require('child_process');
+z = console.log;
 wait = function(t, f){
   return setTimeout(f, t);
 };
@@ -35,11 +36,10 @@ def = function(done){
     throw it;
   }).pipe(gulp.dest("./dist"));
   ls.on('end', function(){
-    var rawJson, version_number;
+    var rawJson, version_number, T;
     rawJson = JSON.parse(fs.readFileSync('./package.json').toString());
     version_number = rawJson.version;
-    gulp.src("./dist/utils/main.js").pipe(replace('__VERSION__', version_number)).pipe(gulp.dest("./dist/utils/"));
-    return done();
+    return T = gulp.src("./dist/utils/main.js").pipe(replace('__VERSION__', version_number)).pipe(gulp.dest("./dist/utils/")).on('done', function(){});
   });
   return gulp.src("./test/*/*.ls").pipe(gulpLivescript({
     bare: true

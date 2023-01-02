@@ -18,6 +18,7 @@ esp              = require "error-stack-parser"
 
 _jspc            = vendor.stringify
 
+
 if (typeof window is "undefined") and (typeof module is "object")
 
   util = require \util
@@ -59,6 +60,8 @@ z.n = ->
 
   console.log ...args
 
+z.p = (obj)-> console.dir Object.getPrototypeOf obj
+
 # --------------------------------------------------------------------------------------
 
 loopfault = ->
@@ -72,16 +75,18 @@ loopfault = ->
 
 # --------------------------------------------------------------------------------------
 
+ansi_wrap = (a,b) -> (msg) -> '\u001b['+ a + 'm' + msg + '\u001b[' + b + 'm'
+
 cc = {}
   ..ok    = (txt) -> "\x1B[38;5;2m#{txt}\x1B[39m"
   ..er1   = (txt) -> "\x1B[38;5;3m#{txt}\x1B[39m"
   ..er2   = (txt) -> "\x1B[38;5;13m#{txt}\x1B[39m"
   ..er3   = (txt) -> "\x1B[38;5;1m#{txt}\x1B[39m"
   ..warn  = (txt) -> "\x1B[38;5;11m#{txt}\x1B[39m"
-  ..pink  = (txt) -> "\x1B[38;5;17m#{txt}\x1B[39m"
-  ..grey  = (txt) -> "\x1B[38;5;8m#{txt}\x1B[39m"
+  ..pink  = (txt) -> '\u001b[35m#{txt}\u001b[39m'
   ..blue  = (txt) -> "\x1B[38;5;12m#{txt}\x1B[39m"
   ..white = (txt) -> "\x1B[37m#{txt}\x1B[39m"
+  ..grey  = (txt) -> "\x1B[38;5;8m#{txt}\x1B[39m"
 
 c = {}
 
@@ -90,8 +95,6 @@ aj = (func) -> -> func ([...arguments].join "")
 for name,func of cc
 
   c[name] = aj func
-
-
 
 # --------------------------------------------------------------------------------------
 
@@ -204,6 +207,16 @@ print_fail = (filename) -> (message) !->
 
 wait = (t,f) -> setTimeout f,t
 
+tupnest_recurse = (a,index = 0) ->
+
+  if index is (a.length - 1) then return a[index]
+
+  fin = [a[index],tupnest_recurse(a,index+1)]
+
+  fin
+
+tupnest = -> tupnest_recurse arguments,0
+
 ext =
   *z:z
    l:l
@@ -214,6 +227,7 @@ ext =
    noop:noop
    wait:wait
    jspc:jspc
+   tupnest:tupnest
    pad:advanced_pad
    R:Object.freeze R
    loopError:loopfault

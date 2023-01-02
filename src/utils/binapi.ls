@@ -42,7 +42,7 @@ get = (__,ukey,___) ->
 
   sortir = @uget @state,ukey
 
-  if (R.type sortir) is \Array
+  if Array.isArray sortir
     [cont,state] = sortir
     if not cont
       return state

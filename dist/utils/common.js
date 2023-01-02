@@ -1,4 +1,4 @@
-var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, util, util_inspect_custom, noop, jspc_def, jspc, z, loopfault, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, ext, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, util, util_inspect_custom, noop, jspc_def, jspc, z, loopfault, ansi_wrap, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, tupnest_recurse, tupnest, ext, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 vendor = require("./vendor");
 l = console.log;
 flat = vendor.flat;
@@ -44,6 +44,9 @@ z.n = function(){
   args = ['\n'].concat(arrayFrom$(arguments), ['\n']);
   return console.log.apply(console, args);
 };
+z.p = function(obj){
+  return console.dir(Object.getPrototypeOf(obj));
+};
 loopfault = function(){
   var loopError, apply, get;
   loopError = function(){};
@@ -64,6 +67,11 @@ loopfault = function(){
     get: get
   });
 };
+ansi_wrap = function(a, b){
+  return function(msg){
+    return '\u001b[' + a + 'm' + msg + '\u001b[' + b + 'm';
+  };
+};
 x$ = cc = {};
 x$.ok = function(txt){
   return "\x1B[38;5;2m" + txt + "\x1B[39m";
@@ -81,16 +89,16 @@ x$.warn = function(txt){
   return "\x1B[38;5;11m" + txt + "\x1B[39m";
 };
 x$.pink = function(txt){
-  return "\x1B[38;5;17m" + txt + "\x1B[39m";
-};
-x$.grey = function(txt){
-  return "\x1B[38;5;8m" + txt + "\x1B[39m";
+  return '\u001b[35m#{txt}\u001b[39m';
 };
 x$.blue = function(txt){
   return "\x1B[38;5;12m" + txt + "\x1B[39m";
 };
 x$.white = function(txt){
   return "\x1B[37m" + txt + "\x1B[39m";
+};
+x$.grey = function(txt){
+  return "\x1B[38;5;8m" + txt + "\x1B[39m";
 };
 c = {};
 aj = function(func){
@@ -188,6 +196,18 @@ print_fail = function(filename){
 wait = function(t, f){
   return setTimeout(f, t);
 };
+tupnest_recurse = function(a, index){
+  var fin;
+  index == null && (index = 0);
+  if (index === a.length - 1) {
+    return a[index];
+  }
+  fin = [a[index], tupnest_recurse(a, index + 1)];
+  return fin;
+};
+tupnest = function(){
+  return tupnest_recurse(arguments, 0);
+};
 ext = {
   z: z,
   l: l,
@@ -198,6 +218,7 @@ ext = {
   noop: noop,
   wait: wait,
   jspc: jspc,
+  tupnest: tupnest,
   pad: advanced_pad,
   R: Object.freeze(R),
   loopError: loopfault,

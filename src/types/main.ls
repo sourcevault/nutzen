@@ -2,158 +2,156 @@
 
 # ------------------------------------------------------------------
 
-{z,l,R,j,deep_freeze,uic,loopError,noop} = com
+# {z,l,R,j,deep_freeze,uic,loopError,noop} = com
 
-oxo = require \../guard/main
+# oxo = require \../guard/main
 
-int = require \./internal
+# int = require \./internal
 
-{custom,define,cache} = int
+# {custom,define,cache} = int
 
-be = custom
+# be = custom
 
 #-------------------------------------------------------------------
 
 # first column is the function name, second column is error message.
 
-props =
-  [\obj \Object]
-  [\arr \Array]
-  [\undef \Undefined]
-  [\null \Null]
-  [\num \Number]
-  [\str \String]
-  [\fun \Function]
-  [\bool \Boolean]
-  [\objerr \Error]
+# props =
+#   [\obj \Object]
+#   [\arr \Array]
+#   [\undef \Undefined]
+#   [\null \Null]
+#   [\num \Number]
+#   [\str \String]
+#   [\fun \Function]
+#   [\bool \Boolean]
+#   [\objerr \Error]
 
-nonmap = R.map do
-  ([name]) -> name
-  R.drop 2,props
+# nonmap = R.map do
+#   ([name]) -> name
+#   R.drop 2,props
 
-base = (type) -> (UFO) ->
+# base = (type) -> (UFO) ->
 
-  if ((R.type UFO) is type)
+#   if ((R.type UFO) is type)
 
-    {continue:true,error:false,value:UFO}
+#     {continue:true,error:false,value:UFO}
 
-  else
+#   else
 
-    str = R.toLower "not #{type}"
+#     str = R.toLower "not #{type}"
 
-    {error:true,continue:false,message:str,value:UFO}
+#     {error:true,continue:false,message:str,value:UFO}
 
-not_base = (type) -> (UFO) ->
+# not_base = (type) -> (UFO) ->
 
-  if ((R.type UFO) is type)
+#   if ((R.type UFO) is type)
 
-    str = R.toLower "is #{type}"
+#     str = R.toLower "is #{type}"
 
-    {error:true,continue:false,message:str,value:UFO}
+#     {error:true,continue:false,message:str,value:UFO}
 
-  else
+#   else
 
-    {continue:true,error:false,value:UFO}
+#     {continue:true,error:false,value:UFO}
 
-# ------------------------------------------------------
+# # ------------------------------------------------------
 
-undefnull = (UFO) ->
+# undefnull = (UFO) ->
 
-  if ((R.type UFO) in [\Undefined \Null])
+#   if ((R.type UFO) in [\Undefined \Null])
 
-    return {continue:true,error:false,value:UFO}
-  else
+#     return {continue:true,error:false,value:UFO}
+#   else
 
-    return {continue:false,error:true,message:"not undefined or null",value:UFO}
+#     return {continue:false,error:true,message:"not undefined or null",value:UFO}
 
-cache.def.add undefnull
+# cache.def.add undefnull
 
-#--------------------------------------------------------
+# #--------------------------------------------------------
 
-F = base "Arguments"
+# F = base \Arguments
 
-define.basis \arg,F
+# define.basis \arg,F
 
-be.arg = F
+# be.arg = F
 
-#-----------------------------
+# #-----------------------------
 
-pop = (msg) -> msg.pop! ; msg
+# pop = (msg) -> msg.pop! ; msg
 
-#-----------------------------
+# #-----------------------------
 
-be.not = (F) ->
+# be.not = (F) ->
 
-  V = be F
+#   V = be F
 
-  be (x) -> not (V.auth x).continue
+#   be (x) -> not (V.auth x).continue
 
-#--------------------------------------------------------
+# #--------------------------------------------------------
 
-be.undefnull = be undefnull
+# be.undefnull = be undefnull
 
-be.not.undefnull = be.not undefnull
+# be.not.undefnull = be.not undefnull
 
-#--------------------------------------------------------
+# #--------------------------------------------------------
 
-be.maybe = (F) -> ((be F).or be.undef).err pop
+# be.maybe = (F) -> ((be F).or be.undef).err pop
 
-#-----------------------------
+# #-----------------------------
 
-be.list  = (F) -> be.arr.map F
+# be.list  = (F) -> be.arr.map F
 
-be.not[uic] = print.inner
+# be.not[uic] = print.inner
 
-be.list[uic] = print.inner
+# be.list[uic] = print.inner
 
-be.maybe[uic] = print.inner
+# be.maybe[uic] = print.inner
 
-#-----------------------------
+# #-----------------------------
 
-be.known = {}
+# be.known = {}
 
-for [name,type] in props
+# for [name,type] in props
 
-  A = base type
+#   A = base type
 
-  base name,A
+#   base name,A
 
-  define.basis name,A
+#   define.basis name,A
 
-  be[name] = A
+#   be[name] = A
 
-  #----------------------------
+#   #----------------------------
 
-  B = not_base type
+#   B = not_base type
 
-  define.basis name,B
+#   define.basis name,B
 
-  be.not[name] = B
+#   be.not[name] = B
 
-  #----------------------------
+#   #----------------------------
 
-  C = define.basis.empty name
+#   C = define.basis.empty name
 
-  be.known[name] = C
+#   be.known[name] = C
 
-#----------------------------
+#------------------------------
 
-#--------------------------------------------------------
+#------------------------------
 
-V = be.arr
 
-.and noop,noop
-.map noop
-.on [\foo],noop
+# .map noop
+# .on [\foo],noop
 # .or noop
 # .and noop
-.try!
+# .try!
 
-.and noop
-.try!
+# .and noop
+# .try!
 
-.and noop
-.catch noop
+# .and noop
+# .catch null
 
 # .map noop
 # .edit noop
@@ -546,9 +544,11 @@ V = be.arr
 
 # -----------------------------------
 
-be = deep_freeze be
+# be = deep_freeze be
 
 # -----------------------------------
 
-module.exports = be
+module.exports = {}
+
+
 

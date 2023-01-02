@@ -4,7 +4,7 @@ tightloop = require \./tightloop
 
 # ------------------------------------------------------------------
 
-{z,l,R,j,uic,deep_freeze,loopError} = com
+{z,l,R,j,uic,deep_freeze,loopError,tupnest} = com
 
 xop = require \../guard/main
 
@@ -112,9 +112,7 @@ proto.normal.auth      = tightloop
 
 proto.normal[uic]      = print.log
 
-proto.normal.try       = -> _try @[sig]
-
-proto.normal.catch       = wrap.catch
+proto.normal.catch     = wrap.catch
 
 proto.functor          = {...proto.normal}
 
@@ -297,7 +295,6 @@ guard.on = xop.unary
            [state.str,\on]
            error_msg
           ]
-
         ]
 
         return [false,[(new Error!),\input.fault,inner_error]]
@@ -306,12 +303,13 @@ guard.on = xop.unary
 
       return [false]
 
-  define.on
   (data)->
 
     if (data[1] is \input.fault) then return handleError data
 
-    null
+    loopError!
+
+  define.on
 
 .arma 2,
 
@@ -399,29 +397,44 @@ validate.rest = (funs,state,type) ->
 
   | otherwise => false
 
-_try = (state) ->
-
-  neo_all = state.all.concat [\try]
-
-  neo =
-    *type:state.type
-     all:neo_all
-     str:state.str.concat \try
-
-  define.proto neo
-
-
 guard.catch = xop.unary
 
-.ar 1,
+.arpar 1,
+
+  ([F]) -> [((R.type F) is \Function)]
+
+  (...,state)->
+
+    E = tupnest do
+      *new Error!,\input.fault
+      \catch
+      \not_function
+      *state.str,\catch
+
+    print.route E
+
+    loopError!
+
   ([F],state) ->
 
-    define.proto state
-    # neo_all = state.all.concat [\try]
+    neo_all = state.all.concat [\catch]
+
+    neo_state =
+      *type:state.type
+       all:neo_state
+       str:state.str.concat \catch
+
+    define.proto neo_state
 
 
+# .ar 0,
+#   (__,state) ->
 
-.def loopError!
+
+#     state
+
+
+.def loopError
 
 #-----------------------------------------------------------------------
 
@@ -474,14 +487,17 @@ define.proto = (data,type = data.type) ->
 
   put
 
+
+l [[\a,\b],[\c,\d]].flat Infinity
+
 define.basis = (name,F) !->
 
   data =
     *type     : name
      str      : [name]
-     all      : [\and,[\d,F]]
+     all      : [{0:\and,1:[\d,F]}]
 
-  switch type
+  switch name
   | \obj,\arr,\arg =>
 
     Object.setPrototypeOf F,proto.functor
@@ -516,7 +532,6 @@ define.basis.empty = (name) ->
     Object.create proto.normal
 
   inherited
-
 
 # ------------------------------------------------------------------
 

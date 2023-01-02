@@ -16,6 +16,8 @@ fs              = require \fs
 
 cp              = require \child_process
 
+z               = console.log
+
 wait = (t,f)-> setTimeout f,t
 
 def = (done) ->
@@ -72,14 +74,13 @@ def = (done) ->
 
     version_number = raw-json.version
 
-    gulp.src "./dist/utils/main.js"
+    T = gulp.src "./dist/utils/main.js"
 
     .pipe replace \__VERSION__,version_number
 
     .pipe gulp.dest "./dist/utils/"
 
-    done!
-
+    .on \done, ->
 
   ## ------------------------------
 

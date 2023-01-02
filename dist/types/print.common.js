@@ -60,8 +60,8 @@ print.input_fault = function(arg$){
   case 'and':
   case 'or':
     return fi.andor(data, method_name);
-  case 'bt':
-    return fi.bt(data);
+  case 'catch':
+    return fi['catch'](data);
   }
 };
 show_chain = function(data){
@@ -80,7 +80,7 @@ show_chain = function(data){
       bulk[0].unshift(init[0]);
       return bulk;
     }(
-    R.splitEvery(4)(
+    R.splitEvery(2)(
     R.map(function(each){
       return "." + each + "(..)";
     })(
@@ -144,16 +144,16 @@ print.input_fault.map = function(arg$){
   }
   return l("");
 };
-print.input_fault.bt = function(arg$){
+print.input_fault['catch'] = function(arg$){
   var type, info;
   type = arg$[0], info = arg$[1];
-  show_name(".bt");
+  show_name(".catch");
   l("");
   show_chain(info);
   l("");
   l(c.white(" expected type signature :"));
   l("");
-  l(type_color(" bt :: (integer|undefined)"));
+  l(type_color(" catch :: (function|undefined)"));
   return l("");
 };
 x$ = on_dtype = {};

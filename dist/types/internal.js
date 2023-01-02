@@ -1,7 +1,7 @@
-var ref$, com, print, sig, tightloop, z, l, R, j, uic, deep_freeze, loopError, xop, x$, cache, assort, cato, y$, wrap, z$, guard, z1$, define, z2$, validate, props, init_state, z3$, proto, i$, len$, val, F, handleError, custom, _try, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ref$, com, print, sig, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, xop, x$, cache, assort, cato, y$, wrap, z$, guard, z1$, define, z2$, validate, props, init_state, z3$, proto, i$, len$, val, F, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ref$ = require('./print.common'), com = ref$.com, print = ref$.print, sig = ref$.sig;
 tightloop = require('./tightloop');
-z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError;
+z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError, tupnest = com.tupnest;
 xop = require('../guard/main');
 x$ = cache = {};
 x$.def = new Set();
@@ -87,9 +87,6 @@ for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
 }
 proto.normal.auth = tightloop;
 proto.normal[uic] = print.log;
-proto.normal['try'] = function(){
-  return _try(this[sig]);
-};
 proto.normal['catch'] = wrap['catch'];
 proto.functor = (import$({}, proto.normal));
 proto.functor.map = wrap.rest('map');
@@ -228,12 +225,12 @@ guard.on = xop.unary.arn([1, 2], function(args, state){
   } else {
     return [false];
   }
-}, define.on, function(data){
+}, function(data){
   if (data[1] === 'input.fault') {
     return handleError(data);
   }
-  return null;
-}).arma(2, function(arg$, state){
+  return loopError();
+}, define.on).arma(2, function(arg$, state){
   var first, second, i$, len$, I;
   first = arg$[0], second = arg$[1];
   switch (R.type(first)) {
@@ -302,21 +299,27 @@ validate.rest = function(funs, state, type){
     return false;
   }
 };
-_try = function(state){
-  var neo_all, neo;
-  neo_all = state.all.concat(['try']);
-  neo = {
-    type: state.type,
-    all: neo_all,
-    str: state.str.concat('try')
-  };
-  return define.proto(neo);
-};
-guard['catch'] = xop.unary.ar(1, function(arg$, state){
+guard['catch'] = xop.unary.arpar(1, function(arg$){
   var F;
   F = arg$[0];
-  return define.proto(state);
-}).def(loopError());
+  return [R.type(F) === 'Function'];
+}, function(){
+  var state, E;
+  state = arguments[arguments.length - 1];
+  E = tupnest([new Error(), 'input.fault'], 'catch', 'not_function', [state.str, 'catch']);
+  print.route(E);
+  return loopError();
+}, function(arg$, state){
+  var F, neo_all, neo_state;
+  F = arg$[0];
+  neo_all = state.all.concat(['catch']);
+  neo_state = {
+    type: state.type,
+    all: neo_state,
+    str: state.str.concat('catch')
+  };
+  return define.proto(neo_state);
+}).def(loopError);
 guard.rest = xop.wh(validate.rest, function(args, state, type){
   var block, data;
   block = define.block(state, type, args);
@@ -333,22 +336,10 @@ define.copy = function(F, data, type){
   case 'obj':
   case 'arr':
   case 'arg':
-    switch (R.type(F)) {
-    case 'Object':
-      F = Object.create(proto.functor);
-      break;
-    case 'Function':
-      Object.setPrototypeOf(F, proto.functor);
-    }
+    Object.setPrototypeOf(F, proto.functor);
     break;
   default:
-    switch (R.type(F)) {
-    case 'Object':
-      F = Object.create(proto.normal);
-      break;
-    case 'Function':
-      Object.setPrototypeOf(F, proto.normal);
-    }
+    Object.setPrototypeOf(F, proto.normal);
   }
   F[sig] = data;
   return cache.ins.add(F);
@@ -369,20 +360,48 @@ define.proto = function(data, type){
   cache.ins.add(put);
   return put;
 };
+l([['a', 'b'], ['c', 'd']].flat(Infinity));
 define.basis = function(name, F){
-  var inner, data;
-  if (typeof F === 'object') {
-    inner = [];
-  } else {
-    inner = ['and', ['d', F]];
-  }
-  cache.def.add(F);
+  var data;
   data = {
     type: name,
     str: [name],
-    all: inner
+    all: [{
+      0: 'and',
+      1: ['d', F]
+    }]
   };
-  define.copy(F, data);
+  switch (name) {
+  case 'obj':
+  case 'arr':
+  case 'arg':
+    Object.setPrototypeOf(F, proto.functor);
+    break;
+  default:
+    Object.setPrototypeOf(F, proto.normal);
+  }
+  F[sig] = data;
+  cache.ins.add(F);
+  cache.def.add(F);
+};
+define.basis.empty = function(name){
+  var data, inherited;
+  data = {
+    type: name,
+    str: [name],
+    all: []
+  };
+  inherited = (function(){
+    switch (name) {
+    case 'obj':
+    case 'arr':
+    case 'arg':
+      return Object.create(proto.functor);
+    default:
+      return Object.create(proto.normal);
+    }
+  }());
+  return inherited;
 };
 define.block = function(state, type, args){
   var all, neo_all, F, inn, funs, I;

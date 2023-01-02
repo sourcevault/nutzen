@@ -211,7 +211,12 @@ core.ma = function(da, ta){
   switch (vtype) {
   case 'f':
     msg = vF.apply(null, da.arg);
-    if (msg !== false) {
+    switch (msg) {
+    case false:
+      break;
+    case null:
+      return null;
+    default:
       return mod_resolve(exec, msg, da.arg);
     }
     break;
@@ -237,8 +242,8 @@ core.arma = function(da, ta){
 };
 common_par = function(fname){
   return function(da, ta){
-    var ref$, vtype, vF, exec, lastview, ret, cont, msg, vd;
-    ref$ = ta[0], vtype = ref$[0], vF = ref$[1], exec = ta[1], lastview = ta[2];
+    var ref$, vtype, vF, lastview, exec, ret, cont, msg, vd;
+    ref$ = ta[0], vtype = ref$[0], vF = ref$[1], lastview = ta[1], exec = ta[2];
     switch (vtype) {
     case 'f':
       ret = vF.apply(null, da.arg);
@@ -250,7 +255,7 @@ common_par = function(fname){
       if (cont) {
         return mod_resolve(exec, msg, da.arg);
       } else {
-        ret = lastview(msg);
+        ret = lastview.apply(null, [msg].concat(arrayFrom$(da.arg)));
         if (ret !== void 8) {
           return ret;
         }
@@ -261,7 +266,7 @@ common_par = function(fname){
       if (vd['continue']) {
         return mod_resolve(exec, vd.value, da.arg);
       } else {
-        ret = lastview(vd.message, vd.path);
+        ret = lastview.apply(null, [vd.message, vd.path].concat(arrayFrom$(da.arg)));
         if (ret !== void 8) {
           return ret;
         }
@@ -271,7 +276,7 @@ common_par = function(fname){
       if (vF) {
         return mod_resolve(exec, void 8, da.arg);
       } else {
-        ret = lastview();
+        ret = lastview.apply(null, da.arg);
         if (ret !== void 8) {
           return ret;
         }

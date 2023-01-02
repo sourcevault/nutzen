@@ -20,13 +20,15 @@ rm.src:
 gulpfile:
   watch:
     - ./src/gulpfile.ls
-
   description:
     - watch gulpfile.ls and run gulp default (only).
   local: &gulpfile
     - lsc -bco . src/gulpfile.ls
-    # - gulp default --silent
-    - gulp watch
+    - gulp default --silent
+    # - gulp watch
+
+gulp.watch:
+  - gulp watch
 
 gulpfile.ncc:
   watch: src/gulpfile.ls
@@ -71,9 +73,10 @@ test.file:
     - run a specific test file for proj=X which=Y.
   local:
     # - time gulp default
-    - echo 'start'
-    - gulp default
-    - node ./test/${proj}/${which}.js || exit 1
+    - |
+     time gulp default
+     time node ./test/${proj}/${which}.js || exit 1
+    # - gulp default --silent
 
 gulp.test.file:
   watch: 
@@ -99,4 +102,18 @@ dev.install:
 version.update:
   watch: false
   local: update-version src/package.yaml hoplon version
+
+hello_1:
+  description: install all dev dependencies.
+  local:
+    - single:
+        npm install gulp -g
+        pnpm install livescript
+        pnpm install gulp-tap
+        pnpm install gulp-livescript
+        pnpm install gulp-rename
+        pnpm install gulp-yaml
+        pnpm install gulp-replace
+        pnpm install gulp-util
+        pnpm install gulp-changed
 

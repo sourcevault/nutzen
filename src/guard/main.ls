@@ -236,8 +236,10 @@ core.ma = (da,ta) ->
 
     msg = vF ...da.arg
 
-    if msg isnt false
-
+    switch msg
+    | false     => void
+    | null      => return null
+    | otherwise =>
       return mod_resolve exec,msg,da.arg
 
   | \v =>
@@ -268,7 +270,7 @@ core.arma = (da,ta) -> arma[ta[0]] da,ta[1]
 
 common_par = (fname)-> (da,ta) ->
 
-  [[vtype,vF],exec,lastview] = ta
+  [[vtype,vF],lastview,exec] = ta
 
   switch vtype
   | \f =>
@@ -276,6 +278,7 @@ common_par = (fname)-> (da,ta) ->
     ret = vF ...da.arg
 
     if not (Array.isArray ret)
+
       print.route do
         [\validator_return_not_array,[(new Error!),[fname,[\validator]],da.state]]
       return void
@@ -283,9 +286,13 @@ common_par = (fname)-> (da,ta) ->
     [cont,msg] = ret
 
     if cont
+
       return mod_resolve exec,msg,da.arg
+
     else
-      ret = lastview msg
+
+      ret = lastview msg,...da.arg
+
       if (ret isnt void) then return ret
 
   | \v => # hoplon validator
@@ -293,20 +300,26 @@ common_par = (fname)-> (da,ta) ->
     vd = vF.auth da.arg
 
     if vd.continue
+
       return mod_resolve exec,vd.value,da.arg
+
     else
-      ret = lastview vd.message,vd.path
+
+      ret = lastview vd.message,vd.path,...da.arg
+
       if (ret isnt void) then return ret
 
   | \b =>
 
     if vF
+
       return mod_resolve exec,void,da.arg
+
     else
-      ret = lastview!
+
+      ret = lastview ...da.arg
+
       if (ret isnt void) then return ret
-
-
 
   UNDEC
 
@@ -322,7 +335,9 @@ arpar.n = n f_arpar
 
 arpar.a = a f_arpar
 
-core.arpar = (da,ta) -> arpar[ta[0]] da,ta[1]
+core.arpar = (da,ta) -> 
+
+  arpar[ta[0]] da,ta[1]
 
 # .arwh  ------------
 
@@ -420,9 +435,6 @@ tightloop = (state) -> ->
   if def then return resolve def,arguments
 
 
-#---------------------------------------------------
-#---------------------------------------------------
-#---------------------------------------------------
 #---------------------------------------------------
 
 main = {}
