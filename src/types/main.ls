@@ -2,15 +2,15 @@
 
 # ------------------------------------------------------------------
 
-# {z,l,R,j,deep_freeze,uic,loopError,noop} = com
+{z,l,R,j,deep_freeze,uic,loopError,noop} = com
 
-# oxo = require \../guard/main
+oxo = require \../guard/main
 
-# int = require \./internal
+internal = require \./internal
 
-# {custom,define,cache} = int
+{custom,define,cache} = internal
 
-# be = custom
+be = custom
 
 #-------------------------------------------------------------------
 

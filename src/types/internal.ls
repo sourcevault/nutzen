@@ -4,7 +4,7 @@ tightloop = require \./tightloop
 
 # ------------------------------------------------------------------
 
-{z,l,R,j,uic,deep_freeze,loopError,tupnest} = com
+{z,l,R,j,uic,deep_freeze,loopError,tupnest,noop} = com
 
 xop = require \../guard/main
 
@@ -24,7 +24,7 @@ assort = (F) ->
 
     [\d,F]
 
-  else if (cache.ins.has F)
+  else if (F instanceof normal)
 
     [\i,F]
 
@@ -55,6 +55,14 @@ cato = (arg) ->
 
 # -------------------------------------------------------
 
+assign_try  = -> (data) -> 
+
+  @try = new proto.try.normal data
+
+  @
+
+assign_self = -> (data) -> @try = data;@
+
 wrap      = {}
   ..on    = null
   ..rest  = null
@@ -77,24 +85,44 @@ validate   = {}
   ..on     = null
   ..rest   = null
 
+proto       = {}
+  ..normal  = (data) -> 
+
+      @try = new proto.try.normal data
+
+      @
+
+  # ..functor = assign_try!
+  ..try     = {}
+    ..normal  = (data) -> 
+
+        @try = data
+        # @try = new proto.normal data
+
+        @
+
+    # ..functor = assign_try!
+
+# proto.try.functor.prototype = Object.create proto.functor.prototype
+
 #---------------------------------------------------------
 
 props = [\and \or \alt \cont \tap \edit \err \jam \fix]
 
-init_state =
-  all  :[]
-  type :null
-  str  :[]
+# wrap.rest = (type) -> -> guard.rest arguments,@[sig],type
 
-wrap.rest = (type) -> -> guard.rest arguments,@[sig],type
+wrap.rest = (type) -> 
+
+  ->
+
+    z @ instanceof normal
+    z @ instanceof functor
+    z @ instanceof proto.try.normal
+
 
 wrap.catch = -> guard.catch arguments,@[sig]
 
 wrap.on = -> guard.on arguments,@[sig]
-
-proto       = {}
-  ..normal  = {}
-  ..functor = null
 
 proto.normal.wrap = ->
 
@@ -106,23 +134,43 @@ for val in props
 
   F = wrap.rest val
 
-  proto.normal[val]  = F
+  proto.normal.prototype[val]  = F
 
-proto.normal.auth      = tightloop
+proto.normal.prototype.auth      = tightloop
 
-proto.normal[uic]      = print.log
+# proto.normal[uic]      = print.log
 
-proto.normal.catch     = wrap.catch
+proto.normal.prototype.catch     = wrap.catch
 
-proto.functor          = {...proto.normal}
+# proto.functor          = {...proto.normal}
 
-proto.functor.map      = wrap.rest \map
+# proto.functor.map      = wrap.rest \map
 
-proto.functor.forEach  = wrap.rest \forEach
+# proto.functor.forEach  = wrap.rest \forEach
 
-proto.functor.on       = wrap.on
+# proto.functor.on       = wrap.on
 
-proto.functor[uic]     = print.log
+# proto.functor[uic]     = print.log
+
+
+# fp                = proto.functor.prototype
+
+# fp.map            = wrap.rest \map
+
+# fp.forEach        = wrap.rest \forEach
+
+# fp.on             = wrap.on
+
+proto.try.normal.prototype = Object.create proto.normal.prototype
+
+
+N = new proto.normal \h
+
+z N.try.and
+
+#---------------------------------------------------------
+
+#---------------------------------------------------------
 
 #---------------------------------------------------------
 
@@ -134,15 +182,15 @@ handleError = (info) ->
 
 custom = xop
 
-.arn 1, -> handleError [(new Error!),\input.fault,[\custom [\arg_count]]]
+.arn 1, -> handleError tupnest (new Error!),\input.fault,\custom,\arg_count
 
 .whn do
 
   (f) ->
 
-    ((R.type f) is \Function) or (f[sig])
+    ((R.type f) is \Function) or (f instanceof normal)
 
-  -> handleError [(new Error!),\input.fault,[\custom [\not_function]]]
+  -> handleError tupnest (new Error!),\input.fault,\custom,\not_function
 
 .def (F) ->
 
@@ -151,11 +199,10 @@ custom = xop
   data =
      *type    : \custom
       all     : [\and,G]
+      index   : 0
       str     : ["{..}"]
 
   define.proto data
-
-custom[uic] = print.inner
 
 #--------------------------------------------------------------------------
 
@@ -357,7 +404,7 @@ validate.rest = (funs,state,type) ->
 
     if (funs.length is 0)
 
-      print.route [(new Error!),\input.fault,[type,[\arg_count,[state.str,type]]]]
+      print.route tupnest [new Error!,\input.fault],type,\arg_count,[state.str,type]
 
       return false
 
@@ -365,7 +412,7 @@ validate.rest = (funs,state,type) ->
 
       if not (((R.type F) is \Function) or (cache.ins.has F))
 
-        print.route [(new Error!),\input.fault,[type,[\not_function,[state.str,type]]]]
+        print.route tupnest [(new Error!),\input.fault],type,\not_function,[state.str,type]
 
         return false
 
@@ -375,7 +422,7 @@ validate.rest = (funs,state,type) ->
 
     if not (funs.length is 1)
 
-      print.route [(new Error!),\input.fault,[type,[\arg_count,[state.str,type]]]]
+      print.route tupnest [(new Error!),\input.fault],type,\arg_count,[state.str,type]
 
       return false
 
@@ -385,7 +432,7 @@ validate.rest = (funs,state,type) ->
 
     if not (((R.type f) is \Function) or (cache.ins.has F))
 
-      print.route [(new Error!),\input.fault,[type,[\not_function,[state.str,type]]]]
+      print.route tupnest [(new Error!),\input.fault],type,\not_function,[state.str,type]
 
       return false
 
@@ -445,14 +492,14 @@ guard.rest = xop
 
     #----------------------------------
 
-    block = define.block state,type,args
+    # block = define.block state,type,args
 
-    data =
-      *type:state.type
-       all:block
-       str:state.str.concat type
+    # data =
+    #   *type:state.type
+    #    all:block
+    #    str:state.str.concat type
 
-    define.proto data
+    # define.proto data
 
 .def loopError
 
@@ -475,20 +522,12 @@ define.copy = (F,data,type = data.type) ->
 
 define.proto = (data,type = data.type) ->
 
-  switch type
-  | \obj,\arr,\arg =>
-    put = Object.create proto.functor
-  | otherwise =>
-    put = Object.create proto.normal
-
-  put[sig] = data
-
-  cache.ins.add put
+  put = switch data.type
+  | \obj,\arr,\arg => new functor data
+  | otherwise      => new normal data
 
   put
 
-
-l [[\a,\b],[\c,\d]].flat Infinity
 
 define.basis = (name,F) !->
 
@@ -569,6 +608,11 @@ define.block = (state,type,args) ->
   neo_all
 
 #-----------------------------------------------------------------------
+
+
+
+
+
 
 module.exports =
   *custom : custom
