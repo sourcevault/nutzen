@@ -86,10 +86,15 @@ validate   = {}
 proto       = {}
   ..normal  = assign_self!
   ..functor = assign_self!
+  ..core    = {}
+    ..normal = assign_self!
+    ..functor = assign_self!
 
 #---------------------------------------------------------
 
-props = [\and \or \alt \cont \tap \edit \err \jam \fix \try]
+# \or \alt
+
+props = [\and \cont \tap \edit \err \jam \fix \try]
 
 wrap.rest = (type) -> -> guard.rest arguments,@self,type
 
@@ -97,7 +102,7 @@ wrap.catch = -> guard.catch arguments,@self
 
 wrap.on = (type) -> -> guard.on arguments,@self,type
 
-proto.normal.prototype.wrap = ->
+proto.core.normal.prototype.wrap = ->
 
   F = @
 
@@ -107,21 +112,22 @@ for val in props
 
   F = wrap.rest val
 
-  proto.normal.prototype[val]  = F
+  proto.core.normal.prototype[val]  = F
 
-proto.normal.prototype.auth      = tightloop
+proto.core.normal.prototype.auth      = tightloop
 
-proto.normal.prototype[uic]      = print.log
+proto.core.normal.prototype[uic]      = print.log
 
-proto.normal.prototype.catch     = wrap.catch
+proto.core.normal.prototype.catch     = wrap.catch
 
-proto.functor.prototype          = Object.create proto.normal.prototype
+proto.core.functor.prototype          = Object.create proto.core.normal.prototype
 
 # proto.functor.prototype[uic]     = print.log
 
 fp                               = proto.functor.prototype
 
 fp.map                           = wrap.rest \map
+
 
 fp.forEach                       = wrap.rest \forEach
 
