@@ -8,9 +8,7 @@ tightloop = require \./tightloop
 
 xop = require \../guard/main
 
-cache = {}
-  ..def = new Set!
-  ..ins = new Set!
+cache_def = new Set!
 
 # ------------------------------------------------------------------
 
@@ -18,13 +16,15 @@ cache = {}
 \i # instance  
 \f # function
 
+def_or_normal = (F) -> (cache_def.has F) or (F instanceof proto.normal)
+
 assort = (F) ->
 
-  if (cache.def.has F)
+  if (cache_def.has F)
 
     [\d,F]
 
-  else if (F instanceof normal)
+  else if (F instanceof proto.normal)
 
     [\i,F]
 
@@ -53,15 +53,12 @@ cato = (arg) ->
 
     fun
 
+
 # -------------------------------------------------------
 
-assign_try  = -> (data) -> 
-
-  @try = new proto.try.normal data
-
+assign_self = -> (self) ->
+  @self = self
   @
-
-assign_self = -> (data) -> @try = data;@
 
 wrap      = {}
   ..on    = null
@@ -80,51 +77,27 @@ define = {}
   ..on     = null
   ..basis  = null
   ..block  = null
+  ..catch  = null
 
 validate   = {}
   ..on     = null
   ..rest   = null
 
 proto       = {}
-  ..normal  = (data) -> 
-
-      @try = new proto.try.normal data
-
-      @
-
-  # ..functor = assign_try!
-  ..try     = {}
-    ..normal  = (data) -> 
-
-        @try = data
-        # @try = new proto.normal data
-
-        @
-
-    # ..functor = assign_try!
-
-# proto.try.functor.prototype = Object.create proto.functor.prototype
+  ..normal  = assign_self!
+  ..functor = assign_self!
 
 #---------------------------------------------------------
 
-props = [\and \or \alt \cont \tap \edit \err \jam \fix]
+props = [\and \or \alt \cont \tap \edit \err \jam \fix \try]
 
-# wrap.rest = (type) -> -> guard.rest arguments,@[sig],type
+wrap.rest = (type) -> -> guard.rest arguments,@self,type
 
-wrap.rest = (type) -> 
+wrap.catch = -> guard.catch arguments,@self
 
-  ->
+wrap.on = (type) -> -> guard.on arguments,@self,type
 
-    z @ instanceof normal
-    z @ instanceof functor
-    z @ instanceof proto.try.normal
-
-
-wrap.catch = -> guard.catch arguments,@[sig]
-
-wrap.on = -> guard.on arguments,@[sig]
-
-proto.normal.wrap = ->
+proto.normal.prototype.wrap = ->
 
   F = @
 
@@ -138,39 +111,23 @@ for val in props
 
 proto.normal.prototype.auth      = tightloop
 
-# proto.normal[uic]      = print.log
+proto.normal.prototype[uic]      = print.log
 
 proto.normal.prototype.catch     = wrap.catch
 
-# proto.functor          = {...proto.normal}
+proto.functor.prototype          = Object.create proto.normal.prototype
 
-# proto.functor.map      = wrap.rest \map
+# proto.functor.prototype[uic]     = print.log
 
-# proto.functor.forEach  = wrap.rest \forEach
+fp                               = proto.functor.prototype
 
-# proto.functor.on       = wrap.on
+fp.map                           = wrap.rest \map
 
-# proto.functor[uic]     = print.log
+fp.forEach                       = wrap.rest \forEach
 
+fp.on                            = wrap.on \on
 
-# fp                = proto.functor.prototype
-
-# fp.map            = wrap.rest \map
-
-# fp.forEach        = wrap.rest \forEach
-
-# fp.on             = wrap.on
-
-proto.try.normal.prototype = Object.create proto.normal.prototype
-
-
-N = new proto.normal \h
-
-z N.try.and
-
-#---------------------------------------------------------
-
-#---------------------------------------------------------
+fp.onor                          = wrap.on \onor
 
 #---------------------------------------------------------
 
@@ -188,7 +145,7 @@ custom = xop
 
   (f) ->
 
-    ((R.type f) is \Function) or (f instanceof normal)
+    ((R.type f) is \Function) or def_or_normal f
 
   -> handleError tupnest (new Error!),\input.fault,\custom,\not_function
 
@@ -202,61 +159,60 @@ custom = xop
       index   : 0
       str     : ["{..}"]
 
-  define.proto data
+  new proto.normal data
 
 #--------------------------------------------------------------------------
 
-define.on = (type,args,state) ->
+define.on = (cat,args,state,ftype) ->
 
-  switch type[0]
+  put = switch cat
   | \array =>
 
     [props,F] = args
 
-    put = [\array,[(R.uniq props),...(cato F)]]
+    [\array,[(R.uniq props),...(cato F)]]
 
   | \string =>
 
     [key,F] = args
 
-    put = [\string,[key,...(cato F)]]
+    [\string,[key,...(cato F)]]
 
   | \object =>
 
     [ob] = args
 
-    fun   = [[key,...(cato val)] for key,val of ob]
+    fun = [[key,...(cato val)] for key,val of ob]
 
-    put = [\object,fun]
-
-  | \single_array =>
-
-    array = type[1]
-
-    put = [\single_array,array]
-
-  block = define.block state,\on,[put]
+    [\object,fun]
 
   data =
     *type     : state.type
-     all      : block
-     str      : state.str.concat \on
+     all      :
+      *node:[ftype,put]
+       back:state.all
+     index    : state.index + 1
+     str      : [ftype,state.str]
 
+  new proto.functor data
 
-  define.proto data
-
-#-----------------------------------------------------------------------
 #-----------------------------------------------------------------------
 
 guard.on = xop.unary
 
 .arn [1,2],
 
-  (args,state) -> handleError [(new Error!),\input.fault,[\on [\arg_count,[state.str,\on]]]]
+  (args,state,type) ->
+
+    handleError tupnest do
+      *(new Error!),\input.fault
+      \on
+      \arg_count
+      *state.str,type
 
 .arpar 1,
 
-  (args,state) ->
+  (args,state,which_on) ->
 
     [maybe_object] = args
 
@@ -266,89 +222,25 @@ guard.on = xop.unary
 
       for I,val of maybe_object
 
-        if not (((R.type val) is \Function) or (cache.ins.has val))
+        if not (((R.type val) is \Function) or (def_or_normal val))
 
-          return [false,[(new Error!),\input.fault,[\on [\object,[state.str,\on]]]]]
+          return tupnest do
+            false
+            *(new Error!),\input.fault
+            \on
+            \object
+            [state.str,which_on]
 
-      return [true,[\object]]
-
-    else if (type is \Array)
-
-      ok = true
-
-      clean = []
-
-      error_msg = null
-
-      for each in maybe_object
-
-        if not (each.length is 3)
-          ok = false
-          error_msg = \length_less_then_3
-          break
-
-        [type,fields,F] = each
-
-        field_type = R.type fields
-
-        if type is \and
-          if field_type is \String
-            field_type = \S
-          else if field_type is \Array
-            field_type = \A
-          else
-            error_msg = \alt_wrong_field_type
-            ok = false
-            break
-        else if type is \alt
-          if field_type is \Array
-            for I in fields
-              if not ((R.type I) in [\String,\Number])
-                ok = false
-                break
-            if not ok
-              error_msg = \alt_wrong_field_type
-              break
-            field_type = \A
-
-          else if (field_type is \String)
-
-            field_type = \S
-
-          else
-            ok = false
-            break
-          
-        else
-          ok = false
-          error_msg = \not_and_alt
-          break
-
-        wF = assort F
-
-        if wF[0] is \f
-          ok = false
-          break
-
-        clean.push [type,[field_type,fields],wF[0],wF[1]]
-
-      if ok
-        return [true,[\single_array,clean]]
-      else
-
-        inner_error = [
-          \on
-          [\single_array
-           [state.str,\on]
-           error_msg
-          ]
-        ]
-
-        return [false,[(new Error!),\input.fault,inner_error]]
+      return [true,\object]
 
     else
 
-      return [false]
+      return tupnest do
+        false
+        [(new Error!),\input.fault]
+        \on
+        \typeError
+        [state.str,which_on]
 
   (data)->
 
@@ -358,9 +250,9 @@ guard.on = xop.unary
 
   define.on
 
-.arma 2,
+.arpar 2,
 
-  ([first,second],state)->
+  ([first,second],state,type)->
 
     switch R.type first
 
@@ -368,31 +260,57 @@ guard.on = xop.unary
 
       for I in first
 
-        if not ((R.type I) is \String)
+        if not ((R.type I) in [\String,\Number])
 
-          return [(new Error!),\input.fault,[\on [\array,[state.str,\on]]]]
+          return tupnest do
+            false
+            *(new Error!),\input.fault
+            \on
+            \array
+            *state.str,type
 
-      if not (((R.type second) is \Function) or (cache.ins.has second))
+      if not (((R.type second) is \Function) or (def_or_normal second))
 
-        return [(new Error!),\input.fault,[\on [\array,[state.str,\on]]]]
+        return tupnest do
+          false
+          *(new Error!),\input.fault
+          \on
+          \array
+          *state.str,type
 
-      return [\array]
+      return [true,\array]
 
     | \String,\Number =>
 
-      if not (((R.type second) is \Function) or (cache.ins.has second))
+      if not (((R.type second) is \Function) or (def_or_normal second))
 
-        return [(new Error!),\input.fault,[\on [\string,[state.str,\on]]]]
+        return tupnest do
+          false
+          *(new Error!),\input.fault
+          \on
+          \string
+          *state.str,type
 
-      return [\string]
+      return [true,\string]
 
     | otherwise => return false
 
+  (E_info)-> 
+
+    handleError E_info
+
   define.on
 
-.def (args,state) ->
+.def (args,state,type) ->
 
-  handleError [(new Error!),\input.fault,[\on [\typeError,[state.str,\on]]]]
+  error_obj = tupnest do
+    *(new Error!),\input.fault
+    \on
+    \typeError
+    *state.str,type
+
+  handleError error_obj
+
 
 #-----------------------------------------------------------------------
 
@@ -410,7 +328,7 @@ validate.rest = (funs,state,type) ->
 
     for F in funs
 
-      if not (((R.type F) is \Function) or (cache.ins.has F))
+      if not (((R.type F) is \Function) or def_or_normal F)
 
         print.route tupnest [(new Error!),\input.fault],type,\not_function,[state.str,type]
 
@@ -428,9 +346,9 @@ validate.rest = (funs,state,type) ->
 
     return true
 
-    [f] = funs
+    [F] = funs
 
-    if not (((R.type f) is \Function) or (cache.ins.has F))
+    if not (((R.type f) is \Function) or def_or_normal F)
 
       print.route tupnest [(new Error!),\input.fault],type,\not_function,[state.str,type]
 
@@ -438,19 +356,37 @@ validate.rest = (funs,state,type) ->
 
     return true
 
-  | \err,\fix,\cont,\jam,\edit  =>
+  | \err,\fix,\cont,\jam,\edit,\try  =>
 
     return true
 
   | otherwise => false
 
+define.catch = ([F],state) ->
+
+  type = state.type
+
+  data =
+    *type:type
+     all:
+      *node:[\catch,F]
+       back:state.all
+     index:state.index + 1
+     str:[\catch,state.str]
+
+  put = switch type
+  | \obj,\arr,\arg => new proto.functor data
+  | otherwise      => new proto.normal data
+
+  put
+
 guard.catch = xop.unary
 
 .arpar 1,
 
-  ([F]) -> [((R.type F) is \Function)]
+  ([F],state) -> (R.type F) is \Function
 
-  (...,state)->
+  (__,state)->
 
     E = tupnest do
       *new Error!,\input.fault
@@ -462,94 +398,77 @@ guard.catch = xop.unary
 
     loopError!
 
-  ([F],state) ->
+  define.catch
 
-    neo_all = state.all.concat [\catch]
+.ar 0,(__,state) -> define.catch [R.identity],state
 
-    neo_state =
-      *type:state.type
-       all:neo_state
-       str:state.str.concat \catch
+.arn [1,0],(__,state)->
 
-    define.proto neo_state
-
-
-# .ar 0,
-#   (__,state) ->
-
-
-#     state
-
+  handleError tupnest do
+    *(new Error!),\input.fault
+    \catch
+    \arg_count
+    *state.str,\catch
 
 .def loopError
 
 #-----------------------------------------------------------------------
 
-guard.rest = xop
+guard.rest = xop # [\and \or \alt \cont \tap \edit \err \jam \fix \map]
 .wh do
   validate.rest
   (args,state,type) ->
 
     #----------------------------------
 
-    # block = define.block state,type,args
+    switch type
 
-    # data =
-    #   *type:state.type
-    #    all:block
-    #    str:state.str.concat type
+    | \and,\map,\alt,\or,\forEach,\onor =>
 
-    # define.proto data
+      F = cato args[0]
+
+    | \err,\fix,\cont,\jam,\edit,\tap =>
+
+      F = args[0]
+
+    | \try =>
+
+      F = void
+
+    data =
+      *type:state.type
+       all:
+        *node:[type,F]
+         back:state.all
+       index:state.index + 1
+       str:[type,state.str]
+
+    switch data.type
+    | \obj,\arr,\arg => new proto.functor data
+    | otherwise      => new proto.normal data
 
 .def loopError
 
 #-----------------------------------------------------------------------
-
-define.copy = (F,data,type = data.type) ->
-
-  switch type
-  | \obj,\arr,\arg =>
-
-    Object.setPrototypeOf F,proto.functor
-
-  | otherwise =>
-
-    Object.setPrototypeOf F,proto.normal
-
-  F[sig] = data
-
-  cache.ins.add F
-
-define.proto = (data,type = data.type) ->
-
-  put = switch data.type
-  | \obj,\arr,\arg => new functor data
-  | otherwise      => new normal data
-
-  put
-
 
 define.basis = (name,F) !->
 
   data =
     *type     : name
      str      : [name]
-     all      : [{0:\and,1:[\d,F]}]
+     all      : node:[\and,[\d,F]]
+     index    : 0
+
+  F.self = data
 
   switch name
   | \obj,\arr,\arg =>
 
-    Object.setPrototypeOf F,proto.functor
+    Object.setPrototypeOf F,proto.functor.prototype
 
   | otherwise =>
 
-    Object.setPrototypeOf F,proto.normal
-
-  F[sig] = data
-
-  cache.ins.add F
-
-  cache.def.add F
+    Object.setPrototypeOf F,proto.normal.prototype
 
   void
 
@@ -558,63 +477,25 @@ define.basis.empty = (name) ->
   data =
     *type     : name
      str      : [name]
-     all      : []
+     index    : -1
 
   inherited = switch name
 
   | \obj,\arr,\arg =>
 
-    Object.create proto.functor
+    new proto.functor data
 
   | otherwise =>
 
-    Object.create proto.normal
+    new proto.normal data
 
   inherited
 
 # ------------------------------------------------------------------
 
-define.block = (state,type,args) ->
-
-  all = state.all
-
-  neo_all = switch type
-  | \map,\forEach =>
-
-    F = cato args[0]
-
-    all.concat [type,F]
-
-  | \err,\fix,\cont,\jam,\edit,\tap  =>
-
-    all.concat [type,args[0]]
-
-  | \and,\alt,\or =>
-
-    inn = all.concat!
-
-    funs = cato args
-
-    for I in funs
-      inn.push type,I
-
-    inn
-
-  | \on => all.concat \on,args
-
-  | \on_or => all.concat \on_or,args
-
-
-  neo_all
-
-#-----------------------------------------------------------------------
-
-
-
-
-
+#-------------------------------------------------------------------
 
 module.exports =
-  *custom : custom
-   define : define
-   cache  : cache
+  *custom    : custom
+   define    : define
+   cache_def : cache_def

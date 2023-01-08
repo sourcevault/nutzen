@@ -1,6 +1,6 @@
 ext = require "./verify.print.common"
 
-{com,verify,modflag,defacto,print} = ext
+{com,verify,modflag,print} = ext
 
 {l,z,R,uic,binapi} = com
 
@@ -11,11 +11,11 @@ resolve = (F,A) ->
   [ftype,f] = F
 
   switch ftype
-  | \f => f ...A
-  | \v => f.auth ...A
+  | \f => f.apply void,A
+  | \v => f.auth.apply void,A
   | \s => f
 
-mod_resolve = (F,init,A) -> # when arguments require manipulation
+unshift_resolve = (F,init,A) -> # when arguments require manipulation
 
   [ftype,f] = F
 
@@ -234,13 +234,13 @@ core.ma = (da,ta) ->
 
   | \f =>
 
-    msg = vF ...da.arg
+    msg = vF.apply void,da.arg
 
     switch msg
     | false     => void
-    | null      => return null
+    | void      => return void
     | otherwise =>
-      return mod_resolve exec,msg,da.arg
+      return unshift_resolve exec,msg,da.arg
 
   | \v =>
 
@@ -248,13 +248,13 @@ core.ma = (da,ta) ->
 
     if vd.continue
 
-      return mod_resolve exec,vd.value,da.arg
+      return unshift_resolve exec,vd.value,da.arg
 
   | \b =>
 
     if vF isnt false
 
-      return mod_resolve exec,vF,da.arg
+      return unshift_resolve exec,vF,da.arg
 
   UNDEC
 
@@ -268,6 +268,8 @@ arma.a = a core.ma
 
 core.arma = (da,ta) -> arma[ta[0]] da,ta[1]
 
+isArray = Array.isArray
+
 common_par = (fname)-> (da,ta) ->
 
   [[vtype,vF],lastview,exec] = ta
@@ -275,25 +277,31 @@ common_par = (fname)-> (da,ta) ->
   switch vtype
   | \f =>
 
-    ret = vF ...da.arg
+    ret = vF.apply void,da.arg
 
-    if not (Array.isArray ret)
+    if isArray ret
 
-      print.route do
-        [\validator_return_not_array,[(new Error!),[fname,[\validator]],da.state]]
-      return void
+      [cont,msg] = ret
 
-    [cont,msg] = ret
+      if cont
 
-    if cont
+        return unshift_resolve exec,msg,da.arg
 
-      return mod_resolve exec,msg,da.arg
+      else
+
+        lvret = lastview msg,...da.arg
 
     else
 
-      ret = lastview msg,...da.arg
+      if ret
 
-      if (ret isnt void) then return ret
+        return resolve exec,da.arg
+
+      else
+
+        lvret = lastview.apply void,da.arg
+
+    if (lvret isnt void) then return ret
 
   | \v => # hoplon validator
 
@@ -301,7 +309,7 @@ common_par = (fname)-> (da,ta) ->
 
     if vd.continue
 
-      return mod_resolve exec,vd.value,da.arg
+      return unshift_resolve exec,vd.value,da.arg
 
     else
 
@@ -313,11 +321,11 @@ common_par = (fname)-> (da,ta) ->
 
     if vF
 
-      return mod_resolve exec,void,da.arg
+      return resolve exec,da.arg
 
     else
 
-      ret = lastview ...da.arg
+      ret = lastview.apply void,da.arg
 
       if (ret isnt void) then return ret
 
@@ -335,7 +343,7 @@ arpar.n = n f_arpar
 
 arpar.a = a f_arpar
 
-core.arpar = (da,ta) -> 
+core.arpar = (da,ta) ->
 
   arpar[ta[0]] da,ta[1]
 
@@ -362,7 +370,6 @@ ar.ob = (da,ta) ->
   if not pick then return UNDEC
 
   resolve pick,da.arg
-
 
 ar.n = (da,ta) ->
 
@@ -510,8 +517,6 @@ handle.def.ok = (self,data) ->
 
   F  = tightloop neo
 
-  F[defacto] = data[1]
-
   if state.debug
     F[uic] = print.log.wrap neo
 
@@ -535,9 +540,6 @@ genfun = (vfun,fname) -> ->
 
   handle[zone] @,data,fname
 
-#---------------------------------------------------
-#---------------------------------------------------
-#---------------------------------------------------
 #---------------------------------------------------
 
 main[uic] = print.log.proto
@@ -626,10 +628,6 @@ getter = (data,key) ->
   else if cat.methods.has key
 
     [true,{path:path,lock:true,str:str,vr:vr,key:key}]
-
-  else if key is \symdef
-
-    return [false,defacto]
 
   else
 

@@ -45,7 +45,20 @@ z.n = function(){
   return console.log.apply(console, args);
 };
 z.p = function(obj){
-  return console.dir(Object.getPrototypeOf(obj));
+  var cont, disp, current, cp;
+  cont = true;
+  disp = [];
+  current = obj;
+  while (cont) {
+    disp.push(obj);
+    cp = obj.__proto__;
+    if (cp === null) {
+      cont = false;
+    }
+    obj = cp;
+  }
+  disp.pop();
+  return z(disp);
 };
 loopfault = function(){
   var loopError, apply, get;
@@ -89,7 +102,7 @@ x$.warn = function(txt){
   return "\x1B[38;5;11m" + txt + "\x1B[39m";
 };
 x$.pink = function(txt){
-  return '\u001b[35m#{txt}\u001b[39m';
+  return "\u001b[35m" + txt + "\u001b[39m";
 };
 x$.blue = function(txt){
   return "\x1B[38;5;12m" + txt + "\x1B[39m";
@@ -197,13 +210,17 @@ wait = function(t, f){
   return setTimeout(f, t);
 };
 tupnest_recurse = function(a, index){
-  var fin;
+  var ot;
   index == null && (index = 0);
   if (index === a.length - 1) {
     return a[index];
   }
-  fin = [a[index], tupnest_recurse(a, index + 1)];
-  return fin;
+  ot = a[index];
+  if (R.type(a[index]) === 'Array') {
+    return arrayFrom$(ot).concat([tupnest_recurse(a, index + 1)]);
+  } else {
+    return [ot, tupnest_recurse(a, index + 1)];
+  }
 };
 tupnest = function(){
   return tupnest_recurse(arguments, 0);

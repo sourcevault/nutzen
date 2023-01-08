@@ -1,20 +1,20 @@
-var ext, com, verify, modflag, defacto, print, l, z, R, uic, binapi, resolve, mod_resolve, UNDEC, ob, n, a, core, n_n, n_a, arn, arwhn, arnwh, arnwhn, arma, common_par, arpar, f_arpar, arwh, ar, tightloop, main, looper, handle, genfun, props, cat, getter, topcache, init, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ext, com, verify, modflag, print, l, z, R, uic, binapi, resolve, unshift_resolve, UNDEC, ob, n, a, core, n_n, n_a, arn, arwhn, arnwh, arnwhn, arma, isArray, common_par, arpar, f_arpar, arwh, ar, tightloop, main, looper, handle, genfun, props, cat, getter, topcache, init, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ext = require("./verify.print.common");
-com = ext.com, verify = ext.verify, modflag = ext.modflag, defacto = ext.defacto, print = ext.print;
+com = ext.com, verify = ext.verify, modflag = ext.modflag, print = ext.print;
 l = com.l, z = com.z, R = com.R, uic = com.uic, binapi = com.binapi;
 resolve = function(F, A){
   var ftype, f;
   ftype = F[0], f = F[1];
   switch (ftype) {
   case 'f':
-    return f.apply(null, A);
+    return f.apply(void 8, A);
   case 'v':
-    return f.auth.apply(f, A);
+    return f.auth.apply(void 8, A);
   case 's':
     return f;
   }
 };
-mod_resolve = function(F, init, A){
+unshift_resolve = function(F, init, A){
   var ftype, f, modArg;
   ftype = F[0], f = F[1];
   switch (ftype) {
@@ -210,25 +210,25 @@ core.ma = function(da, ta){
   ref$ = ta[0], vtype = ref$[0], vF = ref$[1], exec = ta[1];
   switch (vtype) {
   case 'f':
-    msg = vF.apply(null, da.arg);
+    msg = vF.apply(void 8, da.arg);
     switch (msg) {
     case false:
       break;
-    case null:
-      return null;
+    case void 8:
+      return;
     default:
-      return mod_resolve(exec, msg, da.arg);
+      return unshift_resolve(exec, msg, da.arg);
     }
     break;
   case 'v':
     vd = vF.auth(da.arg);
     if (vd['continue']) {
-      return mod_resolve(exec, vd.value, da.arg);
+      return unshift_resolve(exec, vd.value, da.arg);
     }
     break;
   case 'b':
     if (vF !== false) {
-      return mod_resolve(exec, vF, da.arg);
+      return unshift_resolve(exec, vF, da.arg);
     }
   }
   return UNDEC;
@@ -240,31 +240,36 @@ arma.a = a(core.ma);
 core.arma = function(da, ta){
   return arma[ta[0]](da, ta[1]);
 };
+isArray = Array.isArray;
 common_par = function(fname){
   return function(da, ta){
-    var ref$, vtype, vF, lastview, exec, ret, cont, msg, vd;
+    var ref$, vtype, vF, lastview, exec, ret, cont, msg, lvret, vd;
     ref$ = ta[0], vtype = ref$[0], vF = ref$[1], lastview = ta[1], exec = ta[2];
     switch (vtype) {
     case 'f':
-      ret = vF.apply(null, da.arg);
-      if (!Array.isArray(ret)) {
-        print.route(['validator_return_not_array', [new Error(), [fname, ['validator']], da.state]]);
-        return;
-      }
-      cont = ret[0], msg = ret[1];
-      if (cont) {
-        return mod_resolve(exec, msg, da.arg);
-      } else {
-        ret = lastview.apply(null, [msg].concat(arrayFrom$(da.arg)));
-        if (ret !== void 8) {
-          return ret;
+      ret = vF.apply(void 8, da.arg);
+      if (isArray(ret)) {
+        cont = ret[0], msg = ret[1];
+        if (cont) {
+          return unshift_resolve(exec, msg, da.arg);
+        } else {
+          lvret = lastview.apply(null, [msg].concat(arrayFrom$(da.arg)));
         }
+      } else {
+        if (ret) {
+          return resolve(exec, da.arg);
+        } else {
+          lvret = lastview.apply(void 8, da.arg);
+        }
+      }
+      if (lvret !== void 8) {
+        return ret;
       }
       break;
     case 'v':
       vd = vF.auth(da.arg);
       if (vd['continue']) {
-        return mod_resolve(exec, vd.value, da.arg);
+        return unshift_resolve(exec, vd.value, da.arg);
       } else {
         ret = lastview.apply(null, [vd.message, vd.path].concat(arrayFrom$(da.arg)));
         if (ret !== void 8) {
@@ -274,9 +279,9 @@ common_par = function(fname){
       break;
     case 'b':
       if (vF) {
-        return mod_resolve(exec, void 8, da.arg);
+        return resolve(exec, da.arg);
       } else {
-        ret = lastview.apply(null, da.arg);
+        ret = lastview.apply(void 8, da.arg);
         if (ret !== void 8) {
           return ret;
         }
@@ -425,7 +430,6 @@ handle.def.ok = function(self, data){
     str: state.str
   });
   F = tightloop(neo);
-  F[defacto] = data[1];
   if (state.debug) {
     F[uic] = print.log.wrap(neo);
   }
@@ -504,8 +508,6 @@ getter = function(data, key){
         key: key
       }
     ];
-  } else if (key === 'symdef') {
-    return [false, defacto];
   } else {
     print.route(['setting', [new Error(), 'not_in_opts', vr, key]]);
     return null;

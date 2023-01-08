@@ -74,8 +74,8 @@ test.file:
   local:
     # - time gulp default
     - |
-     time gulp default
-     time node ./test/${proj}/${which}.js || exit 1
+     gulp default
+     node ./test/${proj}/${which}.js || exit 1
     # - gulp default --silent
 
 gulp.test.file:
@@ -103,17 +103,4 @@ version.update:
   watch: false
   local: update-version src/package.yaml hoplon version
 
-hello_1:
-  description: install all dev dependencies.
-  local:
-    - single:
-        npm install gulp -g
-        pnpm install livescript
-        pnpm install gulp-tap
-        pnpm install gulp-livescript
-        pnpm install gulp-rename
-        pnpm install gulp-yaml
-        pnpm install gulp-replace
-        pnpm install gulp-util
-        pnpm install gulp-changed
 

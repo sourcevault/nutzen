@@ -1,10 +1,9 @@
-var com, print, modflag, defacto, z, zj, j, l, R, c, esp, create_stack, lit, version, help, show_stack, object_name, pkgname, arrange, show_chain, map_fname_to_ctypes, StrArgLen, StrEType, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var com, print, modflag, z, zj, j, l, R, c, esp, create_stack, lit, version, help, show_stack, object_name, pkgname, arrange, show_chain, map_fname_to_ctypes, StrArgLen, StrEType, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 com = require("../../dist/utils/main.js");
 print = {};
 out$.com = com = com;
 out$.print = print = print;
-out$.modflag = modflag = Symbol("self");
-out$.defacto = defacto = Symbol("default");
+out$.modflag = modflag = Symbol('self');
 z = com.z, zj = com.zj, j = com.j, l = com.l, R = com.R, c = com.c, esp = com.esp, create_stack = com.create_stack, lit = com.lit, version = com.version;
 print.log = {};
 help = c.grey("[  docs] " + com.homepage + "\n");

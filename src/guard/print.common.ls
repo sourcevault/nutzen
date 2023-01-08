@@ -7,8 +7,7 @@ print = {}
 export
   com             = com
   print           = print
-  modflag         = Symbol "self"
-  defacto         = Symbol "default"
+  modflag         = Symbol \self
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 

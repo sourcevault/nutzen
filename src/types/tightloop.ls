@@ -524,97 +524,67 @@ resolve = (fun,put,dtype,args) ->
 
   | otherwise => put
 
+self_amorty = (self)->
+
+  flaty = new Array self.index + 1
+
+  current = self.all
+
+  I = self.index
+
+  while -1 < I
+
+    flaty[I] = current.node
+
+    current = current.back
+
+    --I
+
+  fin = []
+
+  bucket = []
+
+  for I from 0 til flaty.length
+
+    item = flaty[I]
+
+    switch item[0]
+    # | \try      =>
+
+    # | \catch    =>
+    | \or,\alt  =>
+
+      if bucket.length
+        fin.push bucket
+        bucket = []
+      fin.push item
+
+    | otherwise =>
+      bucket.push item
+
+  if bucket.length
+
+    fin.push bucket
+
+  # z.j fin
+
+  # | \and,\cont,\tap,\edit,\err,\jam,\fix,\map,\forEach,\on,\onor => \and
+
+
+  self
 
 tightloop = (x) !->
 
-  state      = @[sig]
+  self = @self
 
-  {all,type} = state
+  if not self.morty
 
-  # zj all
+    self_amorty self
 
-  # I          = 0
+  state = self.morty
 
-  # put        = {continue:true,error:false,value:x}
+  cont = true
 
-  # nI         = all.length
-
-  # while I < nI
-
-  #   each = all[I]
-
-  #   switch I%2
-
-  #   | 0 => # and
-
-  #     J  = 0
-
-  #     nJ = each.length
-
-  #     do
-
-  #       fun = each[J]
-
-  #       if put.error
-
-  #         put = blunder fun,put,arguments
-
-  #       else
-
-  #         put = resolve fun,put,type,arguments
-
-  #       J += 1
-
-  #     while J < nJ
-
-  #     if put.error
-
-  #       I += 1
-
-  #     else
-
-  #       I += 2
-
-  #   | 1 => # or
-
-  #     J    = 0
-
-  #     nJ   = each.length
-
-  #     put.message = [put.message]
-
-  #     do
-
-  #       fun = each[J]
-
-  #       [patt] = fun
-
-  #       nput = resolve fun,put,type,arguments
-
-  #       if (patt is \alt) and nput.continue
-
-  #         put = nput
-  #         J   = nJ
-
-  #       else if nput.continue
-
-  #         put = nput
-  #         I   = nI # end entire loop
-  #         J   = nJ
-
-  #       else
-
-  #         if not (nput.message is undefined)
-
-  #           put.message.push nput.message
-
-  #         J += 1
-
-  #     while J < nJ
-
-  #     I += 1
-  return "from tightloop.ls"
-  # return put
 
 
 module.exports = tightloop

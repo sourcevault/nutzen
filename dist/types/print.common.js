@@ -65,9 +65,10 @@ print.input_fault = function(arg$){
   }
 };
 show_chain = function(data){
-  var init, last, middle, start_chain;
-  init = data[0], last = data[1];
-  middle = R.tail(init);
+  var chain_data, last, flattened_chain, middle, start_chain;
+  chain_data = data[0], last = data[1];
+  flattened_chain = chain_data.flat(Infinity).reverse();
+  middle = R.tail(flattened_chain);
   if (middle.length) {
     start_chain = R.join("\n")(
     R.map(R.join(""))(
@@ -77,7 +78,7 @@ show_chain = function(data){
       return line;
     })(
     function(bulk){
-      bulk[0].unshift(init[0]);
+      bulk[0].unshift(flattened_chain[0]);
       return bulk;
     }(
     R.splitEvery(2)(
@@ -86,7 +87,7 @@ show_chain = function(data){
     })(
     middle)))))));
   } else {
-    start_chain = ' ' + init[0];
+    start_chain = ' ' + flattened_chain[0];
   }
   return l(lit([start_chain, "." + last, "(xx)", " <-- error here"], [c.grey, c.warn, c.er3, c.er3]));
 };
@@ -95,23 +96,25 @@ show_name = function(extra, type){
   return l(lit(["[" + pkgname + ":v" + pkgversion + "]", type, extra], [c.er2, c.er2, c.er2]));
 };
 print.input_fault.andor = function(arg$, method_name){
-  var type, info;
+  var type, info, txt;
   type = arg$[0], info = arg$[1];
   show_name("." + info[1]);
   l("");
   show_chain(info);
   l("");
-  switch (type) {
-  case 'arg_count':
-    l(c.pink(" no value passed.\n\n", " minimum of 1 argument of function type is needed."));
-    break;
-  case 'not_function':
-    l(c.er1("  one of the argument is not a function."));
-  }
+  txt = (function(){
+    switch (type) {
+    case 'arg_count':
+      return " minimum of 1 argument of function type is needed.";
+    case 'not_function':
+      return " one of the argument is not a function.";
+    }
+  }());
+  l(c.er3(txt));
   l("");
   l(c.grey(" expected type signature :"));
   l("");
-  l(type_color(" " + method_name + " :: ((fun|[fun,..]),..,..)"));
+  l(type_color(" " + method_name + " :: fun,..,.."));
   return l("");
 };
 print.input_fault.custom = function(arg$){
@@ -145,22 +148,27 @@ print.input_fault.map = function(arg$){
   return l("");
 };
 print.input_fault['catch'] = function(arg$){
-  var type, info;
-  type = arg$[0], info = arg$[1];
+  var patt, info;
+  patt = arg$[0], info = arg$[1];
   show_name(".catch");
+  l("");
+  switch (patt) {
+  case 'arg_count':
+  case 'not_function':
+    l(c.pink(" only accepts 1 argument of type function."));
+  }
   l("");
   show_chain(info);
   l("");
-  l(c.white(" expected type signature :"));
+  l(c.grey(" expected type signature :"));
   l("");
-  l(type_color(" catch :: (function|undefined)"));
+  l(type_color(" catch :: (function|void)"));
   return l("");
 };
 x$ = on_dtype = {};
-x$.string = "(string|number,function)";
-x$.array = "(string|[number....],function)";
-x$.object = "(object{*:function})";
-x$.single_array = "(['and'|'alt',string|[string,...],INC{hoplon.type}],...])";
+x$.string = "(string|number),function";
+x$.array = "[(string|number),..],function";
+x$.object = "object{*:function}";
 print.input_fault.on = function(arg$){
   var patt, loc, eType, lines, key, val, dtype;
   patt = arg$[0], loc = arg$[1];
@@ -172,7 +180,7 @@ print.input_fault.on = function(arg$){
       return 'inputError';
     }
   }());
-  show_name(".on", "[" + eType + "] ");
+  show_name("." + loc[1], "[" + eType + "] ");
   l("");
   show_chain(loc);
   l("");
@@ -184,7 +192,7 @@ print.input_fault.on = function(arg$){
       l(c.er3("  unable to pattern match on user input."));
       break;
     case 'arg_count':
-      l(c.er3("  minimum of 2 arguments required."));
+      l(c.er3("  only accepts 1 or 2 arguments."));
     }
     l("");
     l(c.grey(" types that may match :"));
@@ -193,7 +201,7 @@ print.input_fault.on = function(arg$){
       var ref$, results$ = [];
       for (key in ref$ = on_dtype) {
         val = ref$[key];
-        results$.push(type_color(" - .on :: " + val));
+        results$.push(type_color(" - ." + loc[1] + (" :: " + val)));
       }
       return results$;
     }()).join("\n\n");
@@ -201,7 +209,7 @@ print.input_fault.on = function(arg$){
     break;
   default:
     dtype = on_dtype[patt];
-    l(lit([" .on", " :: ", dtype, " <-- " + patt + " signature."], [c.warn, c.white, c.ok, c.grey]));
+    l(lit([" ." + loc[1], " :: ", dtype, " <-- expected signature."], [c.ok, c.ok, c.ok, c.ok]));
   }
   return l("");
 };

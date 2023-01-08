@@ -8,7 +8,7 @@ oxo = require \../guard/main
 
 internal = require \./internal
 
-{custom,define,cache} = internal
+{custom,define,cache_def} = internal
 
 be = custom
 
@@ -16,142 +16,146 @@ be = custom
 
 # first column is the function name, second column is error message.
 
-# props =
-#   [\obj \Object]
-#   [\arr \Array]
-#   [\undef \Undefined]
-#   [\null \Null]
-#   [\num \Number]
-#   [\str \String]
-#   [\fun \Function]
-#   [\bool \Boolean]
-#   [\objerr \Error]
+non_map_props =
+  [\undef \Undefined]
+  [\null \Null]
+  [\num \Number]
+  [\str \String]
+  [\fun \Function]
+  [\bool \Boolean]
+  [\objerr \Error]
 
-# nonmap = R.map do
-#   ([name]) -> name
-#   R.drop 2,props
+props =
+  [\obj \Object]
+  [\arr \Array]
+  ...non_map_props
 
-# base = (type) -> (UFO) ->
 
-#   if ((R.type UFO) is type)
+base = (type) -> (UFO) ->
 
-#     {continue:true,error:false,value:UFO}
+  if ((R.type UFO) is type)
 
-#   else
+    {continue:true,error:false,value:UFO}
 
-#     str = R.toLower "not #{type}"
+  else
 
-#     {error:true,continue:false,message:str,value:UFO}
+    str = R.toLower "not #{type}"
 
-# not_base = (type) -> (UFO) ->
+    {error:true,continue:false,message:str,value:UFO}
 
-#   if ((R.type UFO) is type)
+not_base = (type) -> (UFO) ->
 
-#     str = R.toLower "is #{type}"
+  if ((R.type UFO) is type)
 
-#     {error:true,continue:false,message:str,value:UFO}
+    str = R.toLower "is #{type}"
 
-#   else
+    {error:true,continue:false,message:str,value:UFO}
 
-#     {continue:true,error:false,value:UFO}
+  else
 
-# # ------------------------------------------------------
+    {continue:true,error:false,value:UFO}
 
-# undefnull = (UFO) ->
+# ------------------------------------------------------
 
-#   if ((R.type UFO) in [\Undefined \Null])
+undefnull = (UFO) ->
 
-#     return {continue:true,error:false,value:UFO}
-#   else
+  if ((R.type UFO) in [\Undefined \Null])
 
-#     return {continue:false,error:true,message:"not undefined or null",value:UFO}
+    return {continue:true,error:false,value:UFO}
+  else
 
-# cache.def.add undefnull
+    return {continue:false,error:true,message:"not undefined or null",value:UFO}
 
-# #--------------------------------------------------------
+cache_def.add undefnull
 
-# F = base \Arguments
+# --------------------------------------------------------
 
-# define.basis \arg,F
+F = base \Arguments
 
-# be.arg = F
+define.basis \arg,F
 
-# #-----------------------------
+be.arg = F
 
-# pop = (msg) -> msg.pop! ; msg
+# -----------------------------
 
-# #-----------------------------
+be.not = (F) ->
 
-# be.not = (F) ->
+  V = be F
 
-#   V = be F
+  be (x) -> not (V.auth x).continue
 
-#   be (x) -> not (V.auth x).continue
+# --------------------------------------------------------
 
-# #--------------------------------------------------------
+be.undefnull = be undefnull
 
-# be.undefnull = be undefnull
+be.not.undefnull = be.not undefnull
 
-# be.not.undefnull = be.not undefnull
+# --------------------------------------------------------
 
-# #--------------------------------------------------------
+# be.maybe = (F) -> ((be F).or be.undef).err (msg) -> msg.pop! ; msg
 
-# be.maybe = (F) -> ((be F).or be.undef).err pop
-
-# #-----------------------------
+# -----------------------------
 
 # be.list  = (F) -> be.arr.map F
 
-# be.not[uic] = print.inner
+# -----------------------------
 
-# be.list[uic] = print.inner
+be.known = {}
 
-# be.maybe[uic] = print.inner
+for [name,type] in props
 
-# #-----------------------------
+  A = base type
 
-# be.known = {}
+  base name,A
 
-# for [name,type] in props
+  define.basis name,A
 
-#   A = base type
+  be[name] = A
 
-#   base name,A
+  #----------------------------
 
-#   define.basis name,A
+  B = not_base type
 
-#   be[name] = A
+  define.basis name,B
 
-#   #----------------------------
+  be.not[name] = B
 
-#   B = not_base type
+  #----------------------------
 
-#   define.basis name,B
+  C = define.basis.empty name
 
-#   be.not[name] = B
-
-#   #----------------------------
-
-#   C = define.basis.empty name
-
-#   be.known[name] = C
+  be.known[name] = C
 
 #------------------------------
 
-#------------------------------
+# for [name] in non_map_props
+
+#   be.maybe[name] = be.maybe be[name]
 
 
-# .map noop
-# .on [\foo],noop
-# .or noop
+# be.maybe.obj = be.obj.or be.undef
+
+# be.maybe.arr = be.arr.or be.undef
+
+# ------------------------------
+
+V = be.arr
+
+.and ->
+.or ->
+.on 0,->
+# .and ->
+# .try!
+# .edit null
+# .onor 0,->
+# .catch ->
+
+# V.auth 4
+
 # .and noop
 # .try!
 
 # .and noop
-# .try!
-
-# .and noop
-# .catch null
 
 # .map noop
 # .edit noop
@@ -191,20 +195,6 @@ be = custom
 #     [\and,\remote,be.arr]
 #     [\alt,[\remotefold,\remotehost],be.undefnull]
 #    ]
-
-# # ------------------------------------------------------------------
-
-
-
-# for name in nonmap
-
-#   be.maybe[name] = be.maybe be[name]
-
-# # ------------------------------------------------------------------
-
-# be.maybe.obj = be.obj.or be.undef
-
-# be.maybe.arr = be.arr.or be.undef
 
 # # ------------------------------------------------------------------
 

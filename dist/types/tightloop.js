@@ -1,4 +1,4 @@
-var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, execKey, execTop, map, forEach, upon, resolve, tightloop;
+var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, execKey, execTop, map, forEach, upon, resolve, self_amorty, tightloop;
 pc = require("./print.common");
 com = pc.com, pkgname = pc.pkgname, sig = pc.sig;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
@@ -521,10 +521,46 @@ resolve = function(fun, put, dtype, args){
     return put;
   }
 };
+self_amorty = function(self){
+  var flaty, current, I, fin, bucket, i$, to$, item;
+  flaty = new Array(self.index + 1);
+  current = self.all;
+  I = self.index;
+  while (-1 < I) {
+    flaty[I] = current.node;
+    current = current.back;
+    --I;
+  }
+  fin = [];
+  bucket = [];
+  for (i$ = 0, to$ = flaty.length; i$ < to$; ++i$) {
+    I = i$;
+    item = flaty[I];
+    switch (item[0]) {
+    case 'or':
+    case 'alt':
+      if (bucket.length) {
+        fin.push(bucket);
+        bucket = [];
+      }
+      fin.push(item);
+      break;
+    default:
+      bucket.push(item);
+    }
+  }
+  if (bucket.length) {
+    fin.push(bucket);
+  }
+  return self;
+};
 tightloop = function(x){
-  var state, all, type;
-  state = this[sig];
-  all = state.all, type = state.type;
-  return "from tightloop.ls";
+  var self, state, cont;
+  self = this.self;
+  if (!self.morty) {
+    self_amorty(self);
+  }
+  state = self.morty;
+  cont = true;
 };
 module.exports = tightloop;

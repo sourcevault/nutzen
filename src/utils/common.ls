@@ -60,7 +60,29 @@ z.n = ->
 
   console.log ...args
 
-z.p = (obj)-> console.dir Object.getPrototypeOf obj
+z.p = (obj)->
+
+  cont = true
+
+  disp = []
+
+  current = obj
+
+  while cont
+
+    disp.push obj
+
+    cp = obj.__proto__
+
+    if cp is null
+
+      cont = false
+
+    obj = cp
+
+  disp.pop!
+
+  z disp
 
 # --------------------------------------------------------------------------------------
 
@@ -83,7 +105,7 @@ cc = {}
   ..er2   = (txt) -> "\x1B[38;5;13m#{txt}\x1B[39m"
   ..er3   = (txt) -> "\x1B[38;5;1m#{txt}\x1B[39m"
   ..warn  = (txt) -> "\x1B[38;5;11m#{txt}\x1B[39m"
-  ..pink  = (txt) -> '\u001b[35m#{txt}\u001b[39m'
+  ..pink  = (txt) -> "\u001b[35m#{txt}\u001b[39m"
   ..blue  = (txt) -> "\x1B[38;5;12m#{txt}\x1B[39m"
   ..white = (txt) -> "\x1B[37m#{txt}\x1B[39m"
   ..grey  = (txt) -> "\x1B[38;5;8m#{txt}\x1B[39m"
@@ -211,9 +233,16 @@ tupnest_recurse = (a,index = 0) ->
 
   if index is (a.length - 1) then return a[index]
 
-  fin = [a[index],tupnest_recurse(a,index+1)]
+  ot = a[index]
 
-  fin
+  if (R.type a[index]) is \Array
+
+    [...ot,tupnest_recurse(a,index+1)]
+
+  else 
+
+    [ot,tupnest_recurse(a,index+1)]
+
 
 tupnest = -> tupnest_recurse arguments,0
 

@@ -72,25 +72,26 @@ print.input_fault = ([method_name,data]) ->
 
 show_chain = (data) ->
 
-  [init,last] = data
+  [chain_data,last] = data
 
-  middle = R.tail init
+  flattened_chain = (chain_data.flat Infinity).reverse!
+
+  middle = R.tail flattened_chain
 
   if middle.length
 
     start_chain = middle
     |> R.map (each) -> ".#{each}(..)"
     |> R.splitEvery 2
-    |> (bulk) -> (bulk[0].unshift init[0]);bulk
+    |> (bulk) -> (bulk[0].unshift flattened_chain[0]);bulk
     |> R.map (line) -> (line.unshift ' '); line
     |> R.tap (x) ->
     |> R.map R.join ""
     |> R.join "\n"
 
-
   else
 
-    start_chain = ' ' + init[0]
+    start_chain = ' ' + flattened_chain[0]
 
 
   l lit do
@@ -113,16 +114,12 @@ print.input_fault.andor = ([type,info],method_name)->
 
   l ""
 
-  switch type
-  | \arg_count =>
+  txt = switch type
+  | \arg_count    => " minimum of 1 argument of function type is needed."
 
-    l c.pink do
-      " no value passed.\n\n"
-      " minimum of 1 argument of function type is needed."
+  | \not_function => " one of the argument is not a function."
 
-  | \not_function =>
-
-    l c.er1 "  one of the argument is not a function."
+  l c.er3 txt
 
   l ""
 
@@ -130,7 +127,7 @@ print.input_fault.andor = ([type,info],method_name)->
 
   l ""
 
-  l type_color " #{method_name} :: ((fun|[fun,..]),..,..)"
+  l type_color " #{method_name} :: fun,..,.."
 
   l ""
 
@@ -177,9 +174,17 @@ print.input_fault.map = ([patt,loc]) ->
 
   l ""
 
-print.input_fault.catch = ([type,info]) ->
+
+print.input_fault.catch = ([patt,info]) ->
 
   show_name ".catch"
+
+  l ""
+
+  switch patt
+  | \arg_count,\not_function =>
+
+    l c.pink " only accepts 1 argument of type function."
 
   l ""
 
@@ -187,22 +192,20 @@ print.input_fault.catch = ([type,info]) ->
 
   l ""
 
-  l c.white " expected type signature :"
+  l c.grey " expected type signature :"
 
   l ""
 
-  l type_color " catch :: (function|undefined)"
+  l type_color " catch :: (function|void)"
 
   l ""
 
 
 
 on_dtype = {}
-  ..string       = "(string|number,function)"
-  ..array        = "(string|[number....],function)"
-  ..object       = "(object{*:function})"
-  ..single_array = "(['and'|'alt',string|[string,...],INC{hoplon.type}],...])"
-
+  ..string       = "(string|number),function"
+  ..array        = "[(string|number),..],function"
+  ..object       = "object{*:function}"
 
 print.input_fault.on = ([patt,loc])->
 
@@ -210,7 +213,7 @@ print.input_fault.on = ([patt,loc])->
   | \typeError => \typeError
   | otherwise  => \inputError
 
-  show_name ".on","[#{eType}] "
+  show_name ".#{loc[1]}","[#{eType}] "
 
   l ""
 
@@ -228,7 +231,7 @@ print.input_fault.on = ([patt,loc])->
 
     | \arg_count =>
 
-      l c.er3 "  minimum of 2 arguments required."
+      l c.er3 "  only accepts 1 or 2 arguments."
 
     l ""
 
@@ -236,8 +239,7 @@ print.input_fault.on = ([patt,loc])->
 
     l ""
 
-
-    lines = [type_color (" - .on :: #{val}") for key,val of on_dtype].join "\n\n"
+    lines = [type_color (" - ." + loc[1] + " :: #{val}") for key,val of on_dtype].join "\n\n"
 
     l lines
 
@@ -247,8 +249,8 @@ print.input_fault.on = ([patt,loc])->
     dtype = on_dtype[patt]
 
     l lit do
-      [" .on"," :: ",dtype," <-- #{patt} signature."]
-      [c.warn,c.white,c.ok,c.grey]
+      [" .#{loc[1]}", " :: ",dtype," <-- expected signature."]
+      [  c.ok,   c.ok,        c.ok,                      c.ok]
 
   l ""
 
@@ -283,7 +285,6 @@ print.log = ->
   # lit ["{.*} ",prop.join " "],[c.warn,c.grey]
 
   lit [pkgname],[c.warn]
-
 
 
 same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit','tap','forEach','wrap']
