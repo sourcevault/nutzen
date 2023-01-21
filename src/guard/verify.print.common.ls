@@ -2,13 +2,15 @@ ext                             = require "./print.common"
 
 {com,print,modflag}             = ext
 
-{z,R,common_symbols,zj,version} = com
+{z,R,common_symbols,zj,version,tupnest,l} = com
 
 htypes                          = com.common_symbols.htypes
 
 V = {}
 
 export {...ext,verify:V}
+
+NumIsInt = Number.isInteger
 
 customTypeoOf = (unknown) ->
 
@@ -22,7 +24,17 @@ customTypeoOf = (unknown) ->
 
     return type
 
+  | \Number =>
+
+    if (NumIsInt unknown)
+      if ( unknown > -1)
+        return \pos_int
+      return \int
+
+    return \Number
+
   | otherwise => return type
+
 
 V.def = (args) ->
 
@@ -36,8 +48,9 @@ V.def = (args) ->
 
 V.num = (num) ->
 
-  switch R.type num
-  | \Number => return \num
+  switch customTypeoOf num
+  | \pos_int     => return \num
+  | \int,\number => return \fault.num
   | \Array  =>
     for v in num
       if not ((typeof v) is \number)
@@ -55,6 +68,8 @@ array2obj = (arr)->
 
   ob
 
+isA = Array.isArray
+
 multi_object = (fun2map,ob)->
 
   if not ((customTypeoOf ob) is \Object)
@@ -65,7 +80,7 @@ multi_object = (fun2map,ob)->
 
   for index,item of ob
 
-    if not (Number.isInteger Number index)
+    if not (NumIsInt Number index)
       continue
 
     switch R.type item
@@ -73,9 +88,9 @@ multi_object = (fun2map,ob)->
       a_item = item
     | \Function  =>
       a_item = [item]
-    | otherwise  => return [\fault,[\ob_inner_array,index]]
+    | otherwise  => return [\fault,[\ob.key_value_not_array,index]]
 
-    if Array.isArray a_item[0]
+    if isA a_item[0]
       clean = a_item
     else
       clean = [a_item]
@@ -88,7 +103,13 @@ multi_object = (fun2map,ob)->
 
       id = fun2map item_inner
 
-      if id[0] is \fault then return [\fault,[id[1],(index+'.'+k)]]
+      [status] = id
+
+      if (status is \fault)
+
+        capsule = tupnest.concat id,[index,k]
+
+        return capsule
 
       tup.push id
 
@@ -100,30 +121,36 @@ fun2map = {}
 
 fun2map.arwh_ob = (item_inner) ->
 
-  if not (Array.isArray item_inner)
+  if not (isA item_inner)
 
-    return [\fault,\ob_inner_not_array]
+    return tupnest \fault,[\ob.inner_not_array]
 
-  switch item_inner.length
+  if (item_inner.length < 1)
+    return tupnest \fault,[\ob.few_args]
+
+  if (item_inner.length > 2)
+    return tupnest \fault,[\ob.many_args]
+
+  cat = item_inner.length
+
+  switch cat
   | 1 =>
 
     [whatdo] = item_inner
 
-    validator = void
-
-  | otherwise =>
+  | 2 =>
 
     [validator,whatdo] = item_inner
 
   tup = []
 
-  switch customTypeoOf validator
+  if cat is 2
 
-  | \Function     => tup.push [\f,validator]
-  | \htypes       => tup.push [\v,validator]
-  | \Undefined    => tup.push [\b,true]
-  | \Boolean      => tup.push [\b,validator]
-  | otherwise     => return [\fault,\ob_inner_array_validator]
+    switch customTypeoOf validator
+
+    | \Function     => tup.push [\f,validator]
+    | \htypes       => tup.push [\v,validator]
+    | otherwise     => return tupnest \fault,[\ob.inner_array_validator]
 
   switch customTypeoOf whatdo
 
@@ -133,56 +160,64 @@ fun2map.arwh_ob = (item_inner) ->
 
   tup
 
-ret_void = -> void
+fun2map.arcap_ob = (item_inner) ->
 
-fun2map.arpar_ob = (item_inner) ->
+  if not (isA item_inner)
+    return tupnest \fault,[\ob.inner_not_array]
 
-  if not (Array.isArray item_inner)
-    return [\fault,\ob_inner_not_array]
+  if (item_inner.length < 1)
+    return tupnest \fault,[\ob.few_args]
+
+  if (item_inner.length > 3)
+    return tupnest \fault,[\ob.many_args]
 
   switch item_inner.length
   | 1 =>
     [whatdo] = item_inner
-    validator = true
-    lastview  = ret_void
+    cat = 1
   | 2 =>
-    [lastview,whatdo] = item_inner
-    validator = true
-  | otherwise =>
+    [validator,whatdo] = item_inner
+    cat = 2
+  | 3 =>
     [validator,lastview,whatdo] = item_inner
+    cat = 3
 
   tup = []
-
-  switch customTypeoOf validator
-
-  | \Function     => tup.push [\f,validator]
-  | \htypes       => tup.push [\v,validator]
-  | \Undefined    => tup.push [\b,true]
-  | \Boolean      => tup.push [\b,validator]
-  | otherwise     => return [\fault,\ob_inner_array_validator]
-
-
-  switch R.type lastview
-  | \Function        => tup.push lastview
-  | otherwise        => return [\fault,\ob_inner_lastview]
 
   switch customTypeoOf whatdo
 
   | \Function     => tup.push [\f,whatdo]
   | \htypes       => tup.push [\v,whatdo]
   | otherwise     => tup.push [\s,whatdo]
+
+  if cat isnt 1
+
+    switch customTypeoOf validator
+
+    | \Function     => tup.push [\f,validator]
+    | \htypes       => tup.push [\v,validator]
+    | otherwise     => return tupnest \fault,\ob.inner_array_validator,[cat]
+
+
+  if cat is 3
+
+    switch R.type lastview
+    | \Function        => tup.push lastview
+    | otherwise        => return tupnest \fault,[\ob.inner_lastview]
 
   tup
 
 V.arwh_ob = (ob) ->
 
-  multi_object fun2map.arwh_ob,ob
+  da = multi_object fun2map.arwh_ob,ob
+
+  da
 
 V.ar_ob = (ob)->
 
   if not ((customTypeoOf ob) is \Object)
 
-    return [\fault,[\ar_ob_not_object]]
+    return tupnest \fault,[\ob_not_object]
 
   ret = {}
 
@@ -225,6 +260,7 @@ V.ar = (fname,args) ->
     ret.push array2obj num
   | \fault        => return [\fault,[\first]]
   | \fault.array  => return [\fault,[\array]]
+  | \fault.num    => return [\fault,[\pos_int]]
 
   switch customTypeoOf fun
   | \Function     => ret.push [\f,fun]
@@ -270,6 +306,7 @@ numfunfun = (args) ->
     val = array2obj num
   | \fault        => return [\fault,[\first]]
   | \fault.array  => return [\fault,[\array]]
+  | \fault.num    => return [\fault,[\pos_int]]
 
   ret = []
 
@@ -284,9 +321,10 @@ numfunfun = (args) ->
 
   [\ok,[type,[val,ret]]]
 
+
 V.arwh = (fname,args) ->
 
-  if (args.length is 1) and (fname in [\arwh \arwhn \arma])
+  if (args.length is 1) and (fname in [\arwh \arwhn \arcap])
 
     return V.arwh_ob args[0]
 
@@ -298,15 +336,17 @@ V.arwh = (fname,args) ->
 
   numfunfun args
 
-V.arpar_ob = (ob) ->
+V.arcap_ob = (ob) ->
 
-  multi_object fun2map.arpar_ob,ob
+  fin = multi_object fun2map.arcap_ob,ob
 
-V.arpar = (fname,args) ->
+  fin
+
+V.arcap = (fname,args) ->
 
   if (args.length is 1)
 
-    return V.arpar_ob args[0]
+    return V.arcap_ob args[0]
 
   if (args.length < 2)
     return [\fault,[\few_args]]
@@ -314,17 +354,21 @@ V.arpar = (fname,args) ->
   if (args.length > 4)
     return [\fault,[\many_args]]
 
+  # 2,3,4
+  # 1,->
+    # 1,->,->
+  # 1,->,->,->
 
   switch args.length
   | 2 =>
     [raw_num,whatdo] = args
-    validator = true
-    lastview = ret_void
+    cat = 2
   | 3 =>
     [raw_num,validator,whatdo] = args
-    lastview = ret_void
+    cat = 3
   | 4 =>
     [raw_num,validator,lastview,whatdo] = args
+    cat = 4
 
   switch V.num raw_num
   | \num          =>
@@ -333,61 +377,65 @@ V.arpar = (fname,args) ->
   | \array        =>
     type = \a
     num = array2obj raw_num
-  | \fault        => return [\fault,[\first]]
-  | \fault.array  => return [\fault,[\array]]
+  | \fault        => return [\fault,[\num,cat]]
+  | \fault.array  => return [\fault,[\num_array,cat]]
 
   ret = []
-
-  switch customTypeoOf validator
-  | \Function     => ret.push [\f,validator]
-  | \htypes       => ret.push [\v,validator]
-  | \Undefined    => ret.push [\b,true]
-  | \Boolean      => ret.push [\b,validator]
-  | otherwise     => return [\fault,[\second]]
-
-  switch customTypeoOf lastview
-  | \Function     => ret.push lastview
-  | otherwise        => return [\fault,\ob_inner_lastview]
 
   switch customTypeoOf whatdo
   | \Function     => ret.push [\f,whatdo]
   | otherwise     => ret.push [\s,whatdo]
 
-  out = 
-    *\ok
-     *type
-       *num
-        ret
+  if cat isnt 2
 
-  out
+    switch customTypeoOf validator
+    | \Function     => ret.push [\f,validator]
+    | \htypes       => ret.push [\v,validator]
+    | otherwise     => return [\fault,[\validator,cat]]
+
+  if cat is 4
+    switch customTypeoOf lastview
+    | \Function     => ret.push lastview
+    | otherwise        => return [\fault,[\lastview,cat]]
+
+  send = tupnest \ok,type,num,ret
+
+  send
 
 
-V.par = (fname,args) ->
+V.cap = (fname,args) ->
 
-  if (args.length < 3)
+  if (args.length < 2)
     return [\fault,[\few_args]]
 
   if (args.length > 3)
     return [\fault,[\many_args]]
 
-  [validator,ap,lastview] = args
+  switch args.length
+  | 2 =>
+    [validator,exec] = args
+    cat = 2
+  | 3 =>
+    [validator,lastview,exec] = args
+    cat = 3
 
   ret = []
+
+  type = customTypeoOf exec
+
+  switch type
+  | \Function     => ret.push [\f,exec]
+  | otherwise     => ret.push [\s,exec]
 
   switch customTypeoOf validator
   | \Function     => ret.push [\f,validator]
   | \htypes       => ret.push [\v,validator]
-  | otherwise     => return [\fault,[\validator]]
+  | otherwise     => return [\fault,[\validator,cat]]
 
-  type = customTypeoOf ap
-
-  switch type
-  | \Function     => ret.push [\f,ap]
-  | otherwise     => ret.push [\s,ap]
-
-  switch customTypeoOf lastview
-  | \Function     => ret.push lastview
-  | otherwise     => return [\fault,[\lastview]]
+  if cat is 3
+    switch customTypeoOf lastview
+    | \Function     => ret.push lastview
+    | otherwise     => return [\fault,[\lastview]]
 
   [\ok,ret]
 
@@ -396,14 +444,14 @@ V.getvfun = (fname) ->
 
   switch fname
 
-  | \wh,\whn,\ma                      => V.wh
+  | \wh,\whn                          => V.wh
 
   | \ar,\arn                          => V.ar
 
   | \def                              => V.def
 
-  | \arpar                            => V.arpar
+  | \arcap                             => V.arcap
 
-  | \par                              => V.par
+  | \cap                               => V.cap
 
-  | \arwh,\arnwh,\arwhn,\arnwhn,\arma => V.arwh
+  | \arwh,\arnwh,\arwhn,\arnwhn,\arcap => V.arwh

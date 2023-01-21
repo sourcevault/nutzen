@@ -2,13 +2,11 @@
 
 - [Quick Example](#quick-examples-to-get-started)
 - [Introduction](#why-)
-- [Methods](#methods)
+- [Methods](#detailed-api-description)
      - [ar](#ar)
      - [wh](#wh)
-     - [ma](#ma)
-     - [arma](#arma)
-     - [par](#par)
-     - [arpar](#arpar)
+     - [cap](#cap)
+     - [arcap](#arcap)
      - [whn](#whn)
      - [arn](#arn)
      - [arwh](#arwh)
@@ -17,13 +15,12 @@
      - [arnwhn](#arnwhn)
      - [def](#def)
      - [clone](#clone)
-
-1. [Description and type in table](#description-and-type-in-table)
-1. [Namespaces](#Namespaces)
+- [Object Pattern](#object-pattern)
+- [Summary in Tabular Form](#summary-in-tabular-form)
+- [Namespaces](#Namespaces)
      - [immutable](#immutable)
      - [unary](#unary)
      - [debug](#debug)
-
 
 ##### ..quick examples to get started..
 
@@ -68,111 +65,193 @@ Guards are wrappers that are commonly found in functional programming languages,
 
 They also encourage efficient use of pattern matching to structure code and external API.
 
-#### Methods
-
-The API surface is purposefully kept large to cover all types of niche pattern matching usecases:
+The API surface is kept large to cover various forms of requirements :
 
 ```
-CORE   : ar,wh,arwh,ma,arma,par,arpar,def,clone
+CORE   : ar,wh,arwh,cap,arcap,def,clone
 EXTRAS : whn,arn,arwhn,arnwh,arnwhn
+```
+
+The document makes use of [Hindley-Milner](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system) notation, the below notes are provided for some quick guide :
+
+#### `⛔️ Note ⛔️`
+
+1. `number|[num...]` 👉🏼 This means either a number **or** an array of numbers.
+
+2. `pos_int|[pos_int...]` 👉🏼 same as (1) but instead of number you have positive integers.
+
+3. `(function|any)` 👉🏼 it means either a function or any value, the last argument of all `hoplon.guard` is of this type.
+
+4. `{ validator },{ execution }` 👉🏼 this shows that the function accepts two arguments, one if called the validator, and the other is called `execution` function.
+
+6. `{arglen}` 👉🏼 describes arguments that specify `argument.length` values to match.
+
+5. `(-> bool),(function|any)` 👉🏼 here the function accepts two arguments. The first one accepts a function with a return value of type `bool` while the second argument is `any`function or just `any` value.
+
+6. A summary of API and their argument specification has been provided in two [tables](summary-in-tabular-form) for quick reference.
+
+### Detailed API Description
+
+```
+[ LEGENDS ]
+
+PI  =    pos_int | [pos_int,...]
+FT  =  validator | hoplon.types
+FT  =  (-> bool) | hoplon.types
+FA  =   function | any
+ F  =   function
 ```
 
 ### `ar`
 
-`ar :: (number|[num...],function|any)`
+```
+✅ ar :: {arglen},{execution}
+↪️ ar :: (pos_int|[pos_int...]),(function|any)
+↪️ ar :: PI,FA
+✅ ar :: {object}
+```
+First argument can be an array of positive integer or just single positive integer, which describes how many arguments are acceptable before running the function in the second argument.
 
-First argument can be an any of number or just a number, which describes how many arguments are acceptable before running the function in the second argument.
-
-Second argument can also just be an any, in which case, we just return an any.
+Second argument can also just be an `any`, in which case, we just return an `any` without executing a function.
 
 ### `wh`
 
-`wh :: (function,function|any)`
+```
+✅ wh :: {validator},{execution}
+↪️ wh :: (hoplon.types|function),(function|any)
+↪️ wh :: (hoplon.types|(-> bool)),(function|any)
+↪️ wh :: FT,FA
+```
+First function should return a boolean, which determines if second function is run or not.
 
-first function should return a boolean, which determines if second function is run or not.
+`hoplon.types` validator can also be used.
 
-### `ma`
+### `cap`
 
-`ma :: { validator } -> { execution }`
+```
+✅ cap/2 :: {validator},{execution}
+↪️ cap/2 :: (hoplon.types|function),(function|any) 
+↪️ cap/2 :: (hoplon.types|(-> false|any)),(function|any)
+↪️ cap/2 :: FT,FA
+```
+```
+✅ cap/3 :: {validator},{handleError},{execution}
+↪️ cap/3 :: (hoplon.types|function),function,(function|any) 
+↪️ cap/3 :: (hoplon.types|(-> false|any)),function,(function|any)
+↪️ cap/3 :: FT,F,FA
+```
 
-➡️`:: function -> function|any`
+There are situations where the validator function does some side-effects ( eg. finding a file in a directory ) and there is a need to  **cap**ture the result of these side-effects as values.
 
-➡️`:: ( -> bool ) -> function|any`
+It's important to ensure two things :
 
-➡️`:: (function,function|any)`
+- validator doesn't run multiple times.
 
-There are times when the validator function does some side-effects ( eg. finding a file in a directory ).
+-  provide captured value from validator to the execution function.
 
-In situations like that we may need to ensure two things :
-
-- validator is run only **once**,
-
--  provide some value created to our validator function to the execution function ( second function ).
-
-`.ma` is just like `.wh` but gives us the option of ensuring both these conditions are met.
+`.cap` is just like `.wh` but gives us the option of ensuring both these conditions are met.
 
 -  return value of the validator function is sent to the execution function, as the first **argument**.
 
-If the validator function in `.ma` returns `null` then `hoplon` jumps to the next validator, in *any other value type including undefined and false*, `hoplon` **replaces** the value to the argument object to be provided to the execution function.
+If the validator function in `.cap` returns `false` then `hoplon.guard` jumps to the next validator, in *any other value type including undefined*, `hoplon` **adds** this value as the first argument to the execution function.
 
-### `arma`
+### `arcap`
 
-`arma :: {spans},{ validator },{ execution }`
+```
+✅ arcap/1 :: {object}
+✅ arcap/2 :: {arglen},{execution}
+✅ arcap/3 :: {arglen},{validator},{execution}
+✅ arcap/4 :: {arglen},{validator},{lastview},{execution}
+```
 
-Combines `.ar` and `.ma`, first argument can be a number or a array of number just like in `.ar`.
+`arcap` combines the operations of `.ar` and `.cap` while also accepting object notation.
 
-### `par`
+```
+✅ arcap/3 :: {arglen},{validator},{execution}
+↪️ arcap/3 :: (pos_int|[pos_int,...]),(hoplon.types|function),(function|any)
+↪️ arcap/3 :: (pos_int|[pos_int,...]),(hoplon.types|(-> false|any)),(function|any)
+↪️ arcap/3 :: PI,FT,FA
+```
 
-`par :: {spans},{ validator },{ execution },{handleError}`
+First argument can be an array of positive integer or just single positive integer , which describes how many arguments are acceptable before running the validator function in the second argument.
 
-`.par` is exactly like `.ma` but accepts a final error handling function, it's validator also **only accepts** a tuple as return value.
+`{validator}` can return `false|any` where `any` is treated as value to be captured to be used by `{execution}`.
 
-In the trivial case, validator functions return just `true` or `false`, but as we have to deal with more complicated situations, a better return signature would be a tuple, where the second value is relevant metadata (in case of error) or just data.
+in case `{validator}` is `hoplon.types` object, then the corrosponding `.value` is used as data to be captured by `{execution}`.
 
-If the `handleError` function returns `undefined` then `hoplon.guard` jumps to the next validator, *for any other value* **X** it terminates the loop and returns **X**.
+```
+✅ arcap/4 :: {arglen},{validator},{handleError},{execution}
+↪️ arcap/4 :: (pos_int|[pos_int,...]),(hoplon.types|function),(function|any)
+↪️ arcap/4 :: -----------------------,(hoplon.types|(-> false|any|[bool,any])),(-> void|any),(function|any)
+↪️ arcap/4 :: PI,FT,F,FA
+```
 
+In the trivial case, validator functions return just `true` or `false`, but as we have to deal with more complicated error handling scenarios, a better return signature would be a tuple, where the second value is relevant metadata (in case of error) or just data.
 
-### `arpar`
-
-`arpar :: {spans},{ validator },{ execution },{handleError}`
-
-`.arpar` is `.par` but also matches against number of arguments.
+If the `{handleError}` function returns `void` then `hoplon.guard` jumps to the next validator, *for any other value* **X** it terminates the loop and returns **X**.
 
 ### `whn`
 
-`whn :: (function,function|any)`
-
-Same as above but if the first function return `true` then the second function is **not** run.
+```
+✅ whn :: {validator},{execution}
+↪️ whn :: (hoplon.types|function),(function|any)
+↪️ whn :: (hoplon.types|(-> bool)),(function|any)
+↪️ whn :: FT,FA
+```
+Same as `wh` but `{execution}` runs if `{validator}` return `false`.
 
 ### `arn`
 
-`arn :: (number|[num...],function|any)`
-
-Same as `ar` but the functions added is only run if the argument.length **doesn't match** the values provided in the first argument to `arn`.
+```
+✅ arn :: {arglen},{execution}
+↪️ arn :: (pos_int|[pos_int...]),(function|any)
+↪️ arn :: PI,FA
+```
+Same as `ar` but the functions added is only run if the `arguments.length` **doesn't match** the values provided in `{arglen}`.
 
 ### `arwh`
 
-`arwh :: (number|[num...],function,function|any)`
+```
+✅ arwh :: {arglen},{validator},{execution}
+↪️ arwh :: (pos_int|[pos_int...]),(hoplon.types|function),(function|any)
+↪️ arwh :: ----------------------,(hoplon.types|(-> bool)),------------
+↪️ arwh :: PI,FT,FA
+```
 
 A combination of `ar` and `wh` operators, first argument is number of argument we are ready to accept, first function is a validator just like what we would use with `.wh` and last function is what would run if the first two conditions are met.
 
 ### `arwhn`
 
-`arwhn :: (number|[num...],function,function|any)`
+```
+✅ arwhn :: {arglen},{validator},{execution}
+↪️ arwhn :: (pos_int|[pos_int...]),(hoplon.types|function),(function|any)
+↪️ arwhn :: ----------------------,(hoplon.types|(-> bool)),------------
+↪️ arwhn :: PI,FT,FA
+```
 
 Just like `arwh` but only runs if the validator function return `false`.
 
 ### `arnwh`
 
-`arnwh :: (number|[num...],function,function|any)`
+```
+✅ arnwh :: {arglen},{validator},{execution}
+↪️ arnwh :: (pos_int|[pos_int...]),(hoplon.types|function),(function|any)
+↪️ arnwh :: ----------------------,(hoplon.types|(-> bool)),------------
+↪️ arnwh :: PI,FT,FA
+```
 
 Just like `arwh` but runs if the `ar` does not match and validator returns `true`.
 
 ### `arnwhn`
 
-`arnwhn :: (number|[num...],function,function|any)`
+```
+✅ arnwh :: {arglen},{validator},{execution}
+↪️ arnwh :: (pos_int|[pos_int...]),(hoplon.types|function),(function|any)
+↪️ arnwh :: ----------------------,(hoplon.types|(-> bool)),------------
+↪️ arnwh :: PI,FT,FA
+```
 
-Just like `arwh` but runs if both `ar` and `wh` do not match.
+Just like `arwh` but runs if **both** `ar` and `wh` do not match.
 
 ### `def`
 
@@ -190,81 +269,111 @@ Alongside the `hoplon.guard.immutable` namespace, `hoplon.guard` also has a hand
 
 When using fluent API pattern, the underlying object is kept by default to be mutable, to aid in efficiency, but there are rare situations where validator chains share a common parent chain.
 
-
 #### `⛔️ Notes ⛔️`
 
 - Each `hoplon.guard` object **always** has to end with a `.def`.
 
-- all the methods also accept **non-functions** as their last value, functionality was added to make it possible to easily return static values for efficient and easy pattern matching.
+- all the methods also accept **non-functions** as their last value, in case only static values are returned. 
 
 - `hoplon.guard` also accepts validators created using `hoplon.types`.
 
-- when creating large validator chains, you may want to 'reach' / 'use' the `.def` value to *short circuit* your pattern matching, in situation like that `.symdef` is provided, it allows using the `.def` function directly, it's important to note this is purely an *optimization concern*.
+##### why introduce functions like `arn`,`arwhn`, `arnwh` and `arnwhn` ?
 
-#### why introduce functions like `arwhn`, `arnwh` and `arnwhn` or even `arn` ?
-
-It's important to write as few simple functions as possible and reduce the overall number of `if..else`.
+It's important to write as few primitive functions as possible and reduce the overall number of `if..else`.
 
 These functions also completes the algebra of the core operators.
 
-##### Description and type in table
+##### Object Pattern
 
-- `exec` - execution function - once all the conditions are met, this function is run. The return value of this function is the return value of the `hoplon.guard` object.
+Instead of matching on arguments on different validators, we can use a single objects to match against argument number.
 
-- `errorfun` - error logic is expressed within this function.
+This feature is available to be used on `ar`,`arwh`,`arcap` and `arwhn`.
 
+Lets suppose we have the following example :
+
+```js
+var xop = hoplon.guard
+
+var show = xop
+.ar(1,() => console.log("one"));
+.ar(2,() => console.log("two"));
+.def()
+
+show(null); // one
+show(null,null); // two
+```
+
+we can rewrite it using an object:
+
+```js
+var xop = hoplon.guard
+
+var ob = {
+  1:() => console.log("one")
+  2:() => console.log("two")
+}
+
+var show = xop
+.ar(ob);
+.def()
+
+show(null); // one
+show(null,null); // two
+```
+
+##### Summary in Tabular Form
 ```
 [ LEGENDS ]
 
-arglen      👉🏼       number | [num...]
-validator   👉🏼  ( -> bool ) | { hoplon.types object }
-exec        👉🏼    function  | any
-errorfun    👉🏼    function 
+PI  =    pos_int | [pos_int,...]
+FT  =  validator | hoplon.types
+FT  =  (-> bool) | hoplon.types
+FA  =  function  | any
+ F  =  function
 
 🟢 Table 1 - method names and their types.
 
-METHOD NAME  EXPANDED            TYPES
+METHOD NAME  EXPANDED NAME         INPUT TYPE
 ----------------------------------------------------------------
-ar           args                arglen,exec
-wh           when                validator,exec
-whn          when not            validator,exec
-ma           match               validator,exec
-arn          args not            arglen,exec
-arma         args match          arglen,validator,exec
-arwh         args when           arglen,validator,exec
-arnwh        args not when       arglen,validator,exec
-arwhn        args when not       arglen,validator,exec
-arnwhn       args not when not   arglen,validator,exec
-par          par                 validator,exec,errorfun
-arpar        args par            arglen,validator,exec,errorfun
-
+ar           argument              PI,FA
+wh           when                  FT,FA
+whn          when not              FT,FA
+cap/2        capture               FT,FA
+cap/3        ...                   FT,F,FA
+arn          args not              PI,FA
+arcap/3      argument capture      PI,FT,FA
+arcap/4      ...                   PI,FT,F,FA
+arcap/2      ...                   PI,FA
+arwh         argument when         PI,FT,FA
+arnwh        argument not when     PI,FT,FA
+arwhn        argument when not     PI,FT,FA
+arnwhn       argument not when not PI,FT,FA
 ----------------------------------------------------------------
-def          default             (function|any)
+def          default               FA
 ----------------------------------------------------------------
 ```
 
 ```
 🟢 Table 2 - method types displayed with argument columns.
 
-METHOD NAME  TYPES
-             ARG 1       ARG 2       ARG 3       ARG 4
+METHOD PIME  TYPES
+             ARG 1       ARG 2       ARG 3        ARG 4
 ---------------------------------------------------------
-ar           arglen      exec
-wh           validator   exec
-whn          validator   exec
-ma           validator   exec
-arn          arglen      exec
-arwh         arglen      validator   exec
-arma         arglen      validator   exec
-arnwh        arglen      validator   exec
-arwhn        arglen      validator   exec
-arnwhn       arglen      validator   exec
-arpar        arglen      validator   exec        errorfun
-par          validator   exec        errorfun
+ar           arglen      execution                   
+wh           validator   execution                   
+whn          validator   execution                   
+cap/2        validator   execution                   
+cap/3        validator   execution                   
+arn          arglen      execution                   
+arwh         arglen      validator   execution       
+arcap/3      arglen      validator   execution       
+arcap/4      arglen      validator   handleError  execution
+arnwh        arglen      validator   execution       
+arwhn        arglen      validator   execution       
+arnwhn       arglen      validator   execution       
 
 def          function|any
 ```
-
 #### Namespaces
 
 ##### *immutable*

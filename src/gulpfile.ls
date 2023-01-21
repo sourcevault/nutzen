@@ -100,10 +100,13 @@ gulp.task \default, def
 gulp.task \watch,->
 
   gulp.watch do
-    ["./src","./test/*.ls"]
+    ["./src","./test/*/*.ls"]
     gulp.series \default,(done)->
 
-      ta = cp.execSync "node ./test/types/test10.js || exit 1"
+      # ta = cp.execSync "node ./test/types/test10.js || exit 1"
+
+      ta = cp.execSync "node ./test/guard/test7.js || exit 1"
+
       process.stdout.write ta.toString!
 
       done!

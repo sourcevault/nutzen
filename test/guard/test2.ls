@@ -8,7 +8,7 @@ name  = \test2
 
 path = (name) -> "../../dist/#{name}/main"
 
-guard = require path \guard
+xop = require path \guard
 
 com   = require path \utils
 
@@ -30,12 +30,13 @@ dum2 = (str) ->
   | \obj => \object
   | \map => \map
 
-V = guard
-.ma do
+V = xop
+.cap do
   dum2,\obj_or_map
 .def null
 
 out = V \obj
 
-if not (out is \obj_or_map)
+
+if (out isnt \obj_or_map)
   pf!

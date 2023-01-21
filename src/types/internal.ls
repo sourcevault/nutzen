@@ -92,15 +92,7 @@ proto       = {}
 
 #---------------------------------------------------------
 
-# \or \alt
-
 props = [\and \cont \tap \edit \err \jam \fix \try]
-
-wrap.rest = (type) -> -> guard.rest arguments,@self,type
-
-wrap.catch = -> guard.catch arguments,@self
-
-wrap.on = (type) -> -> guard.on arguments,@self,type
 
 proto.core.normal.prototype.wrap = ->
 
@@ -108,32 +100,57 @@ proto.core.normal.prototype.wrap = ->
 
   -> (F.auth.apply F,arguments).value
 
+wrap.rest = (type) -> -> guard.rest arguments,@self,type
+
 for val in props
 
   F = wrap.rest val
 
   proto.core.normal.prototype[val]  = F
 
-proto.core.normal.prototype.auth      = tightloop
+proto.core.normal.prototype.auth   = tightloop
 
-proto.core.normal.prototype[uic]      = print.log
+proto.core.normal.prototype[uic]   = print.log \core.normal
 
-proto.core.normal.prototype.catch     = wrap.catch
+proto.core.normal.prototype.catch  = -> guard.catch arguments,@self
 
-proto.core.functor.prototype          = Object.create proto.core.normal.prototype
+proto.core.functor.prototype       = Object.create proto.core.normal.prototype
 
-# proto.functor.prototype[uic]     = print.log
+wrap.on = (type) -> -> guard.on arguments,@self,type
 
-fp                               = proto.functor.prototype
+fp                                 = proto.core.functor.prototype
 
-fp.map                           = wrap.rest \map
+fp.map                             = wrap.rest \map
 
+fp.forEach                         = wrap.rest \forEach
 
-fp.forEach                       = wrap.rest \forEach
+fp.on                              = wrap.on \on
 
-fp.on                            = wrap.on \on
+fp.onor                            = wrap.on \onor
 
-fp.onor                          = wrap.on \onor
+fp[uic]                            = print.log \core.functor
+
+#---------------------------------------------------------
+
+proto.normal.prototype = Object.create proto.core.normal.prototype
+
+np = proto.normal.prototype
+
+np.or = wrap.rest \or
+
+np.alt = wrap.rest \alt
+
+np[uic]      = print.log \normal
+
+proto.functor.prototype = Object.create proto.core.functor.prototype
+
+fp = proto.functor.prototype
+
+fp.or = wrap.rest \or
+
+fp.alt = wrap.rest \alt
+
+fp[uic]      = print.log \functor
 
 #---------------------------------------------------------
 
@@ -390,9 +407,9 @@ guard.catch = xop.unary
 
 .arpar 1,
 
-  ([F],state) -> (R.type F) is \Function
+  ([F],state) -> ((R.type F) is \Function)
 
-  (__,state)->
+  (...,state)->
 
     E = tupnest do
       *new Error!,\input.fault
@@ -404,9 +421,9 @@ guard.catch = xop.unary
 
     loopError!
 
-  define.catch
+  ([F],skate) -> define.catch [\f,F],state
 
-.ar 0,(__,state) -> define.catch [R.identity],state
+.ar 0,(...,state) -> define.catch [\empty],state
 
 .arn [1,0],(__,state)->
 
@@ -450,8 +467,22 @@ guard.rest = xop # [\and \or \alt \cont \tap \edit \err \jam \fix \map]
        str:[type,state.str]
 
     switch data.type
-    | \obj,\arr,\arg => new proto.functor data
-    | otherwise      => new proto.normal data
+    | \obj,\arr,\arg =>
+
+      switch type
+      | \try      =>
+        new proto.core.functor data
+      | otherwise =>
+        new proto.functor data
+
+    | otherwise      =>
+
+      switch type
+      | \try      =>
+        new proto.core.normal data
+      | otherwise =>
+        new proto.normal data
+
 
 .def loopError
 

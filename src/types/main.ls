@@ -140,10 +140,12 @@ for [name,type] in props
 # ------------------------------
 
 V = be.arr
-
 .and ->
 .or ->
-.on 0,->
+.try!
+
+z V
+
 # .and ->
 # .try!
 # .edit null

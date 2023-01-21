@@ -276,15 +276,26 @@ getprop = (item) ->
 
 includes = R.flip R.includes
 
-sort = (x) -> x.sort(alpha_sort.ascending)
+sort = (x) -> x.sort alpha_sort.ascending
 
-print.log = ->
+print.log = (name) -> ->
+
+  switch name
+  | \functor      =>
+    str = '.mappable'
+  | \normal       =>
+    str = ''
+  | \core.functor =>
+    str = '.mappable:try'
+  | \core.normal  =>
+    str = ':try'
+
 
   # prop = sort (getprop @)
 
   # lit ["{.*} ",prop.join " "],[c.warn,c.grey]
 
-  lit [pkgname],[c.warn]
+  lit [pkgname +  str],[c.pink]
 
 
 same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit','tap','forEach','wrap']

@@ -237,8 +237,24 @@ includes = R.flip(R.includes);
 sort = function(x){
   return x.sort(alpha_sort.ascending);
 };
-print.log = function(){
-  return lit([pkgname], [c.warn]);
+print.log = function(name){
+  return function(){
+    var str;
+    switch (name) {
+    case 'functor':
+      str = '.mappable';
+      break;
+    case 'normal':
+      str = '';
+      break;
+    case 'core.functor':
+      str = '.mappable:try';
+      break;
+    case 'core.normal':
+      str = ':try';
+    }
+    return lit([pkgname + str], [c.pink]);
+  };
 };
 same = includes(['and', 'or', 'cont', 'jam', 'fix', 'err', 'map', 'on', 'alt', 'auth', 'edit', 'tap', 'forEach', 'wrap']);
 myflat = xop.wh(function(ob){

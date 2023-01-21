@@ -1,12 +1,13 @@
-var ext, com, print, modflag, z, R, common_symbols, zj, version, htypes, V, ref$, customTypeoOf, array2obj, multi_object, fun2map, ret_void, numfunfun, out$ = typeof exports != 'undefined' && exports || this;
+var ext, com, print, modflag, z, R, common_symbols, zj, version, tupnest, l, htypes, V, ref$, NumIsInt, customTypeoOf, array2obj, isA, multi_object, fun2map, numfunfun, out$ = typeof exports != 'undefined' && exports || this;
 ext = require("./print.common");
 com = ext.com, print = ext.print, modflag = ext.modflag;
-z = com.z, R = com.R, common_symbols = com.common_symbols, zj = com.zj, version = com.version;
+z = com.z, R = com.R, common_symbols = com.common_symbols, zj = com.zj, version = com.version, tupnest = com.tupnest, l = com.l;
 htypes = com.common_symbols.htypes;
 V = {};
 ref$ = out$;
 import$(ref$, ext);
 ref$.verify = V;
+NumIsInt = Number.isInteger;
 customTypeoOf = function(unknown){
   var type;
   type = R.type(unknown);
@@ -17,6 +18,14 @@ customTypeoOf = function(unknown){
       return 'htypes';
     }
     return type;
+  case 'Number':
+    if (NumIsInt(unknown)) {
+      if (unknown > -1) {
+        return 'pos_int';
+      }
+      return 'int';
+    }
+    return 'Number';
   default:
     return type;
   }
@@ -35,9 +44,12 @@ V.def = function(args){
 };
 V.num = function(num){
   var i$, len$, v;
-  switch (R.type(num)) {
-  case 'Number':
+  switch (customTypeoOf(num)) {
+  case 'pos_int':
     return 'num';
+  case 'int':
+  case 'number':
+    return 'fault.num';
   case 'Array':
     for (i$ = 0, len$ = num.length; i$ < len$; ++i$) {
       v = num[i$];
@@ -59,15 +71,16 @@ array2obj = function(arr){
   }
   return ob;
 };
+isA = Array.isArray;
 multi_object = function(fun2map, ob){
-  var ret, index, item, a_item, clean, tup, i$, to$, k, item_inner, id;
+  var ret, index, item, a_item, clean, tup, i$, to$, k, item_inner, id, status, capsule;
   if (!(customTypeoOf(ob) === 'Object')) {
     return ['fault', ['ob_not_object']];
   }
   ret = {};
   for (index in ob) {
     item = ob[index];
-    if (!Number.isInteger(Number(index))) {
+    if (!NumIsInt(Number(index))) {
       continue;
     }
     switch (R.type(item)) {
@@ -78,9 +91,9 @@ multi_object = function(fun2map, ob){
       a_item = [item];
       break;
     default:
-      return ['fault', ['ob_inner_array', index]];
+      return ['fault', ['ob.key_value_not_array', index]];
     }
-    if (Array.isArray(a_item[0])) {
+    if (isA(a_item[0])) {
       clean = a_item;
     } else {
       clean = [a_item];
@@ -90,8 +103,10 @@ multi_object = function(fun2map, ob){
       k = i$;
       item_inner = clean[k];
       id = fun2map(item_inner);
-      if (id[0] === 'fault') {
-        return ['fault', [id[1], index + '.' + k]];
+      status = id[0];
+      if (status === 'fault') {
+        capsule = tupnest.concat(id, [index, k]);
+        return capsule;
       }
       tup.push(id);
     }
@@ -101,34 +116,36 @@ multi_object = function(fun2map, ob){
 };
 fun2map = {};
 fun2map.arwh_ob = function(item_inner){
-  var whatdo, validator, tup;
-  if (!Array.isArray(item_inner)) {
-    return ['fault', 'ob_inner_not_array'];
+  var cat, whatdo, validator, tup;
+  if (!isA(item_inner)) {
+    return tupnest('fault', ['ob.inner_not_array']);
   }
-  switch (item_inner.length) {
+  if (item_inner.length < 1) {
+    return tupnest('fault', ['ob.few_args']);
+  }
+  if (item_inner.length > 2) {
+    return tupnest('fault', ['ob.many_args']);
+  }
+  cat = item_inner.length;
+  switch (cat) {
   case 1:
     whatdo = item_inner[0];
-    validator = void 8;
     break;
-  default:
+  case 2:
     validator = item_inner[0], whatdo = item_inner[1];
   }
   tup = [];
-  switch (customTypeoOf(validator)) {
-  case 'Function':
-    tup.push(['f', validator]);
-    break;
-  case 'htypes':
-    tup.push(['v', validator]);
-    break;
-  case 'Undefined':
-    tup.push(['b', true]);
-    break;
-  case 'Boolean':
-    tup.push(['b', validator]);
-    break;
-  default:
-    return ['fault', 'ob_inner_array_validator'];
+  if (cat === 2) {
+    switch (customTypeoOf(validator)) {
+    case 'Function':
+      tup.push(['f', validator]);
+      break;
+    case 'htypes':
+      tup.push(['v', validator]);
+      break;
+    default:
+      return tupnest('fault', ['ob.inner_array_validator']);
+    }
   }
   switch (customTypeoOf(whatdo)) {
   case 'Function':
@@ -142,49 +159,31 @@ fun2map.arwh_ob = function(item_inner){
   }
   return tup;
 };
-ret_void = function(){};
-fun2map.arpar_ob = function(item_inner){
-  var whatdo, validator, lastview, tup;
-  if (!Array.isArray(item_inner)) {
-    return ['fault', 'ob_inner_not_array'];
+fun2map.arcap_ob = function(item_inner){
+  var whatdo, cat, validator, lastview, tup;
+  if (!isA(item_inner)) {
+    return tupnest('fault', ['ob.inner_not_array']);
+  }
+  if (item_inner.length < 1) {
+    return tupnest('fault', ['ob.few_args']);
+  }
+  if (item_inner.length > 3) {
+    return tupnest('fault', ['ob.many_args']);
   }
   switch (item_inner.length) {
   case 1:
     whatdo = item_inner[0];
-    validator = true;
-    lastview = ret_void;
+    cat = 1;
     break;
   case 2:
-    lastview = item_inner[0], whatdo = item_inner[1];
-    validator = true;
+    validator = item_inner[0], whatdo = item_inner[1];
+    cat = 2;
     break;
-  default:
+  case 3:
     validator = item_inner[0], lastview = item_inner[1], whatdo = item_inner[2];
+    cat = 3;
   }
   tup = [];
-  switch (customTypeoOf(validator)) {
-  case 'Function':
-    tup.push(['f', validator]);
-    break;
-  case 'htypes':
-    tup.push(['v', validator]);
-    break;
-  case 'Undefined':
-    tup.push(['b', true]);
-    break;
-  case 'Boolean':
-    tup.push(['b', validator]);
-    break;
-  default:
-    return ['fault', 'ob_inner_array_validator'];
-  }
-  switch (R.type(lastview)) {
-  case 'Function':
-    tup.push(lastview);
-    break;
-  default:
-    return ['fault', 'ob_inner_lastview'];
-  }
   switch (customTypeoOf(whatdo)) {
   case 'Function':
     tup.push(['f', whatdo]);
@@ -194,16 +193,39 @@ fun2map.arpar_ob = function(item_inner){
     break;
   default:
     tup.push(['s', whatdo]);
+  }
+  if (cat !== 1) {
+    switch (customTypeoOf(validator)) {
+    case 'Function':
+      tup.push(['f', validator]);
+      break;
+    case 'htypes':
+      tup.push(['v', validator]);
+      break;
+    default:
+      return tupnest('fault', 'ob.inner_array_validator', [cat]);
+    }
+  }
+  if (cat === 3) {
+    switch (R.type(lastview)) {
+    case 'Function':
+      tup.push(lastview);
+      break;
+    default:
+      return tupnest('fault', ['ob.inner_lastview']);
+    }
   }
   return tup;
 };
 V.arwh_ob = function(ob){
-  return multi_object(fun2map.arwh_ob, ob);
+  var da;
+  da = multi_object(fun2map.arwh_ob, ob);
+  return da;
 };
 V.ar_ob = function(ob){
   var ret, index, item, to_add;
   if (!(customTypeoOf(ob) === 'Object')) {
-    return ['fault', ['ar_ob_not_object']];
+    return tupnest('fault', ['ob_not_object']);
   }
   ret = {};
   for (index in ob) {
@@ -252,6 +274,8 @@ V.ar = function(fname, args){
     return ['fault', ['first']];
   case 'fault.array':
     return ['fault', ['array']];
+  case 'fault.num':
+    return ['fault', ['pos_int']];
   }
   switch (customTypeoOf(fun)) {
   case 'Function':
@@ -313,6 +337,8 @@ numfunfun = function(args){
     return ['fault', ['first']];
   case 'fault.array':
     return ['fault', ['array']];
+  case 'fault.num':
+    return ['fault', ['pos_int']];
   }
   ret = [];
   switch (customTypeoOf(validator)) {
@@ -335,7 +361,7 @@ numfunfun = function(args){
   return ['ok', [type, [val, ret]]];
 };
 V.arwh = function(fname, args){
-  if (args.length === 1 && (fname === 'arwh' || fname === 'arwhn' || fname === 'arma')) {
+  if (args.length === 1 && (fname === 'arwh' || fname === 'arwhn' || fname === 'arcap')) {
     return V.arwh_ob(args[0]);
   }
   if (args.length < 3) {
@@ -346,13 +372,15 @@ V.arwh = function(fname, args){
   }
   return numfunfun(args);
 };
-V.arpar_ob = function(ob){
-  return multi_object(fun2map.arpar_ob, ob);
+V.arcap_ob = function(ob){
+  var fin;
+  fin = multi_object(fun2map.arcap_ob, ob);
+  return fin;
 };
-V.arpar = function(fname, args){
-  var raw_num, whatdo, validator, lastview, type, num, ret, out;
+V.arcap = function(fname, args){
+  var raw_num, whatdo, cat, validator, lastview, type, num, ret, send;
   if (args.length === 1) {
-    return V.arpar_ob(args[0]);
+    return V.arcap_ob(args[0]);
   }
   if (args.length < 2) {
     return ['fault', ['few_args']];
@@ -363,15 +391,15 @@ V.arpar = function(fname, args){
   switch (args.length) {
   case 2:
     raw_num = args[0], whatdo = args[1];
-    validator = true;
-    lastview = ret_void;
+    cat = 2;
     break;
   case 3:
     raw_num = args[0], validator = args[1], whatdo = args[2];
-    lastview = ret_void;
+    cat = 3;
     break;
   case 4:
     raw_num = args[0], validator = args[1], lastview = args[2], whatdo = args[3];
+    cat = 4;
   }
   switch (V.num(raw_num)) {
   case 'num':
@@ -383,34 +411,11 @@ V.arpar = function(fname, args){
     num = array2obj(raw_num);
     break;
   case 'fault':
-    return ['fault', ['first']];
+    return ['fault', ['num', cat]];
   case 'fault.array':
-    return ['fault', ['array']];
+    return ['fault', ['num_array', cat]];
   }
   ret = [];
-  switch (customTypeoOf(validator)) {
-  case 'Function':
-    ret.push(['f', validator]);
-    break;
-  case 'htypes':
-    ret.push(['v', validator]);
-    break;
-  case 'Undefined':
-    ret.push(['b', true]);
-    break;
-  case 'Boolean':
-    ret.push(['b', validator]);
-    break;
-  default:
-    return ['fault', ['second']];
-  }
-  switch (customTypeoOf(lastview)) {
-  case 'Function':
-    ret.push(lastview);
-    break;
-  default:
-    return ['fault', 'ob_inner_lastview'];
-  }
   switch (customTypeoOf(whatdo)) {
   case 'Function':
     ret.push(['f', whatdo]);
@@ -418,19 +423,56 @@ V.arpar = function(fname, args){
   default:
     ret.push(['s', whatdo]);
   }
-  out = ['ok', [type, [num, ret]]];
-  return out;
+  if (cat !== 2) {
+    switch (customTypeoOf(validator)) {
+    case 'Function':
+      ret.push(['f', validator]);
+      break;
+    case 'htypes':
+      ret.push(['v', validator]);
+      break;
+    default:
+      return ['fault', ['validator', cat]];
+    }
+  }
+  if (cat === 4) {
+    switch (customTypeoOf(lastview)) {
+    case 'Function':
+      ret.push(lastview);
+      break;
+    default:
+      return ['fault', ['lastview', cat]];
+    }
+  }
+  send = tupnest('ok', type, num, ret);
+  return send;
 };
-V.par = function(fname, args){
-  var validator, ap, lastview, ret, type;
-  if (args.length < 3) {
+V.cap = function(fname, args){
+  var validator, exec, cat, lastview, ret, type;
+  if (args.length < 2) {
     return ['fault', ['few_args']];
   }
   if (args.length > 3) {
     return ['fault', ['many_args']];
   }
-  validator = args[0], ap = args[1], lastview = args[2];
+  switch (args.length) {
+  case 2:
+    validator = args[0], exec = args[1];
+    cat = 2;
+    break;
+  case 3:
+    validator = args[0], lastview = args[1], exec = args[2];
+    cat = 3;
+  }
   ret = [];
+  type = customTypeoOf(exec);
+  switch (type) {
+  case 'Function':
+    ret.push(['f', exec]);
+    break;
+  default:
+    ret.push(['s', exec]);
+  }
   switch (customTypeoOf(validator)) {
   case 'Function':
     ret.push(['f', validator]);
@@ -439,22 +481,16 @@ V.par = function(fname, args){
     ret.push(['v', validator]);
     break;
   default:
-    return ['fault', ['validator']];
+    return ['fault', ['validator', cat]];
   }
-  type = customTypeoOf(ap);
-  switch (type) {
-  case 'Function':
-    ret.push(['f', ap]);
-    break;
-  default:
-    ret.push(['s', ap]);
-  }
-  switch (customTypeoOf(lastview)) {
-  case 'Function':
-    ret.push(lastview);
-    break;
-  default:
-    return ['fault', ['lastview']];
+  if (cat === 3) {
+    switch (customTypeoOf(lastview)) {
+    case 'Function':
+      ret.push(lastview);
+      break;
+    default:
+      return ['fault', ['lastview']];
+    }
   }
   return ['ok', ret];
 };
@@ -462,22 +498,21 @@ V.getvfun = function(fname){
   switch (fname) {
   case 'wh':
   case 'whn':
-  case 'ma':
     return V.wh;
   case 'ar':
   case 'arn':
     return V.ar;
   case 'def':
     return V.def;
-  case 'arpar':
-    return V.arpar;
-  case 'par':
-    return V.par;
+  case 'arcap':
+    return V.arcap;
+  case 'cap':
+    return V.cap;
   case 'arwh':
   case 'arnwh':
   case 'arwhn':
   case 'arnwhn':
-  case 'arma':
+  case 'arcap':
     return V.arwh;
   }
 };

@@ -1,7 +1,7 @@
 
-com                       = require "./common"
+com                       = require \./common
 
-com.binapi                = require "./binapi"
+com.binapi                = require \./binapi
 
 com.homepage              = \https://github.com/sourcevault/hoplon#readme.md
 

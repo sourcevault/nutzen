@@ -32,7 +32,7 @@ type_str = (x) ->
 
 
 V = xop.ar 1,
-  xop.ma do
+  xop.cap do
     type_num
     (x) -> x
   .def ["FROM UDEF"]
@@ -41,7 +41,7 @@ V = xop.ar 1,
 out = V \integer
 
 if not (out is \int)
-  pf ""
+  pf!
 
 out = V null
 
@@ -49,4 +49,4 @@ if ((R.type out) isnt \Array)
   pf ".ar not working"
 
 if (out[0] isnt "FROM UDEF")
-  pf ""
+  pf!

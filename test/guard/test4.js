@@ -26,17 +26,17 @@ type_str = function(x){
     return false;
   }
 };
-V = xop.ar(1, xop.ma(type_num, function(x){
+V = xop.ar(1, xop.cap(type_num, function(x){
   return x;
 }).def(["FROM UDEF"])).def(null);
 out = V('integer');
 if (!(out === 'int')) {
-  pf("");
+  pf();
 }
 out = V(null);
 if (R.type(out) !== 'Array') {
   pf(".ar not working");
 }
 if (out[0] !== "FROM UDEF") {
-  pf("");
+  pf();
 }

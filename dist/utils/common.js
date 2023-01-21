@@ -58,7 +58,7 @@ z.p = function(obj){
     obj = cp;
   }
   disp.pop();
-  return z(disp);
+  return console.dir(disp);
 };
 loopfault = function(){
   var loopError, apply, get;
@@ -191,6 +191,7 @@ create_stack = function(take_only, paths, init_txt){
 print_fail = function(filename){
   return function(message){
     var txt;
+    message == null && (message = "");
     l("[TEST ERROR] " + filename + ":");
     txt = (function(){
       switch (typeof message) {
@@ -224,6 +225,26 @@ tupnest_recurse = function(a, index){
 };
 tupnest = function(){
   return tupnest_recurse(arguments, 0);
+};
+tupnest.push = function(da, ta){
+  var current, cont, last_index;
+  current = da;
+  cont = true;
+  while (cont) {
+    last_index = current.length - 1;
+    if (Array.isArray(current[last_index])) {
+      current = current[last_index];
+    } else {
+      current.push(ta);
+      cont = false;
+    }
+  }
+  return da;
+};
+tupnest.concat = function(da, ta){
+  var cda;
+  cda = R.clone(da);
+  return tupnest.push(cda, ta);
 };
 ext = {
   z: z,

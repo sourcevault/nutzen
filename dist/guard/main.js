@@ -1,7 +1,7 @@
-var ext, com, verify, modflag, print, l, z, R, uic, binapi, resolve, unshift_resolve, UNDEC, ob, n, a, core, n_n, n_a, arn, arwhn, arnwh, arnwhn, arma, isArray, common_par, arpar, f_arpar, arwh, ar, tightloop, main, looper, handle, genfun, props, cat, getter, topcache, init, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ext, com, verify, modflag, print, l, z, R, uic, binapi, loopError, resolve, unshift_resolve, UNDEC, ob, n, a, core, n_n, n_a, arn, arwhn, arnwh, arnwhn, arcap, isArray, arwh, ar, tightloop, main, handle, genfun, props, cat, getter, topcache, init, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ext = require("./verify.print.common");
 com = ext.com, verify = ext.verify, modflag = ext.modflag, print = ext.print;
-l = com.l, z = com.z, R = com.R, uic = com.uic, binapi = com.binapi;
+l = com.l, z = com.z, R = com.R, uic = com.uic, binapi = com.binapi, loopError = com.loopError;
 resolve = function(F, A){
   var ftype, f;
   ftype = F[0], f = F[1];
@@ -101,11 +101,15 @@ a = function(fn){
 };
 core = {};
 core.wh = function(da, ta){
-  var ref$, vtype, vF, exec, cont, vd;
+  var exec, ref$, vtype, vF, cont, vd;
+  if (ta.length === 1) {
+    exec = ta[0];
+    return resolve(exec, da.arg);
+  }
   ref$ = ta[0], vtype = ref$[0], vF = ref$[1], exec = ta[1];
   switch (vtype) {
   case 'f':
-    cont = vF.apply(null, da.arg);
+    cont = vF.apply(void 8, da.arg);
     if (cont) {
       return resolve(exec, da.arg);
     }
@@ -115,16 +119,15 @@ core.wh = function(da, ta){
     if (vd['continue']) {
       return resolve(exec, vd.value);
     }
-    break;
-  case 'b':
-    if (vF) {
-      return resolve(exec, da.arg);
-    }
   }
   return UNDEC;
 };
 core.whn = function(da, ta){
-  var ref$, vtype, vF, exec, cont, vd;
+  var exec, ref$, vtype, vF, cont, vd;
+  if (ta.length === 1) {
+    exec = ta[0];
+    return resolve(exec, da.arg);
+  }
   ref$ = ta[0], vtype = ref$[0], vF = ref$[1], exec = ta[1];
   switch (vtype) {
   case 'f':
@@ -205,100 +208,102 @@ arnwhn.a = n_a(core.whn);
 core.arnwhn = function(da, ta){
   return arnwhn[ta[0]](da, ta[1]);
 };
-core.ma = function(da, ta){
-  var ref$, vtype, vF, exec, msg, vd;
-  ref$ = ta[0], vtype = ref$[0], vF = ref$[1], exec = ta[1];
+core.cap = function(da, ta){
+  switch (ta.length) {
+  case 3:
+    return core.cap[3](da, ta);
+  case 2:
+    return core.cap[2](da, ta);
+  case 1:
+    return resolve(ta[0], da.arg);
+  }
+};
+core.cap[2] = function(da, ta){
+  var exec, ref$, vtype, vF, ret, vd, narg;
+  exec = ta[0], ref$ = ta[1], vtype = ref$[0], vF = ref$[1];
   switch (vtype) {
   case 'f':
-    msg = vF.apply(void 8, da.arg);
-    switch (msg) {
-    case false:
-      break;
-    case void 8:
-      return;
-    default:
-      return unshift_resolve(exec, msg, da.arg);
+    ret = vF.apply(void 8, da.arg);
+    if (ret !== false) {
+      return unshift_resolve(exec, ret, da.arg);
     }
     break;
   case 'v':
     vd = vF.auth(da.arg);
     if (vd['continue']) {
       return unshift_resolve(exec, vd.value, da.arg);
+    } else {
+      narg = [vd.message, vd.path].concat(da.arg);
+      ret = lastview.apply(void 8, narg);
+      if (ret !== void 8) {
+        return ret;
+      }
     }
     break;
   case 'b':
-    if (vF !== false) {
-      return unshift_resolve(exec, vF, da.arg);
+    if (vF) {
+      return resolve(exec, da.arg);
     }
   }
   return UNDEC;
 };
-arma = {};
-arma.ob = ob(core.ma);
-arma.n = n(core.ma);
-arma.a = a(core.ma);
-core.arma = function(da, ta){
-  return arma[ta[0]](da, ta[1]);
-};
-isArray = Array.isArray;
-common_par = function(fname){
-  return function(da, ta){
-    var ref$, vtype, vF, lastview, exec, ret, cont, msg, lvret, vd;
-    ref$ = ta[0], vtype = ref$[0], vF = ref$[1], lastview = ta[1], exec = ta[2];
-    switch (vtype) {
-    case 'f':
-      ret = vF.apply(void 8, da.arg);
-      if (isArray(ret)) {
-        cont = ret[0], msg = ret[1];
-        if (cont) {
-          return unshift_resolve(exec, msg, da.arg);
-        } else {
-          lvret = lastview.apply(null, [msg].concat(arrayFrom$(da.arg)));
-        }
+core.cap[3] = function(da, ta){
+  var exec, ref$, vtype, vF, lastview, ret, cont, msg, narg, lvret, vd;
+  exec = ta[0], ref$ = ta[1], vtype = ref$[0], vF = ref$[1], lastview = ta[2];
+  switch (vtype) {
+  case 'f':
+    ret = vF.apply(void 8, da.arg);
+    if (isArray(ret)) {
+      cont = ret[0], msg = ret[1];
+      if (cont) {
+        return unshift_resolve(exec, msg, da.arg);
       } else {
-        if (ret) {
-          return resolve(exec, da.arg);
-        } else {
-          lvret = lastview.apply(void 8, da.arg);
-        }
+        narg = [msg].concat(da.arg);
+        lvret = lastview.apply(void 8, narg);
       }
-      if (lvret !== void 8) {
-        return ret;
-      }
-      break;
-    case 'v':
-      vd = vF.auth(da.arg);
-      if (vd['continue']) {
-        return unshift_resolve(exec, vd.value, da.arg);
-      } else {
-        ret = lastview.apply(null, [vd.message, vd.path].concat(arrayFrom$(da.arg)));
-        if (ret !== void 8) {
-          return ret;
-        }
-      }
-      break;
-    case 'b':
-      if (vF) {
+    } else {
+      if (ret) {
         return resolve(exec, da.arg);
       } else {
-        ret = lastview.apply(void 8, da.arg);
-        if (ret !== void 8) {
-          return ret;
-        }
+        lvret = lastview.apply(void 8, da.arg);
       }
     }
-    return UNDEC;
-  };
+    if (lvret !== void 8) {
+      return lvret;
+    }
+    break;
+  case 'v':
+    vd = vF.auth(da.arg);
+    if (vd['continue']) {
+      return unshift_resolve(exec, vd.value, da.arg);
+    } else {
+      narg = [vd.message, vd.path].concat(da.arg);
+      ret = lastview.apply(void 8, narg);
+      if (ret !== void 8) {
+        return ret;
+      }
+    }
+    break;
+  case 'b':
+    if (vF) {
+      return resolve(exec, da.arg);
+    } else {
+      ret = lastview.apply(void 8, da.arg);
+      if (ret !== void 8) {
+        return ret;
+      }
+    }
+  }
+  return UNDEC;
 };
-core.par = common_par('par');
-arpar = {};
-f_arpar = common_par('arpar');
-arpar.ob = ob(f_arpar);
-arpar.n = n(f_arpar);
-arpar.a = a(f_arpar);
-core.arpar = function(da, ta){
-  return arpar[ta[0]](da, ta[1]);
+arcap = {};
+arcap.ob = ob(core.cap);
+arcap.n = n(core.cap);
+arcap.a = a(core.cap);
+core.arcap = function(da, ta){
+  return arcap[ta[0]](da, ta[1]);
 };
+isArray = Array.isArray;
 arwh = {};
 arwh.ob = ob(core.wh);
 arwh.n = n(core.wh);
@@ -373,58 +378,74 @@ tightloop = function(state){
     }
   };
 };
-main = {};
-looper = function(state){
-  var instance, frozen;
-  instance = Object.create(main);
-  instance[modflag] = state;
-  frozen = Object.freeze(instance);
-  return frozen;
+main = function(self){
+  this.self = self;
+  return this;
 };
-handle = {};
-handle.fault = function(self, data, fname){
+main.prototype.clone = function(){
   var state, neo;
-  state = self[modflag];
-  print.route(['input', [new Error(), fname, data, state]]);
-  neo = Object.assign({}, state, {
-    fault: ['input', fname, data]
-  });
-  return looper(neo);
-};
-main.clone = function(){
-  var state, neo;
-  state = this[modflag];
+  state = this.self;
   neo = R.mergeRight(state, {
     fns: arrayFrom$(state.fns),
     str: arrayFrom$(state.str)
   });
-  return looper(neo);
+  return new main(neo);
 };
-handle.ok = function(self, data, fname){
-  var state, neo_data, fns, neo;
-  state = self[modflag];
+main.prototype[uic] = print.log.proto;
+handle = {
+  def: {
+    fault: void 8,
+    ok: void 8
+  },
+  fault: void 8,
+  ok: void 8
+};
+handle.fault = function(state, data, fname){
+  var neo;
+  print.route(['input', [new Error(), fname, data, state]]);
+  neo = Object.assign({}, state, {
+    fault: ['input', fname, data]
+  });
+  return new main(neo);
+};
+genfun = function(vfun, fname){
+  return function(){
+    var state, out, status, data;
+    state = this.self;
+    if (state === void 8) {
+      print.route(['state_undef', [new Error(), fname]]);
+      return;
+    }
+    if (state.fault) {
+      return this;
+    }
+    out = vfun(fname, arguments);
+    status = out[0], data = out[1];
+    return handle[status](state, data, fname);
+  };
+};
+handle.ok = function(state, data, fname){
+  var neo_data, fns, neo;
   neo_data = [fname, data];
-  if (state.immutable || state.str.length === 0) {
+  if (state.str.length === 0) {
     fns = state.fns.concat([neo_data]);
     neo = R.mergeRight(state, {
       fns: fns,
       str: state.str.concat(fname)
     });
-    return looper(neo);
+    return new main(neo);
   } else {
     state.fns.push(neo_data);
     state.str.push(fname);
-    return self;
+    return new main(state);
   }
 };
-handle.def = {};
 handle.def.fault = function(){
   return null;
 };
 handle.def.fault[uic] = print.log.def_fault;
-handle.def.ok = function(self, data){
-  var state, neo, F;
-  state = self[modflag];
+handle.def.ok = function(state, data){
+  var neo, F;
   neo = R.mergeRight(state, {
     def: data,
     str: state.str
@@ -435,26 +456,9 @@ handle.def.ok = function(self, data){
   }
   return F;
 };
-genfun = function(vfun, fname){
-  return function(){
-    var state, out, zone, data;
-    state = this[modflag];
-    if (state === void 8) {
-      print.route(['state_undef', [new Error(), fname]]);
-      return;
-    }
-    if (state.fault) {
-      return this;
-    }
-    out = vfun(fname, arguments);
-    zone = out[0], data = out[1];
-    return handle[zone](this, data, fname);
-  };
-};
-main[uic] = print.log.proto;
-main.def = function(){
+main.prototype.def = function(){
   var state, ref$, ___, data;
-  state = this[modflag];
+  state = this.self;
   if (state === undefined) {
     print.route(['state_undef', [new Error(), 'def']]);
     return undefined;
@@ -463,53 +467,54 @@ main.def = function(){
     return handle.def.fault;
   }
   ref$ = verify.def(arguments), ___ = ref$[0], data = ref$[1];
-  return handle.def.ok(this, data);
+  return handle.def.ok(state, data);
 };
-props = ['ar', 'wh', 'ma', 'arma', 'par', 'arpar', 'whn', 'arn', 'arwh', 'arwhn', 'arnwh', 'arnwhn'];
+props = ['ar', 'wh', 'whn', 'arn', 'cap', 'arwh', 'arcap', 'arwhn', 'arnwh', 'arnwhn'];
 R.reduce(function(ob, prop){
   var F;
   F = verify.getvfun(prop);
-  ob[prop] = genfun(F, prop);
+  ob.prototype[prop] = genfun(F, prop);
   return ob;
 }, main, props);
 cat = {};
-cat.opt = new Set(['unary', 'immutable', 'debug']);
+cat.opt = new Set(['unary', 'debug']);
 cat.methods = new Set(props.concat(['def']));
 getter = function(data, key){
-  var path, lock, str, vr, npath, sorted;
-  path = data.path, lock = data.lock, str = data.str, vr = data.vr;
+  var path, lock, str, sorted_path, npath, copypath, sorted, ndata;
+  path = data.path, lock = data.lock, str = data.str, sorted_path = data.sorted_path;
   if (lock) {
-    print.route(['setting', [new Error(), 'path_locked', vr, key]]);
+    print.route(['setting', [new Error(), 'path_locked', sorted_path, key]]);
     return null;
   }
   if (cat.opt.has(key)) {
     if (R.includes(key, path)) {
-      print.route(['setting', [new Error(), 'already_in_path', vr, key]]);
+      print.route(['setting', [new Error(), 'already_in_path', sorted_path, key]]);
       return null;
     } else {
       npath = path.concat(key);
-      sorted = R.clone(npath).sort();
-      return [
-        true, {
-          path: sorted,
-          lock: false,
-          str: sorted.join("."),
-          vr: npath
-        }
-      ];
+      copypath = npath.concat();
+      sorted = copypath.sort();
+      ndata = {
+        path: sorted,
+        lock: false,
+        str: sorted.join("."),
+        sorted_path: npath
+      };
+      return [true, ndata];
     }
   } else if (cat.methods.has(key)) {
-    return [
-      true, {
-        path: path,
-        lock: true,
-        str: str,
-        vr: vr,
-        key: key
-      }
-    ];
+    ndata = {
+      path: path,
+      lock: true,
+      str: str,
+      sorted_path: sorted_path,
+      key: key
+    };
+    return [true, ndata];
+  } else if (key === 'doc') {
+    return print.docstring;
   } else {
-    print.route(['setting', [new Error(), 'not_in_opts', vr, key]]);
+    print.route(['setting', [new Error(), 'not_in_opts', sorted_path, key]]);
     return null;
   }
 };
@@ -520,30 +525,34 @@ init = {
   def: null,
   fault: false,
   unary: false,
-  immutable: false
+  debug: false
 };
 entry = function(data, args){
-  var str, has, path, lock, vr, key, ob, i$, len$, ke, put;
+  var str, has, path, lock, key, ob, i$, len$, ke, put;
+  if (data === null) {
+    return loopError();
+  }
   str = data.str;
   has = topcache[str];
   if (has) {
     return has[data.key].apply(has, args);
   }
-  path = data.path, lock = data.lock, vr = data.vr, key = data.key;
+  path = data.path, lock = data.lock, key = data.key;
   ob = {};
   for (i$ = 0, len$ = path.length; i$ < len$; ++i$) {
     ke = path[i$];
     ob[ke] = true;
   }
-  put = looper(Object.assign({}, init, ob));
+  data = Object.assign({}, init, ob);
+  put = new main(data);
   topcache[str] = put;
   return put[key].apply(put, args);
 };
 pkg = binapi(entry, getter, {
   path: [],
   lock: false,
-  vr: [],
-  str: [],
+  sorted_path: [],
+  str: "",
   key: null
 }, print.log.prox);
 module.exports = pkg;

@@ -1,4 +1,5 @@
-{uic,noop,R} = require "./common"
+{uic,noop,R,z} = require "./common"
+
 
 generic_log = (state) -> state
 
@@ -31,6 +32,8 @@ ap = (__,___,args) ->
 
   @fun @state,args
 
+isA = Array.isArray
+
 get = (__,ukey,___) ->
 
   switch ukey
@@ -42,15 +45,18 @@ get = (__,ukey,___) ->
 
   sortir = @uget @state,ukey
 
-  if Array.isArray sortir
+  if isA sortir
+
     [cont,state] = sortir
+
     if not cont
       return state
   else
+
     state = sortir
 
   data =
-    cache:{}
+   *cache:{}
     log:@log
     fun:@fun
     state:state

@@ -2,7 +2,7 @@ ext = require "./verify.print.common"
 
 {com,verify,modflag,print} = ext
 
-{l,z,R,uic,binapi} = com
+{l,z,R,uic,binapi,loopError} = com
 
 #---------------------------------------------------
 
@@ -102,13 +102,19 @@ core = {}
 
 core.wh = (da,ta) ->
 
+  if ta.length is 1
+
+    [exec] = ta
+
+    return resolve exec,da.arg
+
   [[vtype,vF],exec] = ta
 
   switch vtype
 
   | \f =>
 
-    cont = vF ...da.arg
+    cont = vF.apply void,da.arg
 
     if cont
 
@@ -122,15 +128,15 @@ core.wh = (da,ta) ->
 
       return resolve exec,vd.value
 
-  | \b =>
-
-    if vF
-
-      return resolve exec,da.arg
-
   UNDEC
 
 core.whn = (da,ta) ->
+
+  if ta.length is 1
+
+    [exec] = ta
+
+    return resolve exec,da.arg
 
   [[vtype,vF],exec] = ta
 
@@ -214,7 +220,9 @@ arnwh.n = n_n core.wh
 
 arnwh.a = n_a core.wh
 
-core.arnwh = (da,ta) -> arnwh[ta[0]] da,ta[1]
+core.arnwh = (da,ta) ->
+
+  arnwh[ta[0]] da,ta[1]
 
 arnwhn = {}
 
@@ -226,23 +234,27 @@ core.arnwhn = (da,ta) -> arnwhn[ta[0]] da,ta[1]
 
 # -----
 
-core.ma = (da,ta) ->
+core.cap = (da,ta) ->
 
-  [[vtype,vF],exec] = ta
+  switch ta.length
+  | 3 => core.cap.3 da,ta
+  | 2 => core.cap.2 da,ta
+  | 1 => resolve ta[0],da.arg
+
+core.cap.2 = (da,ta) ->
+
+  [exec,[vtype,vF]] = ta
 
   switch vtype
 
   | \f =>
 
-    msg = vF.apply void,da.arg
+    ret = vF.apply void,da.arg
 
-    switch msg
-    | false     => void
-    | void      => return void
-    | otherwise =>
-      return unshift_resolve exec,msg,da.arg
+    if ret isnt false
+      return unshift_resolve exec,ret,da.arg
 
-  | \v =>
+  | \v => # hoplon validator
 
     vd = vF.auth da.arg
 
@@ -250,31 +262,27 @@ core.ma = (da,ta) ->
 
       return unshift_resolve exec,vd.value,da.arg
 
+    else
+
+      narg = [vd.message,vd.path].concat da.arg
+
+      ret = lastview.apply void,narg
+
+      if (ret isnt void) then return ret
+
   | \b =>
 
-    if vF isnt false
+    if vF
 
-      return unshift_resolve exec,vF,da.arg
+      return resolve exec,da.arg
 
   UNDEC
 
-arma = {}
+core.cap.3 = (da,ta) ->
 
-arma.ob = ob core.ma
+  [exec,[vtype,vF],lastview] = ta
 
-arma.n = n core.ma
-
-arma.a = a core.ma
-
-core.arma = (da,ta) -> arma[ta[0]] da,ta[1]
-
-isArray = Array.isArray
-
-common_par = (fname)-> (da,ta) ->
-
-  [[vtype,vF],lastview,exec] = ta
-
-  switch vtype
+  switch vtype  
   | \f =>
 
     ret = vF.apply void,da.arg
@@ -289,7 +297,9 @@ common_par = (fname)-> (da,ta) ->
 
       else
 
-        lvret = lastview msg,...da.arg
+        narg = [msg].concat da.arg
+
+        lvret = lastview.apply void,narg
 
     else
 
@@ -301,7 +311,7 @@ common_par = (fname)-> (da,ta) ->
 
         lvret = lastview.apply void,da.arg
 
-    if (lvret isnt void) then return ret
+    if (lvret isnt void) then return lvret
 
   | \v => # hoplon validator
 
@@ -313,7 +323,9 @@ common_par = (fname)-> (da,ta) ->
 
     else
 
-      ret = lastview vd.message,vd.path,...da.arg
+      narg = [vd.message,vd.path].concat da.arg
+
+      ret = lastview.apply void,narg
 
       if (ret isnt void) then return ret
 
@@ -331,21 +343,18 @@ common_par = (fname)-> (da,ta) ->
 
   UNDEC
 
-core.par = common_par \par
 
-arpar = {}
+arcap = {}
 
-f_arpar = common_par \arpar
+arcap.ob = ob core.cap
 
-arpar.ob = ob f_arpar
+arcap.n = n core.cap
 
-arpar.n = n f_arpar
+arcap.a = a core.cap
 
-arpar.a = a f_arpar
+core.arcap = (da,ta) -> arcap[ta[0]] da,ta[1]
 
-core.arpar = (da,ta) ->
-
-  arpar[ta[0]] da,ta[1]
+isArray = Array.isArray
 
 # .arwh  ------------
 
@@ -357,7 +366,9 @@ arwh.n = n core.wh
 
 arwh.a = a core.wh
 
-core.arwh = (da,ta) -> arwh[ta[0]] da,ta[1]
+core.arwh = (da,ta) ->
+
+  arwh[ta[0]] da,ta[1]
 
 # .ar  ------------
 
@@ -441,90 +452,38 @@ tightloop = (state) -> ->
 
   if def then return resolve def,arguments
 
-
 #---------------------------------------------------
 
-main = {}
+main = (self) -> @self = self; @
 
-looper = (state) ->
+main.prototype.clone = ->
 
-  instance = Object.create main
+  state = @self
 
-  instance[modflag] = state
+  neo = R.mergeRight state,{fns:[...state.fns],str:[...state.str]}
 
-  frozen = Object.freeze instance
+  new main neo
 
-  frozen
+main.prototype[uic] = print.log.proto
 
-handle = {}
+handle =
+  def:
+    fault:void
+    ok:void
+  fault: void
+  ok: void
 
-handle.fault = (self,data,fname) ->
-
-  state = self[modflag]
+handle.fault = (state,data,fname) ->
 
   print.route [\input,[(new Error!),fname,data,state]]
 
   neo = Object.assign {},state,{fault:[\input,fname,data]}
 
-  looper neo
-
-main.clone = ->
-
-  state = @[modflag]
-
-  neo = R.mergeRight state,{fns:[...state.fns],str:[...state.str]}
-
-  looper neo
-
-handle.ok = (self,data,fname)->
-
-  state = self[modflag]
-
-  neo_data = [fname,data]
-
-  if (state.immutable) or (state.str.length is 0)
-
-    fns = state.fns.concat [neo_data]
-
-    neo = R.mergeRight state,{fns:fns,str:(state.str.concat fname)}
-
-    looper neo
-
-  else
-
-    state.fns.push neo_data
-
-    state.str.push fname
-
-    self
-
-handle.def = {}
-
-handle.def.fault = -> null
-
-handle.def.fault[uic] = print.log.def_fault
-
-handle.def.ok = (self,data) ->
-
-  state = self[modflag]
-
-  neo = R.mergeRight do
-    state
-    {
-      def:data
-      str:state.str
-    }
-
-  F  = tightloop neo
-
-  if state.debug
-    F[uic] = print.log.wrap neo
-
-  F
+  new main neo
 
 genfun = (vfun,fname) -> ->
 
-  state = @[modflag]
+  state = @self
 
   if state is void
 
@@ -536,17 +495,56 @@ genfun = (vfun,fname) -> ->
 
   out = vfun fname,arguments
 
-  [zone,data] = out
+  [status,data] = out
 
-  handle[zone] @,data,fname
+  handle[status] state,data,fname
 
 #---------------------------------------------------
 
-main[uic] = print.log.proto
+handle.ok = (state,data,fname)->
 
-main.def =  ->
+  neo_data = [fname,data]
 
-  state = @[modflag]
+  if state.str.length is 0
+
+    fns = state.fns.concat [neo_data]
+
+    neo = R.mergeRight state,{fns:fns,str:(state.str.concat fname)}
+
+    new main neo
+
+  else
+
+    state.fns.push neo_data
+
+    state.str.push fname
+
+    new main state
+
+handle.def.fault = -> null
+
+handle.def.fault[uic] = print.log.def_fault
+
+handle.def.ok = (state,data) ->
+
+  neo = R.mergeRight do
+    state
+    {
+      def:data
+      str:state.str
+    }
+
+  F  = tightloop neo
+
+  if state.debug
+
+    F[uic] = print.log.wrap neo
+
+  F
+
+main.prototype.def =  ->
+
+  state = @self
 
   if state is undefined
 
@@ -558,18 +556,16 @@ main.def =  ->
 
   [___,data] = verify.def arguments
 
-  handle.def.ok @,data
+  handle.def.ok state,data
 
 props =
   *\ar
    \wh
-   \ma
-   \arma
-   \par
-   \arpar
    \whn
    \arn
+   \cap
    \arwh
+   \arcap
    \arwhn
    \arnwh
    \arnwhn
@@ -582,7 +578,7 @@ R.reduce do
 
     F = verify.getvfun prop
 
-    ob[prop] = genfun F,prop
+    ob.prototype[prop] = genfun F,prop
 
     ob
 
@@ -593,19 +589,21 @@ R.reduce do
 
 cat = {}
 
-cat.opt = new Set [\unary,\immutable,\debug]
+cat.opt = new Set [\unary,\debug]
 
 cat.methods = new Set props.concat [\def]
 
-# Set(12) {'ma', 'arma', 'wh', 'ar', 'whn', 'arn', 'arwh', 'arnwh', 'arwhn', 'arnwhn', 'arpar', 'def'}
+# Set(12) {'cap', 'arcap', 'wh', 'ar', 'whn', 'arn', 'arwh', 'arnwh', 'arwhn', 'arnwhn', 'def'}
 
 getter = (data,key) ->
 
-  {path,lock,str,vr} = data
+  # vr -->  [ 'debug' ],[ 'debug', 'unary' ]
+
+  {path,lock,str,sorted_path} = data
 
   if lock
 
-    print.route [\setting,[(new Error!),\path_locked,vr,key]]
+    print.route [\setting,[(new Error!),\path_locked,sorted_path,key]]
 
     return null
 
@@ -613,7 +611,7 @@ getter = (data,key) ->
 
     if (R.includes key,path)
 
-      print.route [\setting,[(new Error!),\already_in_path,vr,key]]
+      print.route [\setting,[(new Error!),\already_in_path,sorted_path,key]]
 
       null
 
@@ -621,19 +619,38 @@ getter = (data,key) ->
 
       npath = path.concat key
 
-      sorted = (R.clone npath).sort!
+      copypath = npath.concat!
 
-      [true,{path:sorted,lock:false,str:(sorted.join "."),vr:npath}]
+      sorted = copypath.sort!
+
+      ndata =
+       *path:sorted
+        lock:false
+        str:(sorted.join ".")
+        sorted_path:npath
+
+      [true,ndata]
 
   else if cat.methods.has key
 
-    [true,{path:path,lock:true,str:str,vr:vr,key:key}]
+    ndata =
+      *path:path
+       lock:true
+       str:str
+       sorted_path:sorted_path
+       key:key
+
+    [true,ndata]
+
+  else if (key is \doc)
+
+    print.docstring
 
   else
 
-    print.route [\setting,[(new Error!),\not_in_opts,vr,key]]
+    print.route [\setting,[(new Error!),\not_in_opts,sorted_path,key]]
 
-    null
+    return null
 
 topcache = {}
 
@@ -643,9 +660,12 @@ init =
   def      :null
   fault    :false
   unary    :false
-  immutable:false
+  debug    :false
+
 
 entry = (data,args) ->
+
+  if data is null then return loopError!
 
   str = data.str
 
@@ -654,24 +674,23 @@ entry = (data,args) ->
   if has
     return has[data.key] ...args
 
-  {path,lock,vr,key} = data
+  {path,lock,key} = data
 
-  ob = {} # { debug: true },{debug: true, immutable:true}
+  ob = {} # {unary:true},{unary:true,immutable:true}
 
   for ke in path
     ob[ke] = true
 
-  put = looper Object.assign do
-    {}
-    init
-    ob
+  data = Object.assign {},init,ob
+
+  put = new main data
 
   topcache[str] = put
 
   put[key] ...args
 
 pkg = binapi do
-  entry,getter,{path:[],lock:false,vr:[],str:[],key:null}
+  entry,getter,{path:[],lock:false,sorted_path:[],str:"",key:null}
   print.log.prox
 
 

@@ -1,5 +1,5 @@
-var ref$, uic, noop, R, generic_log, veri, ap, get, pub;
-ref$ = require("./common"), uic = ref$.uic, noop = ref$.noop, R = ref$.R;
+var ref$, uic, noop, R, z, generic_log, veri, ap, isA, get, pub;
+ref$ = require("./common"), uic = ref$.uic, noop = ref$.noop, R = ref$.R, z = ref$.z;
 generic_log = function(state){
   return state;
 };
@@ -35,6 +35,7 @@ veri = function(arglen, fun, uget, state, ulog){
 ap = function(__, ___, args){
   return this.fun(this.state, args);
 };
+isA = Array.isArray;
 get = function(__, ukey, ___){
   var ret, sortir, cont, state, data, P;
   switch (ukey) {
@@ -46,7 +47,7 @@ get = function(__, ukey, ___){
     return ret;
   }
   sortir = this.uget(this.state, ukey);
-  if (Array.isArray(sortir)) {
+  if (isA(sortir)) {
     cont = sortir[0], state = sortir[1];
     if (!cont) {
       return state;

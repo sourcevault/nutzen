@@ -73,7 +73,7 @@ z.p = (obj)->
     disp.push obj
 
     cp = obj.__proto__
-
+     
     if cp is null
 
       cont = false
@@ -82,7 +82,7 @@ z.p = (obj)->
 
   disp.pop!
 
-  z disp
+  console.dir disp
 
 # --------------------------------------------------------------------------------------
 
@@ -213,7 +213,7 @@ create_stack = (take_only,paths = [],init_txt) ->
 
 # --------------------------------------------------------------------------------------
 
-print_fail = (filename) -> (message) !->
+print_fail = (filename) -> (message = "") !->
 
   l do
     "[TEST ERROR] #{filename}:"
@@ -245,6 +245,36 @@ tupnest_recurse = (a,index = 0) ->
 
 
 tupnest = -> tupnest_recurse arguments,0
+
+
+tupnest.push = (da,ta)->
+
+  current = da
+
+  cont = true
+
+  while cont
+
+    last_index = current.length - 1
+
+    if (Array.isArray current[last_index])
+
+      current = current[last_index]
+
+    else
+
+      current.push ta
+
+      cont = false
+
+  da
+
+tupnest.concat = (da,ta) ->
+
+  cda = R.clone da
+
+  tupnest.push cda,ta
+
 
 ext =
   *z:z
