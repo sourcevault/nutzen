@@ -1,5 +1,5 @@
 var com, print, modflag, z, zj, j, l, R, c, esp, create_stack, lit, version, help, show_stack, object_name, pkgname, arrange, show_chain, map_fname_to_ctypes, txt, arcap_txt, cap_txt, StrArgLen, defc, StrEType, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-com = require("../../dist/utils/main.js");
+com = require("../../dist/utils/main.js").com;
 print = {};
 out$.com = com = com;
 out$.print = print = print;
@@ -399,7 +399,6 @@ print.validator_return_not_array = function(ta){
 };
 print.route = function(ta){
   var ECLASS, data;
-  ta;
   ECLASS = ta[0], data = ta[1];
   switch (ECLASS) {
   case 'input':

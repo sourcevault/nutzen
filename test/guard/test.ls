@@ -10,7 +10,7 @@ path = (name) -> "../../dist/#{name}/main"
 
 guard = require path \guard
 
-com   = require path \utils
+{com} = require path \utils
 
 {l,zj,z,c,binapi,print_fail,create_stack} = com
 

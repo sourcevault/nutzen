@@ -1,4 +1,4 @@
-var ref$, com, print, z, l, R, j, deep_freeze, uic, loopError, noop, oxo, internal, custom, define, cache_def, be, non_map_props, props, base, not_base, undefnull, F, i$, len$, name, type, A, B, C, V, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ref$, com, print, z, l, R, j, deep_freeze, uic, loopError, noop, oxo, internal, custom, define, cache_def, be, non_map_props, props, base, not_base, undefnull, F, i$, len$, name, type, A, B, C, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ref$ = require('./print.common'), com = ref$.com, print = ref$.print;
 z = com.z, l = com.l, R = com.R, j = com.j, deep_freeze = com.deep_freeze, uic = com.uic, loopError = com.loopError, noop = com.noop;
 oxo = require('../guard/main');
@@ -90,6 +90,4 @@ for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
   C = define.basis.empty(name);
   be.known[name] = C;
 }
-V = be.arr.and(function(){}).or(function(){})['try']();
-z(V);
-module.exports = {};
+module.exports = be;

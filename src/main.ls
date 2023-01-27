@@ -1,4 +1,4 @@
-com = require "./utils/main"
+{com} = require "./utils/main"
 
 guard = require "./guard/main"
 

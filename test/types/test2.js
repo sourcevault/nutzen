@@ -1,5 +1,5 @@
 var com, z, l, R, j, zj, print_fail, be, p, G7, valG7, isG7, ret1, ret2;
-com = require('../../dist/utils/main');
+com = require('../../dist/utils/main').com;
 z = com.z, l = com.l, R = com.R, j = com.j, zj = com.zj, print_fail = com.print_fail;
 be = require('../../dist/types/main');
 p = print_fail("test/types/test2.js");

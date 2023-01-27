@@ -130,21 +130,22 @@ for [name,type] in props
 
 # for [name] in non_map_props
 
-#   be.maybe[name] = be.maybe be[name]
-
+# be.maybe[name] = be.maybe be[name]
 
 # be.maybe.obj = be.obj.or be.undef
 
 # be.maybe.arr = be.arr.or be.undef
 
 # ------------------------------
+# .and ->
+# .or ->
 
-V = be.arr
-.and ->
-.or ->
-.try!
 
-z V
+# z V
+
+# z a
+
+# z a
 
 # .and ->
 # .try!
@@ -540,7 +541,31 @@ z V
 
 # -----------------------------------
 
-module.exports = {}
+
+# dum = (ta)-> @self = ta; @
+
+# get = ->
+
+#   z @
+
+# Object.defineProperty dum.prototype,\try,get:get
+
+# K = new dum {name:'kokok'}
+
+# K.try
+
+
+
+module.exports = be
+
+
+
+
+
+
+
+
+
 
 
 

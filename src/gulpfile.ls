@@ -105,7 +105,7 @@ gulp.task \watch,->
 
       # ta = cp.execSync "node ./test/types/test10.js || exit 1"
 
-      ta = cp.execSync "node ./test/guard/test7.js || exit 1"
+      ta = cp.execSync "node ./test/types/test10.js || exit 1"
 
       process.stdout.write ta.toString!
 

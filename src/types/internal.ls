@@ -1,4 +1,4 @@
-{com,print,sig} = require \./print.common
+{com,print} = require \./print.common
 
 tightloop = require \./tightloop
 
@@ -8,7 +8,13 @@ tightloop = require \./tightloop
 
 xop = require \../guard/main
 
-cache_def = new Set!
+z com
+
+ht = com.htypes
+
+cache_def = ht.is_def
+
+def_or_normal = ht.is_ins
 
 # ------------------------------------------------------------------
 
@@ -16,15 +22,13 @@ cache_def = new Set!
 \i # instance  
 \f # function
 
-def_or_normal = (F) -> (cache_def.has F) or (F instanceof proto.normal)
-
 assort = (F) ->
 
   if (cache_def.has F)
 
     [\d,F]
 
-  else if (F instanceof proto.normal)
+  else if (F instanceof proto.core.normal)
 
     [\i,F]
 
@@ -53,6 +57,7 @@ cato = (arg) ->
 
     fun
 
+proto_link = (origin,target)-> target.prototype = Object.create origin.prototype
 
 # -------------------------------------------------------
 
@@ -87,12 +92,24 @@ proto       = {}
   ..normal  = assign_self!
   ..functor = assign_self!
   ..core    = {}
-    ..normal = assign_self!
+    ..normal = ht
     ..functor = assign_self!
 
 #---------------------------------------------------------
 
-props = [\and \cont \tap \edit \err \jam \fix \try]
+props = [\and \cont \tap \edit \err \jam \fix]
+
+proto_link do
+  proto.core.normal
+  proto.core.functor
+
+proto_link do
+  proto.core.normal
+  proto.normal
+
+proto_link do
+  proto.core.functor
+  proto.functor
 
 proto.core.normal.prototype.wrap = ->
 
@@ -108,49 +125,43 @@ for val in props
 
   proto.core.normal.prototype[val]  = F
 
-proto.core.normal.prototype.auth   = tightloop
+proto.core.normal.prototype.auth = tightloop
 
-proto.core.normal.prototype[uic]   = print.log \core.normal
+proto.core.normal.prototype[uic] = print.log \core.normal
 
-proto.core.normal.prototype.catch  = -> guard.catch arguments,@self
-
-proto.core.functor.prototype       = Object.create proto.core.normal.prototype
+proto.core.normal.prototype.catch = -> guard.catch arguments,@self
 
 wrap.on = (type) -> -> guard.on arguments,@self,type
 
-fp                                 = proto.core.functor.prototype
+p = proto.core.functor.prototype
 
-fp.map                             = wrap.rest \map
+p.map = wrap.rest \map
 
-fp.forEach                         = wrap.rest \forEach
+p.forEach = wrap.rest \forEach
 
-fp.on                              = wrap.on \on
+p.on = wrap.on \on
 
-fp.onor                            = wrap.on \onor
+p.onor = wrap.on \onor
 
-fp[uic]                            = print.log \core.functor
+p[uic] = print.log \core.functor
 
 #---------------------------------------------------------
 
-proto.normal.prototype = Object.create proto.core.normal.prototype
+p = proto.normal.prototype
 
-np = proto.normal.prototype
+p.or = wrap.rest \or
 
-np.or = wrap.rest \or
+p.alt = wrap.rest \alt
 
-np.alt = wrap.rest \alt
+p[uic] = print.log \normal
 
-np[uic]      = print.log \normal
+p = proto.functor.prototype
 
-proto.functor.prototype = Object.create proto.core.functor.prototype
+p.or = wrap.rest \or
 
-fp = proto.functor.prototype
+p.alt = wrap.rest \alt
 
-fp.or = wrap.rest \or
-
-fp.alt = wrap.rest \alt
-
-fp[uic]      = print.log \functor
+p[uic] = print.log \functor
 
 #---------------------------------------------------------
 
@@ -183,6 +194,8 @@ custom = xop
       str     : ["{..}"]
 
   new proto.normal data
+
+custom.is_instance = def_or_normal
 
 #--------------------------------------------------------------------------
 
@@ -233,7 +246,7 @@ guard.on = xop.unary
       \arg_count
       *state.str,type
 
-.arpar 1,
+.arcap 1,
 
   (args,state,which_on) ->
 
@@ -273,7 +286,7 @@ guard.on = xop.unary
 
   define.on
 
-.arpar 2,
+.arcap 2,
 
   ([first,second],state,type)->
 
@@ -405,7 +418,7 @@ define.catch = ([F],state) ->
 
 guard.catch = xop.unary
 
-.arpar 1,
+.arcap 1,
 
   ([F],state) -> ((R.type F) is \Function)
 
@@ -530,9 +543,17 @@ define.basis.empty = (name) ->
 
 # ------------------------------------------------------------------
 
+# get = ->
+#   z arguments
+#   z @
+
+# P = Object.defineProperty {a:1},\try,get:get
+
+# P.try
+
 #-------------------------------------------------------------------
 
 module.exports =
-  *custom    : custom
-   define    : define
-   cache_def : cache_def
+  *custom        : custom
+   define        : define
+   cache_def     : cache_def

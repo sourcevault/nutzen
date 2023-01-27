@@ -1,5 +1,5 @@
 var com, l, zj, z, c, binapi, print_fail, create_stack, fail, get, lopo, F6, compute, out, E;
-com = require("../../dist/utils/main.js");
+com = require("../../dist/utils/main.js").com;
 l = com.l, zj = com.zj, z = com.z, c = com.c, binapi = com.binapi, print_fail = com.print_fail, create_stack = com.create_stack;
 l = com.l, z = com.z, binapi = com.binapi;
 fail = print_fail("test/utils/test1.js");

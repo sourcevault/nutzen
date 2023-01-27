@@ -1,4 +1,4 @@
-com = require \../utils/main
+{com} = require \../utils/main
 
 xop = require \../guard/main
 
@@ -7,7 +7,6 @@ print      = {}
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
 
 {l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack,version} = com
-
 
 pkgversion = version
 
@@ -19,7 +18,6 @@ export
   com             = com
   print           = print
   pkgname         = pkgname
-  sig             = com.common_symbols.htypes
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -----------------
 
@@ -56,7 +54,6 @@ print.resreq = ([cat,type]) ->
 
 
   l lit ['\n',txt,'\n'],[0,c.warn,0]
-
 
 print.input_fault = ([method_name,data]) ->
 
@@ -200,8 +197,6 @@ print.input_fault.catch = ([patt,info]) ->
 
   l ""
 
-
-
 on_dtype = {}
   ..string       = "(string|number),function"
   ..array        = "[(string|number),..],function"
@@ -282,46 +277,45 @@ print.log = (name) -> ->
 
   switch name
   | \functor      =>
-    str = '.mappable'
+    str = ':*m'
   | \normal       =>
     str = ''
   | \core.functor =>
-    str = '.mappable:try'
+    str = ':*m:try'
   | \core.normal  =>
     str = ':try'
-
 
   # prop = sort (getprop @)
 
   # lit ["{.*} ",prop.join " "],[c.warn,c.grey]
 
-  lit [pkgname +  str],[c.pink]
+  lit [pkgname,str],[c.ok,c.pink]
 
 
 same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit','tap','forEach','wrap']
 
-myflat = xop
-.wh do
-  (ob) ->
-    switch (R.type ob)
-    | \Function,\Object => true
-    | otherwise         => false
+# myflat = xop
+# .wh do
+#   (ob) ->
+#     switch (R.type ob)
+#     | \Function,\Object => true
+#     | otherwise         => false
 
-  (ob,fin = {}) ->
+#   (ob,fin = {}) ->
 
-    keys = Object.keys ob
+#     keys = Object.keys ob
 
-    for I in keys
+#     for I in keys
 
-      if not (same I)
+#       if not (same I)
 
-        prop = myflat ob[I]
+#         prop = myflat ob[I]
 
-        fin[I] = prop
+#         fin[I] = prop
 
-    fin
+#     fin
 
-.def -> {}
+# .def -> {}
 
 split = R.groupBy (name) -> (/\./).test name
 
@@ -335,7 +329,7 @@ find_len = R.reduce (accum,x) ->
 
 print.inner = ->
 
-  props =  sort [ I for I of flat myflat @]
+  # props =  sort [ I for I of flat myflat @]
 
   props.push \tap
 

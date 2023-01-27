@@ -1,5 +1,6 @@
-var ref$, uic, noop, R, z, generic_log, veri, ap, isA, get, pub;
-ref$ = require("./common"), uic = ref$.uic, noop = ref$.noop, R = ref$.R, z = ref$.z;
+var com, uic, noop, R, z, generic_log, veri, ap, isA, get, pub;
+com = require("./common");
+uic = com.uic, noop = com.noop, R = com.R, z = com.z;
 generic_log = function(state){
   return state;
 };
@@ -87,4 +88,8 @@ pub = function(fun, uget, state, ulog){
   P = new Proxy(noop, data);
   return P;
 };
-module.exports = pub;
+com.binapi = pub;
+com.homepage = 'https://github.com/sourcevault/hoplon#readme.md';
+com.version = '__VERSION__';
+com = Object.freeze(com);
+module.exports = com;

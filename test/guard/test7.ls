@@ -16,7 +16,7 @@ guard = require path \guard
 
 xop = guard
 
-com   = require path \utils
+{com}   = require path \utils
 
 {l,zj,z,c,binapi,print_fail,create_stack,R} = com
 

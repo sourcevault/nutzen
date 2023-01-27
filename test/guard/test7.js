@@ -6,7 +6,7 @@ path = function(name){
 };
 guard = require(path('guard'));
 xop = guard;
-com = require(path('utils'));
+com = require(path('utils')).com;
 l = com.l, zj = com.zj, z = com.z, c = com.c, binapi = com.binapi, print_fail = com.print_fail, create_stack = com.create_stack, R = com.R;
 pf = print_fail("test/" + proj + "/" + name + ".js");
 F = function(){

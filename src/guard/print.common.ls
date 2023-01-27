@@ -1,4 +1,4 @@
-com = require "../../dist/utils/main.js"
+{com} = require "../../dist/utils/main.js"
 
 print = {}
 
@@ -15,9 +15,9 @@ export
 
 print.log  = {}
 
-help       = c.grey "[  docs] #{com.homepage}"
+help         = c.grey "[  docs] #{com.homepage}"
 
-show_stack = create_stack 2,['internal/modules/cjs','node:internal'],(help + '\n')
+show_stack   = create_stack 2,['internal/modules/cjs','node:internal'],(help + '\n')
 
 object_name  = "hoplon.guard"
 
@@ -198,7 +198,6 @@ StrArgLen = (fname,ctype,eType,extra)->
 defc = c.er1 'one of the argument is of the wrong type.'
 
 StrEType = (fname,data) ->
-
 
   [eType,extra] = data
 
@@ -562,8 +561,6 @@ print.validator_return_not_array = (ta) ->
   show_stack E
 
 print.route = (ta) !->
-
-  ta
 
   [ECLASS,data] = ta
 

@@ -1,19 +1,19 @@
-var ref$, com, print, sig, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, noop, xop, cache_def, def_or_normal, assort, cato, assign_self, x$, wrap, y$, guard, z$, define, z1$, validate, z2$, proto, z3$, props, i$, len$, val, F, fp, np, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-ref$ = require('./print.common'), com = ref$.com, print = ref$.print, sig = ref$.sig;
+var ref$, com, print, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, noop, xop, ht, cache_def, def_or_normal, assort, cato, proto_link, assign_self, x$, wrap, y$, guard, z$, define, z1$, validate, z2$, proto, z3$, props, i$, len$, val, F, p, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+ref$ = require('./print.common'), com = ref$.com, print = ref$.print;
 tightloop = require('./tightloop');
 z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError, tupnest = com.tupnest, noop = com.noop;
 xop = require('../guard/main');
-cache_def = new Set();
+z(com);
+ht = com.htypes;
+cache_def = ht.is_def;
+def_or_normal = ht.is_ins;
 'd';
 'i';
 'f';
-def_or_normal = function(F){
-  return cache_def.has(F) || F instanceof proto.normal;
-};
 assort = function(F){
   if (cache_def.has(F)) {
     return ['d', F];
-  } else if (F instanceof proto.normal) {
+  } else if (F instanceof proto.core.normal) {
     return ['i', F];
   } else {
     return ['f', F];
@@ -35,6 +35,9 @@ cato = function(arg){
     }
     return fun;
   }
+};
+proto_link = function(origin, target){
+  return target.prototype = Object.create(origin.prototype);
 };
 assign_self = function(){
   return function(self){
@@ -65,9 +68,12 @@ z2$ = proto = {};
 z2$.normal = assign_self();
 z2$.functor = assign_self();
 z3$ = z2$.core = {};
-z3$.normal = assign_self();
+z3$.normal = ht;
 z3$.functor = assign_self();
-props = ['and', 'cont', 'tap', 'edit', 'err', 'jam', 'fix', 'try'];
+props = ['and', 'cont', 'tap', 'edit', 'err', 'jam', 'fix'];
+proto_link(proto.core.normal, proto.core.functor);
+proto_link(proto.core.normal, proto.normal);
+proto_link(proto.core.functor, proto.functor);
 proto.core.normal.prototype.wrap = function(){
   var F;
   F = this;
@@ -90,28 +96,25 @@ proto.core.normal.prototype[uic] = print.log('core.normal');
 proto.core.normal.prototype['catch'] = function(){
   return guard['catch'](arguments, this.self);
 };
-proto.core.functor.prototype = Object.create(proto.core.normal.prototype);
 wrap.on = function(type){
   return function(){
     return guard.on(arguments, this.self, type);
   };
 };
-fp = proto.core.functor.prototype;
-fp.map = wrap.rest('map');
-fp.forEach = wrap.rest('forEach');
-fp.on = wrap.on('on');
-fp.onor = wrap.on('onor');
-fp[uic] = print.log('core.functor');
-proto.normal.prototype = Object.create(proto.core.normal.prototype);
-np = proto.normal.prototype;
-np.or = wrap.rest('or');
-np.alt = wrap.rest('alt');
-np[uic] = print.log('normal');
-proto.functor.prototype = Object.create(proto.core.functor.prototype);
-fp = proto.functor.prototype;
-fp.or = wrap.rest('or');
-fp.alt = wrap.rest('alt');
-fp[uic] = print.log('functor');
+p = proto.core.functor.prototype;
+p.map = wrap.rest('map');
+p.forEach = wrap.rest('forEach');
+p.on = wrap.on('on');
+p.onor = wrap.on('onor');
+p[uic] = print.log('core.functor');
+p = proto.normal.prototype;
+p.or = wrap.rest('or');
+p.alt = wrap.rest('alt');
+p[uic] = print.log('normal');
+p = proto.functor.prototype;
+p.or = wrap.rest('or');
+p.alt = wrap.rest('alt');
+p[uic] = print.log('functor');
 handleError = function(info){
   print.route(info);
   return loopError();
@@ -133,6 +136,7 @@ custom = xop.arn(1, function(){
   };
   return new proto.normal(data);
 });
+custom.is_instance = def_or_normal;
 define.on = function(cat, args, state, ftype){
   var put, props, F, key, ob, fun, val, data;
   put = (function(){
@@ -168,7 +172,7 @@ define.on = function(cat, args, state, ftype){
 };
 guard.on = xop.unary.arn([1, 2], function(args, state, type){
   return handleError(tupnest([new Error(), 'input.fault'], 'on', 'arg_count', [state.str, type]));
-}).arpar(1, function(args, state, which_on){
+}).arcap(1, function(args, state, which_on){
   var maybe_object, type, I, val;
   maybe_object = args[0];
   type = R.type(maybe_object);
@@ -188,7 +192,7 @@ guard.on = xop.unary.arn([1, 2], function(args, state, type){
     return handleError(data);
   }
   return loopError();
-}, define.on).arpar(2, function(arg$, state, type){
+}, define.on).arcap(2, function(arg$, state, type){
   var first, second, i$, len$, I, ref$;
   first = arg$[0], second = arg$[1];
   switch (R.type(first)) {
@@ -287,7 +291,7 @@ define['catch'] = function(arg$, state){
   }());
   return put;
 };
-guard['catch'] = xop.unary.arpar(1, function(arg$, state){
+guard['catch'] = xop.unary.arcap(1, function(arg$, state){
   var F;
   F = arg$[0];
   return R.type(F) === 'Function';

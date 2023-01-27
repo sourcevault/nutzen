@@ -1,5 +1,5 @@
-var com, xop, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, version, pkgversion, pkgname, sig, help, show_stack, type_color, show_chain, show_name, x$, on_dtype, getprop, includes, sort, same, myflat, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-com = require('../utils/main');
+var com, xop, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, version, pkgversion, pkgname, help, show_stack, type_color, show_chain, show_name, x$, on_dtype, getprop, includes, sort, same, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+com = require('../utils/main').com;
 xop = require('../guard/main');
 print = {};
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack, version = com.version;
@@ -8,7 +8,6 @@ pkgname = 'hoplon.types';
 out$.com = com = com;
 out$.print = print = print;
 out$.pkgname = pkgname = pkgname;
-out$.sig = sig = com.common_symbols.htypes;
 print.log = {};
 help = c.grey("[  docs] " + com.homepage + "\n");
 show_stack = create_stack(1, ['internal/modules/cjs', 'node:internal'], help);
@@ -242,44 +241,21 @@ print.log = function(name){
     var str;
     switch (name) {
     case 'functor':
-      str = '.mappable';
+      str = ':*m';
       break;
     case 'normal':
       str = '';
       break;
     case 'core.functor':
-      str = '.mappable:try';
+      str = ':*m:try';
       break;
     case 'core.normal':
       str = ':try';
     }
-    return lit([pkgname + str], [c.pink]);
+    return lit([pkgname, str], [c.ok, c.pink]);
   };
 };
 same = includes(['and', 'or', 'cont', 'jam', 'fix', 'err', 'map', 'on', 'alt', 'auth', 'edit', 'tap', 'forEach', 'wrap']);
-myflat = xop.wh(function(ob){
-  switch (R.type(ob)) {
-  case 'Function':
-  case 'Object':
-    return true;
-  default:
-    return false;
-  }
-}, function(ob, fin){
-  var keys, i$, len$, I, prop;
-  fin == null && (fin = {});
-  keys = Object.keys(ob);
-  for (i$ = 0, len$ = keys.length; i$ < len$; ++i$) {
-    I = keys[i$];
-    if (!same(I)) {
-      prop = myflat(ob[I]);
-      fin[I] = prop;
-    }
-  }
-  return fin;
-}).def(function(){
-  return {};
-});
 split = R.groupBy(function(name){
   return /\./.test(name);
 });
@@ -291,14 +267,7 @@ find_len = R.reduce(function(accum, x){
   }
 });
 print.inner = function(){
-  var props, I, ob, len, initTable, table, res$, i$, len$, str;
-  props = sort((function(){
-    var results$ = [];
-    for (I in flat(myflat(this))) {
-      results$.push(I);
-    }
-    return results$;
-  }.call(this)));
+  var ob, len, initTable, table, res$, i$, len$, I, str;
   props.push('tap');
   ob = split(props);
   len = find_len(0, props) + 4;
