@@ -248,7 +248,6 @@ tupnest_recurse = (a,index = 0) ->
 
 tupnest = -> tupnest_recurse arguments,0
 
-
 tupnest.push = (da,ta)->
 
   current = da
@@ -393,22 +392,11 @@ com.version = \__VERSION__
 
 com.homepage = \https://github.com/sourcevault/hoplon#readme.md
 
+com.id_htypes = Symbol \hoplon.types
 
-ht = (da)-> @self = da; @
+com = Object.freeze com
 
-ht.is_def = new Set!
-
-ht.is_ins = (F) ->
-
-  (F instanceof ht) or (ht.is_def.has F)
+module.exports = com
 
 # ------------------------------------------------------------------
-
-ext =
-  com:Object.freeze com
-  htypes:ht
-
-
-module.exports = ext
-
 

@@ -1,5 +1,3 @@
-utils                           = require "../../dist/utils/main.js"
-
 ext                             = require "./print.common"
 
 {com,print,modflag}             = ext
@@ -20,8 +18,9 @@ customTypeoOf = (unknown) ->
 
   | \Object,\Function =>
 
-    z utils.htypes.is_ins unknown
-    if (utils.htypes.is_ins unknown) then return \htypes
+    z com.id_htypes
+
+    # if (utils.htypes.is_ins unknown) then return \htypes
 
     return type
 

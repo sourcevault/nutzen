@@ -1,4 +1,4 @@
-var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, util, util_inspect_custom, uic, noop, jspc_def, jspc, z, loopfault, ansi_wrap, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, tupnest_recurse, tupnest, generic_log, veri, ap, isA, get, pub, com, ht, ext, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, util, util_inspect_custom, uic, noop, jspc_def, jspc, z, loopfault, ansi_wrap, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, tupnest_recurse, tupnest, generic_log, veri, ap, isA, get, pub, com, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 vendor = require("./vendor");
 l = console.log;
 flat = vendor.flat;
@@ -357,19 +357,9 @@ com = {
 };
 com.version = '2.0.0';
 com.homepage = 'https://github.com/sourcevault/hoplon#readme.md';
-ht = function(da){
-  this.self = da;
-  return this;
-};
-ht.is_def = new Set();
-ht.is_ins = function(F){
-  return F instanceof ht || ht.is_def.has(F);
-};
-ext = {
-  com: Object.freeze(com),
-  htypes: ht
-};
-module.exports = ext;
+com.id_htypes = Symbol('hoplon.types');
+com = Object.freeze(com);
+module.exports = com;
 function in$(x, xs){
   var i = -1, l = xs.length >>> 0;
   while (++i < l) if (x === xs[i]) return true;

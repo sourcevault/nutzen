@@ -10,11 +10,11 @@ xop = require \../guard/main
 
 z com
 
-ht = com.htypes
+# ht = com.htypes
 
-cache_def = ht.is_def
+# cache_def = ht.is_def
 
-def_or_normal = ht.is_ins
+# def_or_normal = ht.is_ins
 
 # ------------------------------------------------------------------
 

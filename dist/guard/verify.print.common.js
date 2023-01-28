@@ -1,5 +1,4 @@
-var utils, ext, com, print, modflag, z, R, version, tupnest, l, V, ref$, NumIsInt, customTypeoOf, array2obj, isA, multi_object, fun2map, numfunfun, out$ = typeof exports != 'undefined' && exports || this;
-utils = require("../../dist/utils/main.js");
+var ext, com, print, modflag, z, R, version, tupnest, l, V, ref$, NumIsInt, customTypeoOf, array2obj, isA, multi_object, fun2map, numfunfun, out$ = typeof exports != 'undefined' && exports || this;
 ext = require("./print.common");
 com = ext.com, print = ext.print, modflag = ext.modflag;
 z = com.z, R = com.R, version = com.version, tupnest = com.tupnest, l = com.l;
@@ -14,10 +13,7 @@ customTypeoOf = function(unknown){
   switch (type) {
   case 'Object':
   case 'Function':
-    z(utils.htypes.is_ins(unknown));
-    if (utils.htypes.is_ins(unknown)) {
-      return 'htypes';
-    }
+    z(com.id_htypes);
     return type;
   case 'Number':
     if (NumIsInt(unknown)) {

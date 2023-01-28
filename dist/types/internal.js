@@ -1,12 +1,9 @@
-var ref$, com, print, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, noop, xop, ht, cache_def, def_or_normal, assort, cato, proto_link, assign_self, x$, wrap, y$, guard, z$, define, z1$, validate, z2$, proto, z3$, props, i$, len$, val, F, p, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ref$, com, print, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, noop, xop, assort, cato, proto_link, assign_self, x$, wrap, y$, guard, z$, define, z1$, validate, z2$, proto, z3$, props, i$, len$, val, F, p, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ref$ = require('./print.common'), com = ref$.com, print = ref$.print;
 tightloop = require('./tightloop');
 z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError, tupnest = com.tupnest, noop = com.noop;
 xop = require('../guard/main');
 z(com);
-ht = com.htypes;
-cache_def = ht.is_def;
-def_or_normal = ht.is_ins;
 'd';
 'i';
 'f';

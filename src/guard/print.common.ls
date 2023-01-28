@@ -1,4 +1,4 @@
-{com} = require "../../dist/utils/main.js"
+com = require \../utils/main
 
 print = {}
 
