@@ -8,8 +8,6 @@ tightloop = require \./tightloop
 
 xop = require \../guard/main
 
-z com
-
 # ht = com.htypes
 
 # cache_def = ht.is_def
@@ -92,7 +90,7 @@ proto       = {}
   ..normal  = assign_self!
   ..functor = assign_self!
   ..core    = {}
-    ..normal = ht
+    ..normal = assign_self!
     ..functor = assign_self!
 
 #---------------------------------------------------------
