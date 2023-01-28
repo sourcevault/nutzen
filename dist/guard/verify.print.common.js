@@ -13,7 +13,9 @@ customTypeoOf = function(unknown){
   switch (type) {
   case 'Object':
   case 'Function':
-    z(com.id_htypes);
+    if (unknown[com.id_htypes]) {
+      return 'htypes';
+    }
     return type;
   case 'Number':
     if (NumIsInt(unknown)) {

@@ -8,11 +8,9 @@ tightloop = require \./tightloop
 
 xop = require \../guard/main
 
-# ht = com.htypes
+cache_def = new Set!
 
-# cache_def = ht.is_def
-
-# def_or_normal = ht.is_ins
+def_or_normal = (F) -> (cache_def.has F) or (F instanceof proto.core.normal)
 
 # ------------------------------------------------------------------
 

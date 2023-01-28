@@ -18,9 +18,7 @@ customTypeoOf = (unknown) ->
 
   | \Object,\Function =>
 
-    z com.id_htypes
-
-    # if (utils.htypes.is_ins unknown) then return \htypes
+    if unknown[com.id_htypes] then return \htypes
 
     return type
 
