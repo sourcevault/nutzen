@@ -1,14 +1,15 @@
-var com, print, modflag, z, zj, j, l, R, c, esp, create_stack, lit, version, help, show_stack, object_name, pkgname, arrange, show_chain, map_fname_to_ctypes, txt, arcap_txt, cap_txt, StrArgLen, defc, StrEType, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-com = require('../utils/main');
+var ext, print, ref$, com, z, j, l, R, c, esp, create_stack, lit, version, help, show_stack, object_name, pkgname, arrange, show_chain, map_fname_to_ctypes, txt, arcap_txt, cap_txt, StrArgLen, defc, StrEType, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+ext = require('../utils/main');
 print = {};
-out$.com = com = com;
-out$.print = print = print;
-out$.modflag = modflag = Symbol('self');
-z = com.z, zj = com.zj, j = com.j, l = com.l, R = com.R, c = com.c, esp = com.esp, create_stack = com.create_stack, lit = com.lit, version = com.version;
+ref$ = out$;
+import$(ref$, ext);
+ref$.print = print;
+com = ext.com;
+z = com.z, j = com.j, l = com.l, R = com.R, c = com.c, esp = com.esp, create_stack = com.create_stack, lit = com.lit, version = com.version;
 print.log = {};
 help = c.grey("[  docs] " + com.homepage);
 show_stack = create_stack(2, ['internal/modules/cjs', 'node:internal'], help + '\n');
-object_name = "hoplon.guard";
+object_name = 'hoplon.guard';
 pkgname = object_name + "#v" + version;
 print.log.def_fault = function(){
   return c.er2("[error." + pkgname + "]");
@@ -421,3 +422,8 @@ print.route = function(ta){
   }
 };
 print.docstring = "" + c.pink(pkgname) + "\n" + c.grey(help);
+function import$(obj, src){
+  var own = {}.hasOwnProperty;
+  for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+  return obj;
+}

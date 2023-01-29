@@ -1,7 +1,7 @@
-var com, z, l, R, j, zj, print_fail, be, p, G7, valG7, isG7, ret1, ret2;
-com = require('../../dist/utils/main');
-z = com.z, l = com.l, R = com.R, j = com.j, zj = com.zj, print_fail = com.print_fail;
-be = require('../../dist/types/main');
+var ref$, utils, types, z, l, R, j, print_fail, be, p, G7, valG7, isG7, ret1, ret2;
+ref$ = require('../../dist/main'), utils = ref$.utils, types = ref$.types;
+z = utils.z, l = utils.l, R = utils.R, j = utils.j, print_fail = utils.print_fail;
+be = types;
 p = print_fail("test/types/test2.js");
 G7 = new Set(["USA", "EU", "UK", "Japan", "Italy", "Germany", "France"]);
 valG7 = function(s){

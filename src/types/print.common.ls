@@ -1,10 +1,12 @@
-com = require \../utils/main
+ext = require \../utils/main
 
 xop = require \../guard/main
 
 print      = {}
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
+
+com = ext.com
 
 {l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack,version} = com
 
@@ -14,10 +16,7 @@ pkgname    = \hoplon.types
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
 
-export
-  com             = com
-  print           = print
-  pkgname         = pkgname
+export {...ext,print,pkgname}
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -----------------
 
@@ -28,6 +27,7 @@ help       = c.grey "[  docs] #{com.homepage}\n"
 # -------------------------------------------------------------------
 
 show_stack = create_stack 1,['internal/modules/cjs','node:internal'],help
+
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - -
 

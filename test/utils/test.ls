@@ -1,6 +1,8 @@
-com = require \../../dist/utils/main
+{utils,types} = require \../../dist/main
 
-{l,zj,z,c,binapi,print_fail,create_stack} = com
+{l,z,c,binapi,print_fail,create_stack} = utils
+
+be = types
 
 fail = print_fail "test/utils/test.js"
 

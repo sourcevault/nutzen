@@ -1,4 +1,4 @@
-{com,print} = require \./print.common
+{com,symbols,print} = require \./print.common
 
 tightloop = require \./tightloop
 
@@ -8,9 +8,9 @@ tightloop = require \./tightloop
 
 xop = require \../guard/main
 
-cache_def = new Set!
+defset = new Set!
 
-def_or_normal = (F) -> (cache_def.has F) or (F instanceof proto.core.normal)
+def_or_normal = (F) -> F[com.id_htypes]
 
 # ------------------------------------------------------------------
 
@@ -20,11 +20,11 @@ def_or_normal = (F) -> (cache_def.has F) or (F instanceof proto.core.normal)
 
 assort = (F) ->
 
-  if (cache_def.has F)
+  if (defset.has F)
 
     [\d,F]
 
-  else if (F instanceof proto.core.normal)
+  else if (F[com.id_htypes])
 
     [\i,F]
 
@@ -552,4 +552,4 @@ define.basis.empty = (name) ->
 module.exports =
   *custom        : custom
    define        : define
-   cache_def     : cache_def
+   defset        : defset

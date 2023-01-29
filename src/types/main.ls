@@ -2,13 +2,14 @@
 
 # ------------------------------------------------------------------
 
+
 {z,l,R,j,deep_freeze,uic,loopError,noop} = com
 
 oxo = require \../guard/main
 
 internal = require \./internal
 
-{custom,define,cache_def} = internal
+{custom,define,defset} = internal
 
 be = custom
 
@@ -66,7 +67,7 @@ undefnull = (UFO) ->
 
     return {continue:false,error:true,message:"not undefined or null",value:UFO}
 
-cache_def.add undefnull
+defset.add undefnull
 
 # --------------------------------------------------------
 
@@ -319,7 +320,7 @@ for [name,type] in props
 #     return {continue:true,error:false,value:UFO}
 
 
-# cache.def.add integer
+# defset.add integer
 
 # #-------------------------------------------------------------------------------------
 
@@ -333,7 +334,7 @@ for [name,type] in props
 
 #     return {continue:false,error:true,message:"not a number or boolean",value:UFO}
 
-# cache.def.add boolnum
+# defset.add boolnum
 
 # #-------------------------------------------------------------------------------------
 
@@ -349,7 +350,7 @@ for [name,type] in props
 #     return {continue:false,error:true,message:"not a number or boolean",value:UFO}
 
 
-# cache.def.add maybe_boolnum
+# defset.add maybe_boolnum
 
 # #-------------------------------------------------------
 

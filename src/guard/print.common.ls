@@ -1,17 +1,17 @@
-com = require \../utils/main
+ext = require \../utils/main
+
 
 print = {}
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
-export
-  com             = com
-  print           = print
-  modflag         = Symbol \self
+export {...ext,print:print}
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
-{z,zj,j,l,R,c,esp,create_stack,lit,version} = com
+com = ext.com
+
+{z,j,l,R,c,esp,create_stack,lit,version} = com
 
 print.log  = {}
 
@@ -19,7 +19,7 @@ help         = c.grey "[  docs] #{com.homepage}"
 
 show_stack   = create_stack 2,['internal/modules/cjs','node:internal'],(help + '\n')
 
-object_name  = "hoplon.guard"
+object_name  = \hoplon.guard
 
 pkgname      = "#{object_name}\#v#{version}"
 

@@ -1,6 +1,6 @@
-var ext, com, print, modflag, z, R, version, tupnest, l, V, ref$, NumIsInt, customTypeoOf, array2obj, isA, multi_object, fun2map, numfunfun, out$ = typeof exports != 'undefined' && exports || this;
+var ext, com, print, symbols, z, R, version, tupnest, l, V, ref$, NumIsInt, customTypeoOf, array2obj, isA, multi_object, fun2map, numfunfun, out$ = typeof exports != 'undefined' && exports || this;
 ext = require("./print.common");
-com = ext.com, print = ext.print, modflag = ext.modflag;
+com = ext.com, print = ext.print, symbols = ext.symbols;
 z = com.z, R = com.R, version = com.version, tupnest = com.tupnest, l = com.l;
 V = {};
 ref$ = out$;

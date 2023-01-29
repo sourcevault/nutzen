@@ -1,4 +1,4 @@
-var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, util, util_inspect_custom, uic, noop, jspc_def, jspc, z, loopfault, ansi_wrap, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, tupnest_recurse, tupnest, generic_log, veri, ap, isA, get, pub, com, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, util, util_inspect_custom, uic, noop, jspc_def, jspc, z, loopfault, ansi_wrap, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, tupnest_recurse, tupnest, generic_log, veri, ap, isA, get, pub, com, y$, symbols, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 vendor = require("./vendor");
 l = console.log;
 flat = vendor.flat;
@@ -357,9 +357,14 @@ com = {
 };
 com.version = '2.0.0';
 com.homepage = 'https://github.com/sourcevault/hoplon#readme.md';
-com.id_htypes = Symbol('hoplon.types');
+y$ = symbols = {};
+y$.htypes = Symbol('hoplon.types');
+y$.guard = Symbol('hoplon.guard');
 com = Object.freeze(com);
-module.exports = com;
+module.exports = {
+  com: com,
+  symbols: symbols
+};
 function in$(x, xs){
   var i = -1, l = xs.length >>> 0;
   while (++i < l) if (x === xs[i]) return true;

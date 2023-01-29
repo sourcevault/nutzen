@@ -392,11 +392,14 @@ com.version = \__VERSION__
 
 com.homepage = \https://github.com/sourcevault/hoplon#readme.md
 
-com.id_htypes = Symbol \hoplon.types
+symbols = {}
+
+  ..htypes = Symbol \hoplon.types
+  ..guard = Symbol \hoplon.guard
 
 com = Object.freeze com
 
-module.exports = com
+module.exports = {com:com,symbols}
 
 # ------------------------------------------------------------------
 

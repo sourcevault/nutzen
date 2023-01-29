@@ -1,6 +1,6 @@
 ext                             = require "./print.common"
 
-{com,print,modflag}             = ext
+{com,print,symbols}             = ext
 
 {z,R,version,tupnest,l}         = com
 

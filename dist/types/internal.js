@@ -1,19 +1,19 @@
-var ref$, com, print, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, noop, xop, cache_def, def_or_normal, assort, cato, proto_link, assign_self, x$, wrap, y$, guard, z$, define, z1$, validate, z2$, proto, z3$, props, i$, len$, val, F, p, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-ref$ = require('./print.common'), com = ref$.com, print = ref$.print;
+var ref$, com, symbols, print, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, noop, xop, defset, def_or_normal, assort, cato, proto_link, assign_self, x$, wrap, y$, guard, z$, define, z1$, validate, z2$, proto, z3$, props, i$, len$, val, F, p, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+ref$ = require('./print.common'), com = ref$.com, symbols = ref$.symbols, print = ref$.print;
 tightloop = require('./tightloop');
 z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError, tupnest = com.tupnest, noop = com.noop;
 xop = require('../guard/main');
-cache_def = new Set();
+defset = new Set();
 def_or_normal = function(F){
-  return cache_def.has(F) || F instanceof proto.core.normal;
+  return F[com.id_htypes];
 };
 'd';
 'i';
 'f';
 assort = function(F){
-  if (cache_def.has(F)) {
+  if (defset.has(F)) {
     return ['d', F];
-  } else if (F instanceof proto.core.normal) {
+  } else if (F[com.id_htypes]) {
     return ['i', F];
   } else {
     return ['f', F];
@@ -405,5 +405,5 @@ define.basis.empty = function(name){
 module.exports = {
   custom: custom,
   define: define,
-  cache_def: cache_def
+  cache_def: defset
 };

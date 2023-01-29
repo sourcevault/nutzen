@@ -1,6 +1,7 @@
-var com, l, zj, z, c, binapi, print_fail, create_stack, fail, lopo, get, fun, P, K, subtract, sub;
-com = require('../../dist/utils/main');
-l = com.l, zj = com.zj, z = com.z, c = com.c, binapi = com.binapi, print_fail = com.print_fail, create_stack = com.create_stack;
+var ref$, utils, types, l, z, c, binapi, print_fail, create_stack, be, fail, lopo, get, fun, P, K, subtract, sub;
+ref$ = require('../../dist/main'), utils = ref$.utils, types = ref$.types;
+l = utils.l, z = utils.z, c = utils.c, binapi = utils.binapi, print_fail = utils.print_fail, create_stack = utils.create_stack;
+be = types;
 fail = print_fail("test/utils/test.js");
 lopo = function(state){
   return binapi(fun, get, state);

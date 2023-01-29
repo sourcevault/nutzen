@@ -1,6 +1,6 @@
-var ext, com, verify, modflag, print, l, z, R, uic, binapi, loopError, resolve, unshift_resolve, UNDEC, ob, n, a, core, n_n, n_a, arn, arwhn, arnwh, arnwhn, arcap, isArray, arwh, ar, tightloop, main, handle, genfun, props, cat, getter, topcache, init, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ext, com, verify, print, l, z, R, uic, binapi, loopError, resolve, unshift_resolve, UNDEC, ob, n, a, core, n_n, n_a, arn, arwhn, arnwh, arnwhn, arcap, isArray, arwh, ar, tightloop, main, handle, genfun, props, cat, getter, topcache, init, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ext = require("./verify.print.common");
-com = ext.com, verify = ext.verify, modflag = ext.modflag, print = ext.print;
+com = ext.com, verify = ext.verify, print = ext.print;
 l = com.l, z = com.z, R = com.R, uic = com.uic, binapi = com.binapi, loopError = com.loopError;
 resolve = function(F, A){
   var ftype, f;

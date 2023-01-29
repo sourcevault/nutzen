@@ -1,12 +1,10 @@
-var proj, name, path, xop, com, l, zj, z, c, binapi, print_fail, create_stack, R, pf, type_num, type_str, V, out;
+var proj, name, ref$, utils, types, guard, l, z, c, binapi, print_fail, create_stack, R, be, xop, pf, type_num, type_str, V, out;
 proj = 'guard';
 name = 'test4';
-path = function(name){
-  return "../../dist/" + name + "/main";
-};
-xop = require(path('guard'));
-com = require(path('utils')).com;
-l = com.l, zj = com.zj, z = com.z, c = com.c, binapi = com.binapi, print_fail = com.print_fail, create_stack = com.create_stack, R = com.R;
+ref$ = require('../../dist/main'), utils = ref$.utils, types = ref$.types, guard = ref$.guard;
+l = utils.l, z = utils.z, c = utils.c, binapi = utils.binapi, print_fail = utils.print_fail, create_stack = utils.create_stack, R = utils.R;
+be = types;
+xop = guard;
 pf = print_fail("test/" + proj + "/" + name + ".js");
 type_num = function(x){
   switch (x) {

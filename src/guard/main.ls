@@ -1,6 +1,6 @@
 ext = require "./verify.print.common"
 
-{com,verify,modflag,print} = ext
+{com,verify,print} = ext
 
 {l,z,R,uic,binapi,loopError} = com
 

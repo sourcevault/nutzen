@@ -1,7 +1,7 @@
-var com, z, l, R, j, zj, print_fail, be, p, SA, main, ret, e;
-com = require('../../dist/utils/main');
-z = com.z, l = com.l, R = com.R, j = com.j, zj = com.zj, print_fail = com.print_fail;
-be = require('../../dist/types/main');
+var ref$, utils, types, z, l, R, j, print_fail, be, p, SA, main, ret, e;
+ref$ = require('../../dist/main'), utils = ref$.utils, types = ref$.types;
+z = utils.z, l = utils.l, R = utils.R, j = utils.j, print_fail = utils.print_fail;
+be = types;
 p = print_fail("test/types/test3.js");
 SA = be.str.or(be.arr.or(be.num));
 main = be.obj.on("chokidar", be.obj.on("path", SA));

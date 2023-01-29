@@ -6,19 +6,13 @@ name  = \test7
 
 # BOILER PLATE
 
-path = (name) -> "../../dist/#{name}/main"
+{utils,types,guard} = require \../../dist/main
 
-guard = require path \guard
+{l,z,c,binapi,print_fail,create_stack,R} = utils
 
-# be    = require path \types
-
-# xop = guard
+be = types
 
 xop = guard
-
-{com}   = require path \utils
-
-{l,zj,z,c,binapi,print_fail,create_stack,R} = com
 
 pf = print_fail "test/#{proj}/#{name}.js"
 

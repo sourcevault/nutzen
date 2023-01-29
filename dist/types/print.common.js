@@ -1,13 +1,15 @@
-var com, xop, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, version, pkgversion, pkgname, help, show_stack, type_color, show_chain, show_name, x$, on_dtype, getprop, includes, sort, same, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-com = require('../utils/main');
+var ext, xop, print, com, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, version, pkgversion, pkgname, ref$, help, show_stack, type_color, show_chain, show_name, x$, on_dtype, getprop, includes, sort, same, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+ext = require('../utils/main');
 xop = require('../guard/main');
 print = {};
+com = ext.com;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack, version = com.version;
 pkgversion = version;
 pkgname = 'hoplon.types';
-out$.com = com = com;
-out$.print = print = print;
-out$.pkgname = pkgname = pkgname;
+ref$ = out$;
+import$(ref$, ext);
+ref$.print = print;
+ref$.pkgname = pkgname;
 print.log = {};
 help = c.grey("[  docs] " + com.homepage + "\n");
 show_stack = create_stack(1, ['internal/modules/cjs', 'node:internal'], help);
@@ -296,3 +298,8 @@ print.inner = function(){
   str += table;
   return str;
 };
+function import$(obj, src){
+  var own = {}.hasOwnProperty;
+  for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+  return obj;
+}
