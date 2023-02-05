@@ -1,10 +1,11 @@
-var ref$, com, print, z, l, R, j, deep_freeze, uic, loopError, noop, oxo, internal, custom, define, cache_def, be, non_map_props, props, base, not_base, undefnull, F, i$, len$, name, type, A, B, C, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-ref$ = require('./print.common'), com = ref$.com, print = ref$.print;
+var ref$, com, symbols, print, z, l, R, j, deep_freeze, uic, loopError, noop, oxo, internal, custom, define, defset, be, non_map_props, props, base, not_base, undefnull, F, i$, len$, name, type, A, B, C, V, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+ref$ = require('./print.common'), com = ref$.com, symbols = ref$.symbols, print = ref$.print;
 z = com.z, l = com.l, R = com.R, j = com.j, deep_freeze = com.deep_freeze, uic = com.uic, loopError = com.loopError, noop = com.noop;
 oxo = require('../guard/main');
 internal = require('./internal');
-custom = internal.custom, define = internal.define, cache_def = internal.cache_def;
+custom = internal.custom, define = internal.define, defset = internal.defset;
 be = custom;
+be.known = {};
 non_map_props = [['undef', 'Undefined'], ['null', 'Null'], ['num', 'Number'], ['str', 'String'], ['fun', 'Function'], ['bool', 'Boolean'], ['objerr', 'Error']];
 props = [['obj', 'Object'], ['arr', 'Array']].concat(arrayFrom$(non_map_props));
 base = function(type){
@@ -64,9 +65,10 @@ undefnull = function(UFO){
     };
   }
 };
-cache_def.add(undefnull);
+defset.add(undefnull);
 F = base('Arguments');
-define.basis('arg', F);
+define.basis('arg', F, 'arr');
+define.basis.empty('arg', 'arr');
 be.arg = F;
 be.not = function(F){
   var V;
@@ -77,7 +79,6 @@ be.not = function(F){
 };
 be.undefnull = be(undefnull);
 be.not.undefnull = be.not(undefnull);
-be.known = {};
 for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
   ref$ = props[i$], name = ref$[0], type = ref$[1];
   A = base(type);
@@ -90,4 +91,6 @@ for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
   C = define.basis.empty(name);
   be.known[name] = C;
 }
+V = be.arr.or(function(){}, function(){});
+V.auth([]);
 module.exports = be;

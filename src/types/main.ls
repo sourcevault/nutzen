@@ -1,4 +1,4 @@
-{com,print} = require \./print.common
+{com,symbols,print} = require \./print.common
 
 # ------------------------------------------------------------------
 
@@ -12,6 +12,8 @@ internal = require \./internal
 {custom,define,defset} = internal
 
 be = custom
+
+be.known = {}
 
 #-------------------------------------------------------------------
 
@@ -73,7 +75,9 @@ defset.add undefnull
 
 F = base \Arguments
 
-define.basis \arg,F
+define.basis \arg,F,\arr
+
+define.basis.empty \arg,\arr
 
 be.arg = F
 
@@ -101,8 +105,6 @@ be.not.undefnull = be.not undefnull
 
 # -----------------------------
 
-be.known = {}
-
 for [name,type] in props
 
   A = base type
@@ -129,9 +131,49 @@ for [name,type] in props
 
 #------------------------------
 
+V = be.arr
+
+# .try
+# .on [1,3],->
+# .and ->
+# .try
+# .try
+# .on 2,->
+# .and ->,->
+# .end
+
+.or ->,->
+
+# .or ->
+
+V.auth []
+
+
+
+
+# .alt ->
+
+# .and ->
+# .and ->
+
+# .try
+# .and ->
+# .and ->
+
+# .and ->
+# .or ->
+# .and ->
+
+# .catch!
+
+
+# z.pa V
+
+
+
 # for [name] in non_map_props
 
-# be.maybe[name] = be.maybe be[name]
+#   be.maybe[name] = be.maybe be[name]
 
 # be.maybe.obj = be.obj.or be.undef
 
@@ -140,7 +182,6 @@ for [name,type] in props
 # ------------------------------
 # .and ->
 # .or ->
-
 
 # z V
 
@@ -541,21 +582,6 @@ for [name,type] in props
 # be = deep_freeze be
 
 # -----------------------------------
-
-
-# dum = (ta)-> @self = ta; @
-
-# get = ->
-
-#   z @
-
-# Object.defineProperty dum.prototype,\try,get:get
-
-# K = new dum {name:'kokok'}
-
-# K.try
-
-
 
 module.exports = be
 

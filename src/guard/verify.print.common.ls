@@ -10,6 +10,7 @@ export {...ext,verify:V}
 
 NumIsInt = Number.isInteger
 
+
 customTypeoOf = (unknown) ->
 
   type = R.type unknown
@@ -18,7 +19,7 @@ customTypeoOf = (unknown) ->
 
   | \Object,\Function =>
 
-    if unknown[com.id_htypes] then return \htypes
+    if unknown[symbols.htypes] then return \htypes
 
     return type
 

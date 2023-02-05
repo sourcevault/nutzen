@@ -234,7 +234,7 @@ apply.auth.key = (F,val,args,key) ->
 \i # instance / hoplon.types instance
 \f # function / user provided function
 
-exec-key = (type,F,val,args,key) ->
+exec_key = (type,F,val,args,key) ->
 
   sortir = switch type
   | \d => apply.normal.key F,val,args,key
@@ -253,7 +253,7 @@ exec-key = (type,F,val,args,key) ->
 
   sortir
 
-exec-top = (type,F,val,args) ->
+exec_top = (type,F,val,args) ->
 
   switch type
   | \d => apply.normal.top F,val,args
@@ -280,7 +280,7 @@ map = (dtype,fun,value,args) ->
 
     while I < In
 
-      put = exec-key type,F,value[I],args,I
+      put = exec_key type,F,value[I],args,I
 
       if put.error
 
@@ -300,7 +300,7 @@ map = (dtype,fun,value,args) ->
 
     for key,val of value
 
-      put = exec-key type,F,val,args,key
+      put = exec_key type,F,val,args,key
 
       if put.error
         return put
@@ -323,7 +323,7 @@ forEach = (dtype,fun,value,args) ->
 
     while I < In
 
-      exec-key type,F,value[I],args,I
+      exec_key type,F,value[I],args,I
 
       I += 1
 
@@ -333,7 +333,7 @@ forEach = (dtype,fun,value,args) ->
 
     for key,val of value
 
-      exec-key type,F,val,args,key
+      exec_key type,F,val,args,key
 
     {continue:true,error:false,value:value}
 
@@ -345,7 +345,7 @@ upon = ([type,fun],value,args) ->
 
     [key,shape,G] = fun
 
-    put = exec-key shape,G,value[key],args,key
+    put = exec_key shape,G,value[key],args,key
 
     if put.error
       return put
@@ -366,7 +366,7 @@ upon = ([type,fun],value,args) ->
 
       key = arr[I]
 
-      put = exec-key shape,G,value[key],args,key
+      put = exec_key shape,G,value[key],args,key
 
       if put.error
         return put
@@ -387,7 +387,7 @@ upon = ([type,fun],value,args) ->
 
       [key,shape,G] = fun[I]
 
-      put = exec-key shape,G,value[key],args,key
+      put = exec_key shape,G,value[key],args,key
 
       if put.error
         return put
@@ -412,7 +412,7 @@ upon = ([type,fun],value,args) ->
 
         if field_type is \S
 
-          put = exec-key wFt,wFF,value[field],args,field
+          put = exec_key wFt,wFF,value[field],args,field
 
           if put.error
             return put
@@ -423,7 +423,7 @@ upon = ([type,fun],value,args) ->
 
           for each in field
 
-            put = exec-key wFt,wFF,value[each],args,each
+            put = exec_key wFt,wFF,value[each],args,each
 
             if put.error
               return put
@@ -438,7 +438,7 @@ upon = ([type,fun],value,args) ->
 
         for each in field
 
-          put = exec-key wFt,wFF,value[each],args,each
+          put = exec_key wFt,wFF,value[each],args,each
 
           if put.continue
             value[each] = put.value
@@ -511,7 +511,7 @@ resolve = (fun,put,dtype,args) ->
 
       [type,G] = F[I]
 
-      put = exec-top type,G,value,args
+      put = exec_top type,G,value,args
 
       if put.continue
         return put
@@ -542,36 +542,88 @@ self_amorty = (self)->
 
   fin = []
 
-  bucket = []
+  bucket = {type:\and,item:[]}
 
-  for I from 0 til flaty.length
+  I =  0
 
-    item = flaty[I]
+  :oloop while I < flaty.length
 
-    switch item[0]
-    # | \try      =>
+    each = flaty[I]
 
-    # | \catch    =>
-    | \or,\alt  =>
+    [type,data] = each
 
-      if bucket.length
+    if (type in [\or,\alt,\try])
+
+      if bucket.item.length
+
         fin.push bucket
-        bucket = []
-      fin.push item
 
-    | otherwise =>
-      bucket.push item
+        bucket = {type:\and,item:[]}
 
-  if bucket.length
+      switch type
+      | \try =>
 
+        tbuck = {type:\try,end:false,item:[]}
+
+        item_inner = []
+
+        new_I = I + 1
+
+        for K from new_I til flaty.length
+
+          eachi = flaty[K]
+
+          switch eachi[0]
+
+          | \try =>
+
+            tbuck.item.push item_inner
+
+            item_inner = []
+
+          | \end =>
+
+            new_I = K + 1
+
+            tbuck.item.push item_inner
+
+            fin.push tbuck
+
+            I = new_I
+
+            tbuck.end = true
+
+            continue oloop
+
+          | otherwise =>
+
+            item_inner.push eachi
+
+          new_I++
+
+        I = new_I
+
+        tbuck.item.push item_inner
+
+        fin.push tbuck
+
+      | \or,\alt =>
+
+
+        fin.push {type:type,item:data}
+
+    else 
+
+      bucket.item.push each
+
+    I++
+
+  if bucket.item.length
     fin.push bucket
 
-  # z.j fin
+  # --- done ---
 
-  # | \and,\cont,\tap,\edit,\err,\jam,\fix,\map,\forEach,\on,\onor => \and
-
-
-  self
+  fin
 
 tightloop = (x) !->
 
@@ -579,11 +631,11 @@ tightloop = (x) !->
 
   if not self.morty
 
-    self_amorty self
+    @data = self_amorty self
 
-  state = self.morty
+  data = @data
 
-  cont = true
+  
 
 
 

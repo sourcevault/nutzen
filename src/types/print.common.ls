@@ -26,8 +26,7 @@ help       = c.grey "[  docs] #{com.homepage}\n"
 
 # -------------------------------------------------------------------
 
-show_stack = create_stack 1,['internal/modules/cjs','node:internal'],help
-
+show_stack = create_stack 2,['internal/modules/cjs','node:internal'],help
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - -
 
@@ -50,7 +49,7 @@ print.resreq = ([cat,type]) ->
     | \res   => "  first argmuent is not a Array of String / Number."
     | \req   => "  second argmuent is not a Array of String / Number."
 
-  | \res,\req    => "  one of the (inner) argument is not of type of String / Number."
+  | \res,\req  => "  one of the (inner) argument is not of type of String / Number."
 
 
   l lit ['\n',txt,'\n'],[0,c.warn,0]
@@ -64,7 +63,6 @@ print.input_fault = ([method_name,data]) ->
   | \map      => fi.map data
   | \custom   => fi.custom data
   | \and,\or  => fi.andor data,method_name
-  | \catch    => fi.catch data
 
 
 show_chain = (data) ->
@@ -93,7 +91,7 @@ show_chain = (data) ->
 
   l lit do
     [start_chain,("."  + last),"(xx)"," <-- error here"]
-    [c.grey,c.warn,c.er3,c.er3]
+    [c.grey,c.er1,c.er3,c.er2]
 
 show_name = (extra,type = "[inputError] ") ->
 
@@ -124,7 +122,7 @@ print.input_fault.andor = ([type,info],method_name)->
 
   l ""
 
-  l type_color " #{method_name} :: fun,..,.."
+  l type_color " #{method_name} :: (fun,..)"
 
   l ""
 
@@ -171,31 +169,6 @@ print.input_fault.map = ([patt,loc]) ->
 
   l ""
 
-
-print.input_fault.catch = ([patt,info]) ->
-
-  show_name ".catch"
-
-  l ""
-
-  switch patt
-  | \arg_count,\not_function =>
-
-    l c.pink " only accepts 1 argument of type function."
-
-  l ""
-
-  show_chain info
-
-  l ""
-
-  l c.grey " expected type signature :"
-
-  l ""
-
-  l type_color " catch :: (function|void)"
-
-  l ""
 
 on_dtype = {}
   ..string       = "(string|number),function"
@@ -277,11 +250,11 @@ print.log = (name) -> ->
 
   switch name
   | \functor      =>
-    str = ':*m'
+    str = ':m'
   | \normal       =>
     str = ''
   | \core.functor =>
-    str = ':*m:try'
+    str = ':m:try'
   | \core.normal  =>
     str = ':try'
 
@@ -289,7 +262,7 @@ print.log = (name) -> ->
 
   # lit ["{.*} ",prop.join " "],[c.warn,c.grey]
 
-  lit [pkgname,str],[c.ok,c.pink]
+  lit [pkgname,str],[c.pink,c.pink]
 
 
 same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit','tap','forEach','wrap']

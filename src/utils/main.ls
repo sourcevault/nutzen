@@ -62,7 +62,7 @@ z.n = ->
 
   console.log ...args
 
-z.p = (obj)->
+get_all_protos = (obj) ->
 
   cont = true
 
@@ -75,7 +75,7 @@ z.p = (obj)->
     disp.push obj
 
     cp = obj.__proto__
-     
+
     if cp is null
 
       cont = false
@@ -84,7 +84,35 @@ z.p = (obj)->
 
   disp.pop!
 
-  console.dir disp
+  disp
+
+z.p = (obj)->
+
+  all_proto = get_all_protos obj
+
+  console.dir all_proto
+
+z.d = console.dir
+
+z.pa = (obj) ->
+
+  all_proto = get_all_protos obj
+
+  disp = []
+
+  for cp in all_proto
+
+    props = Object.getOwnPropertyNames cp
+
+    disp.push props
+
+  l disp
+
+  # disp.pop!
+
+  # console.log disp
+
+
 
 # --------------------------------------------------------------------------------------
 

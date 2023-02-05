@@ -13,7 +13,7 @@ customTypeoOf = function(unknown){
   switch (type) {
   case 'Object':
   case 'Function':
-    if (unknown[com.id_htypes]) {
+    if (unknown[symbols.htypes]) {
       return 'htypes';
     }
     return type;

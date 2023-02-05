@@ -1,4 +1,4 @@
-var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, util, util_inspect_custom, uic, noop, jspc_def, jspc, z, loopfault, ansi_wrap, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, tupnest_recurse, tupnest, generic_log, veri, ap, isA, get, pub, com, y$, symbols, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, util, util_inspect_custom, uic, noop, jspc_def, jspc, z, get_all_protos, loopfault, ansi_wrap, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, tupnest_recurse, tupnest, generic_log, veri, ap, isA, get, pub, com, y$, symbols, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 vendor = require("./vendor");
 l = console.log;
 flat = vendor.flat;
@@ -45,7 +45,7 @@ z.n = function(){
   args = ['\n'].concat(arrayFrom$(arguments), ['\n']);
   return console.log.apply(console, args);
 };
-z.p = function(obj){
+get_all_protos = function(obj){
   var cont, disp, current, cp;
   cont = true;
   disp = [];
@@ -59,7 +59,24 @@ z.p = function(obj){
     obj = cp;
   }
   disp.pop();
-  return console.dir(disp);
+  return disp;
+};
+z.p = function(obj){
+  var all_proto;
+  all_proto = get_all_protos(obj);
+  return console.dir(all_proto);
+};
+z.d = console.dir;
+z.pa = function(obj){
+  var all_proto, disp, i$, len$, cp, props;
+  all_proto = get_all_protos(obj);
+  disp = [];
+  for (i$ = 0, len$ = all_proto.length; i$ < len$; ++i$) {
+    cp = all_proto[i$];
+    props = Object.getOwnPropertyNames(cp);
+    disp.push(props);
+  }
+  return l(disp);
 };
 loopfault = function(){
   var loopError, apply, get;

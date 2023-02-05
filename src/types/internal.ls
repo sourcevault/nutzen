@@ -10,7 +10,11 @@ xop = require \../guard/main
 
 defset = new Set!
 
-def_or_normal = (F) -> F[com.id_htypes]
+def_or_normal = (F) ->
+
+  if ((F[symbols.htypes]) or (defset.has F)) then return true
+
+  false
 
 # ------------------------------------------------------------------
 
@@ -20,13 +24,14 @@ def_or_normal = (F) -> F[com.id_htypes]
 
 assort = (F) ->
 
-  if (defset.has F)
+  if F[symbols.htypes]
+
+    [\i,F]
+
+  else if (defset.has F)
 
     [\d,F]
 
-  else if (F[com.id_htypes])
-
-    [\i,F]
 
   else
 
@@ -53,7 +58,7 @@ cato = (arg) ->
 
     fun
 
-proto_link = (origin,target)-> target.prototype = Object.create origin.prototype
+proto_link = (origin,target) !-> target.prototype = Object.create origin.prototype
 
 # -------------------------------------------------------
 
@@ -88,12 +93,10 @@ proto       = {}
   ..normal  = assign_self!
   ..functor = assign_self!
   ..core    = {}
-    ..normal = assign_self!
     ..functor = assign_self!
+    ..normal = assign_self!
 
 #---------------------------------------------------------
-
-props = [\and \cont \tap \edit \err \jam \fix]
 
 proto_link do
   proto.core.normal
@@ -107,27 +110,84 @@ proto_link do
   proto.core.functor
   proto.functor
 
-proto.core.normal.prototype.wrap = ->
+user_wrap = ->
 
   F = @
 
   -> (F.auth.apply F,arguments).value
 
+p_core = proto.core.normal.prototype
+
+p_core[symbols.htypes] = true
+
+p_core.auth = tightloop
+
+p_core.wrap = user_wrap
+
 wrap.rest = (type) -> -> guard.rest arguments,@self,type
 
-for val in props
+for val in [\and \cont \tap \edit \err \jam \fix]
 
   F = wrap.rest val
 
-  proto.core.normal.prototype[val]  = F
+  p_core[val]  = F
 
-proto.core.normal.prototype.auth = tightloop
+create_new_core = (data,type = data.type)->
 
-proto.core.normal.prototype[uic] = print.log \core.normal
+  switch type
+  | \obj,\arr      => new proto.core.functor data
+  | otherwise      => new proto.core.normal data
 
-proto.core.normal.prototype.catch = -> guard.catch arguments,@self
+get = {}
+
+get.try = ->
+
+  state = @self
+
+  type = state.type
+
+  data =
+    type:type
+    all:
+      *node:[\try]
+       back:state.all
+    index:state.index + 1
+    mode:\try
+    str:[\try,state.str]
+
+  create_new_core data
+
+
+get.end = ->
+
+  state = @self
+
+  type = state.type
+
+  data =
+    type:type
+    all:
+      *node:[\end]
+       back:state.all
+    index:state.index + 1
+    mode:\normal
+    str:[\end,state.str]
+
+  switch data.type
+  | \obj,\arr =>
+    new proto.functor data
+  | otherwise =>
+    new proto.normal data
+
+Object.defineProperty p_core,\try,get:get.try
+
+p_core[uic] = print.log \core.normal
+
+Object.defineProperty p_core,\end,get:get.end
 
 wrap.on = (type) -> -> guard.on arguments,@self,type
+
+#---------------------------------------------------------
 
 p = proto.core.functor.prototype
 
@@ -143,19 +203,21 @@ p[uic] = print.log \core.functor
 
 #---------------------------------------------------------
 
-p = proto.normal.prototype
+pn = proto.normal.prototype
 
-p.or = wrap.rest \or
+pn.or = wrap.rest \or
 
-p.alt = wrap.rest \alt
+pn.alt = wrap.rest \alt
 
-p[uic] = print.log \normal
+pn[uic] = print.log \normal
+
+#---------------------------------------------------------
 
 p = proto.functor.prototype
 
-p.or = wrap.rest \or
+p.or = pn.or
 
-p.alt = wrap.rest \alt
+p.alt = pn.alt
 
 p[uic] = print.log \functor
 
@@ -188,10 +250,14 @@ custom = xop
       all     : [\and,G]
       index   : 0
       str     : ["{..}"]
+      mode    : \normal
 
   new proto.normal data
 
-custom.is_instance = def_or_normal
+custom.is_instance = (x) ->
+  switch x[symbols.htypes]
+  | true => true
+  | otherwise => false
 
 #--------------------------------------------------------------------------
 
@@ -225,6 +291,8 @@ define.on = (cat,args,state,ftype) ->
        back:state.all
      index    : state.index + 1
      str      : [ftype,state.str]
+     mode     : state.mode
+
 
   new proto.functor data
 
@@ -343,7 +411,6 @@ guard.on = xop.unary
 
   handleError error_obj
 
-
 #-----------------------------------------------------------------------
 
 validate.rest = (funs,state,type) ->
@@ -394,56 +461,6 @@ validate.rest = (funs,state,type) ->
 
   | otherwise => false
 
-define.catch = ([F],state) ->
-
-  type = state.type
-
-  data =
-    *type:type
-     all:
-      *node:[\catch,F]
-       back:state.all
-     index:state.index + 1
-     str:[\catch,state.str]
-
-  put = switch type
-  | \obj,\arr,\arg => new proto.functor data
-  | otherwise      => new proto.normal data
-
-  put
-
-guard.catch = xop.unary
-
-.arcap 1,
-
-  ([F],state) -> ((R.type F) is \Function)
-
-  (...,state)->
-
-    E = tupnest do
-      *new Error!,\input.fault
-      \catch
-      \not_function
-      *state.str,\catch
-
-    print.route E
-
-    loopError!
-
-  ([F],skate) -> define.catch [\f,F],state
-
-.ar 0,(...,state) -> define.catch [\empty],state
-
-.arn [1,0],(__,state)->
-
-  handleError tupnest do
-    *(new Error!),\input.fault
-    \catch
-    \arg_count
-    *state.str,\catch
-
-.def loopError
-
 #-----------------------------------------------------------------------
 
 guard.rest = xop # [\and \or \alt \cont \tap \edit \err \jam \fix \map]
@@ -454,8 +471,21 @@ guard.rest = xop # [\and \or \alt \cont \tap \edit \err \jam \fix \map]
     #----------------------------------
 
     switch type
+    | \and,\or =>
 
-    | \and,\map,\alt,\or,\forEach,\onor =>
+      list = [cato I for I in args]
+
+      len = list.length
+
+      switch len
+      | 1         =>
+        type = type
+        F = list[0]
+      | otherwise =>
+        type = type + "." + \multi
+        F = list
+
+    | \map,\alt,\forEach,\onor =>
 
       F = cato args[0]
 
@@ -473,42 +503,38 @@ guard.rest = xop # [\and \or \alt \cont \tap \edit \err \jam \fix \map]
         *node:[type,F]
          back:state.all
        index:state.index + 1
+       mode:state.mode
        str:[type,state.str]
 
-    switch data.type
-    | \obj,\arr,\arg =>
+    if (type is \try) or (state.mode is \try)
 
-      switch type
-      | \try      =>
-        new proto.core.functor data
-      | otherwise =>
+      create_new_core data
+
+    else
+
+      switch data.type
+      | \obj,\arr =>
         new proto.functor data
-
-    | otherwise      =>
-
-      switch type
-      | \try      =>
-        new proto.core.normal data
       | otherwise =>
         new proto.normal data
-
 
 .def loopError
 
 #-----------------------------------------------------------------------
 
-define.basis = (name,F) !->
+define.basis = (name,F,type = name) !->
 
   data =
-    *type     : name
+    *type     : type
      str      : [name]
      all      : node:[\and,[\d,F]]
      index    : 0
+     mode     : \normal
 
   F.self = data
 
-  switch name
-  | \obj,\arr,\arg =>
+  switch type
+  | \obj,\arr =>
 
     Object.setPrototypeOf F,proto.functor.prototype
 
@@ -518,16 +544,17 @@ define.basis = (name,F) !->
 
   void
 
-define.basis.empty = (name) ->
+define.basis.empty = (name,type = name) ->
 
   data =
-    *type     : name
+    *type     : type
      str      : [name]
      index    : -1
+     mode     : \normal
 
-  inherited = switch name
+  inherited = switch type
 
-  | \obj,\arr,\arg =>
+  | \obj,\arr =>
 
     new proto.functor data
 
@@ -538,14 +565,6 @@ define.basis.empty = (name) ->
   inherited
 
 # ------------------------------------------------------------------
-
-# get = ->
-#   z arguments
-#   z @
-
-# P = Object.defineProperty {a:1},\try,get:get
-
-# P.try
 
 #-------------------------------------------------------------------
 

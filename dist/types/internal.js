@@ -1,20 +1,23 @@
-var ref$, com, symbols, print, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, noop, xop, defset, def_or_normal, assort, cato, proto_link, assign_self, x$, wrap, y$, guard, z$, define, z1$, validate, z2$, proto, z3$, props, i$, len$, val, F, p, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ref$, com, symbols, print, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, noop, xop, defset, def_or_normal, assort, cato, proto_link, assign_self, x$, wrap, y$, guard, z$, define, z1$, validate, z2$, proto, z3$, user_wrap, p_core, i$, len$, val, F, create_new_core, get, p, pn, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ref$ = require('./print.common'), com = ref$.com, symbols = ref$.symbols, print = ref$.print;
 tightloop = require('./tightloop');
 z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError, tupnest = com.tupnest, noop = com.noop;
 xop = require('../guard/main');
 defset = new Set();
 def_or_normal = function(F){
-  return F[com.id_htypes];
+  if (F[symbols.htypes] || defset.has(F)) {
+    return true;
+  }
+  return false;
 };
 'd';
 'i';
 'f';
 assort = function(F){
-  if (defset.has(F)) {
-    return ['d', F];
-  } else if (F[com.id_htypes]) {
+  if (F[symbols.htypes]) {
     return ['i', F];
+  } else if (defset.has(F)) {
+    return ['d', F];
   } else {
     return ['f', F];
   }
@@ -37,7 +40,7 @@ cato = function(arg){
   }
 };
 proto_link = function(origin, target){
-  return target.prototype = Object.create(origin.prototype);
+  target.prototype = Object.create(origin.prototype);
 };
 assign_self = function(){
   return function(self){
@@ -68,34 +71,88 @@ z2$ = proto = {};
 z2$.normal = assign_self();
 z2$.functor = assign_self();
 z3$ = z2$.core = {};
-z3$.normal = assign_self();
 z3$.functor = assign_self();
-props = ['and', 'cont', 'tap', 'edit', 'err', 'jam', 'fix'];
+z3$.normal = assign_self();
 proto_link(proto.core.normal, proto.core.functor);
 proto_link(proto.core.normal, proto.normal);
 proto_link(proto.core.functor, proto.functor);
-proto.core.normal.prototype.wrap = function(){
+user_wrap = function(){
   var F;
   F = this;
   return function(){
     return F.auth.apply(F, arguments).value;
   };
 };
+p_core = proto.core.normal.prototype;
+p_core[symbols.htypes] = true;
+p_core.auth = tightloop;
+p_core.wrap = user_wrap;
 wrap.rest = function(type){
   return function(){
     return guard.rest(arguments, this.self, type);
   };
 };
-for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
-  val = props[i$];
+for (i$ = 0, len$ = (ref$ = ['and', 'cont', 'tap', 'edit', 'err', 'jam', 'fix']).length; i$ < len$; ++i$) {
+  val = ref$[i$];
   F = wrap.rest(val);
-  proto.core.normal.prototype[val] = F;
+  p_core[val] = F;
 }
-proto.core.normal.prototype.auth = tightloop;
-proto.core.normal.prototype[uic] = print.log('core.normal');
-proto.core.normal.prototype['catch'] = function(){
-  return guard['catch'](arguments, this.self);
+create_new_core = function(data, type){
+  type == null && (type = data.type);
+  switch (type) {
+  case 'obj':
+  case 'arr':
+    return new proto.core.functor(data);
+  default:
+    return new proto.core.normal(data);
+  }
 };
+get = {};
+get['try'] = function(){
+  var state, type, data;
+  state = this.self;
+  type = state.type;
+  data = {
+    type: type,
+    all: {
+      node: ['try'],
+      back: state.all
+    },
+    index: state.index + 1,
+    mode: 'try',
+    str: ['try', state.str]
+  };
+  return create_new_core(data);
+};
+get.end = function(){
+  var state, type, data;
+  state = this.self;
+  type = state.type;
+  data = {
+    type: type,
+    all: {
+      node: ['end'],
+      back: state.all
+    },
+    index: state.index + 1,
+    mode: 'normal',
+    str: ['end', state.str]
+  };
+  switch (data.type) {
+  case 'obj':
+  case 'arr':
+    return new proto.functor(data);
+  default:
+    return new proto.normal(data);
+  }
+};
+Object.defineProperty(p_core, 'try', {
+  get: get['try']
+});
+p_core[uic] = print.log('core.normal');
+Object.defineProperty(p_core, 'end', {
+  get: get.end
+});
 wrap.on = function(type){
   return function(){
     return guard.on(arguments, this.self, type);
@@ -107,13 +164,13 @@ p.forEach = wrap.rest('forEach');
 p.on = wrap.on('on');
 p.onor = wrap.on('onor');
 p[uic] = print.log('core.functor');
-p = proto.normal.prototype;
-p.or = wrap.rest('or');
-p.alt = wrap.rest('alt');
-p[uic] = print.log('normal');
+pn = proto.normal.prototype;
+pn.or = wrap.rest('or');
+pn.alt = wrap.rest('alt');
+pn[uic] = print.log('normal');
 p = proto.functor.prototype;
-p.or = wrap.rest('or');
-p.alt = wrap.rest('alt');
+p.or = pn.or;
+p.alt = pn.alt;
 p[uic] = print.log('functor');
 handleError = function(info){
   print.route(info);
@@ -132,11 +189,19 @@ custom = xop.arn(1, function(){
     type: 'custom',
     all: ['and', G],
     index: 0,
-    str: ["{..}"]
+    str: ["{..}"],
+    mode: 'normal'
   };
   return new proto.normal(data);
 });
-custom.is_instance = def_or_normal;
+custom.is_instance = function(x){
+  switch (x[symbols.htypes]) {
+  case true:
+    return true;
+  default:
+    return false;
+  }
+};
 define.on = function(cat, args, state, ftype){
   var put, props, F, key, ob, fun, val, data;
   put = (function(){
@@ -166,7 +231,8 @@ define.on = function(cat, args, state, ftype){
       back: state.all
     },
     index: state.index + 1,
-    str: [ftype, state.str]
+    str: [ftype, state.str],
+    mode: state.mode
   };
   return new proto.functor(data);
 };
@@ -266,59 +332,30 @@ validate.rest = function(funs, state, type){
     return false;
   }
 };
-define['catch'] = function(arg$, state){
-  var F, type, data, put;
-  F = arg$[0];
-  type = state.type;
-  data = {
-    type: type,
-    all: {
-      node: ['catch', F],
-      back: state.all
-    },
-    index: state.index + 1,
-    str: ['catch', state.str]
-  };
-  put = (function(){
-    switch (type) {
-    case 'obj':
-    case 'arr':
-    case 'arg':
-      return new proto.functor(data);
-    default:
-      return new proto.normal(data);
-    }
-  }());
-  return put;
-};
-guard['catch'] = xop.unary.arcap(1, function(arg$, state){
-  var F;
-  F = arg$[0];
-  return R.type(F) === 'Function';
-}, function(){
-  var state, E;
-  state = arguments[arguments.length - 1];
-  E = tupnest([new Error(), 'input.fault'], 'catch', 'not_function', [state.str, 'catch']);
-  print.route(E);
-  return loopError();
-}, function(arg$, skate){
-  var F;
-  F = arg$[0];
-  return define['catch'](['f', F], state);
-}).ar(0, function(){
-  var state;
-  state = arguments[arguments.length - 1];
-  return define['catch'](['empty'], state);
-}).arn([1, 0], function(__, state){
-  return handleError(tupnest([new Error(), 'input.fault'], 'catch', 'arg_count', [state.str, 'catch']));
-}).def(loopError);
 guard.rest = xop.wh(validate.rest, function(args, state, type){
-  var F, data;
+  var list, res$, i$, len$, I, len, F, data;
   switch (type) {
   case 'and':
+  case 'or':
+    res$ = [];
+    for (i$ = 0, len$ = args.length; i$ < len$; ++i$) {
+      I = args[i$];
+      res$.push(cato(I));
+    }
+    list = res$;
+    len = list.length;
+    switch (len) {
+    case 1:
+      type = type;
+      F = list[0];
+      break;
+    default:
+      type = type + "." + 'multi';
+      F = list;
+    }
+    break;
   case 'map':
   case 'alt':
-  case 'or':
   case 'forEach':
   case 'onor':
     F = cato(args[0]);
@@ -341,60 +378,56 @@ guard.rest = xop.wh(validate.rest, function(args, state, type){
       back: state.all
     },
     index: state.index + 1,
+    mode: state.mode,
     str: [type, state.str]
   };
-  switch (data.type) {
-  case 'obj':
-  case 'arr':
-  case 'arg':
-    switch (type) {
-    case 'try':
-      return new proto.core.functor(data);
-    default:
+  if (type === 'try' || state.mode === 'try') {
+    return create_new_core(data);
+  } else {
+    switch (data.type) {
+    case 'obj':
+    case 'arr':
       return new proto.functor(data);
-    }
-  default:
-    switch (type) {
-    case 'try':
-      return new proto.core.normal(data);
     default:
       return new proto.normal(data);
     }
   }
 }).def(loopError);
-define.basis = function(name, F){
+define.basis = function(name, F, type){
   var data;
+  type == null && (type = name);
   data = {
-    type: name,
+    type: type,
     str: [name],
     all: {
       node: ['and', ['d', F]]
     },
-    index: 0
+    index: 0,
+    mode: 'normal'
   };
   F.self = data;
-  switch (name) {
+  switch (type) {
   case 'obj':
   case 'arr':
-  case 'arg':
     Object.setPrototypeOf(F, proto.functor.prototype);
     break;
   default:
     Object.setPrototypeOf(F, proto.normal.prototype);
   }
 };
-define.basis.empty = function(name){
+define.basis.empty = function(name, type){
   var data, inherited;
+  type == null && (type = name);
   data = {
-    type: name,
+    type: type,
     str: [name],
-    index: -1
+    index: -1,
+    mode: 'normal'
   };
   inherited = (function(){
-    switch (name) {
+    switch (type) {
     case 'obj':
     case 'arr':
-    case 'arg':
       return new proto.functor(data);
     default:
       return new proto.normal(data);
@@ -405,5 +438,5 @@ define.basis.empty = function(name){
 module.exports = {
   custom: custom,
   define: define,
-  cache_def: defset
+  defset: defset
 };

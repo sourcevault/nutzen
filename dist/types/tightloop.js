@@ -1,4 +1,4 @@
-var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, execKey, execTop, map, forEach, upon, resolve, self_amorty, tightloop;
+var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, exec_key, exec_top, map, forEach, upon, resolve, self_amorty, tightloop;
 pc = require("./print.common");
 com = pc.com, pkgname = pc.pkgname, sig = pc.sig;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
@@ -264,7 +264,7 @@ apply.auth.key = function(F, val, args, key){
 'd';
 'i';
 'f';
-execKey = function(type, F, val, args, key){
+exec_key = function(type, F, val, args, key){
   var sortir;
   sortir = (function(){
     switch (type) {
@@ -286,7 +286,7 @@ execKey = function(type, F, val, args, key){
   }
   return sortir;
 };
-execTop = function(type, F, val, args){
+exec_top = function(type, F, val, args){
   switch (type) {
   case 'd':
     return apply.normal.top(F, val, args);
@@ -306,7 +306,7 @@ map = function(dtype, fun, value, args){
     put = null;
     arr = [];
     while (I < In) {
-      put = execKey(type, F, value[I], args, I);
+      put = exec_key(type, F, value[I], args, I);
       if (put.error) {
         return put;
       }
@@ -323,7 +323,7 @@ map = function(dtype, fun, value, args){
     put = null;
     for (key in value) {
       val = value[key];
-      put = execKey(type, F, val, args, key);
+      put = exec_key(type, F, val, args, key);
       if (put.error) {
         return put;
       }
@@ -344,7 +344,7 @@ forEach = function(dtype, fun, value, args){
     I = 0;
     In = value.length;
     while (I < In) {
-      execKey(type, F, value[I], args, I);
+      exec_key(type, F, value[I], args, I);
       I += 1;
     }
     return {
@@ -355,7 +355,7 @@ forEach = function(dtype, fun, value, args){
   case 'obj':
     for (key in value) {
       val = value[key];
-      execKey(type, F, val, args, key);
+      exec_key(type, F, val, args, key);
     }
     return {
       'continue': true,
@@ -370,7 +370,7 @@ upon = function(arg$, value, args){
   switch (type) {
   case 'string':
     key = fun[0], shape = fun[1], G = fun[2];
-    put = execKey(shape, G, value[key], args, key);
+    put = exec_key(shape, G, value[key], args, key);
     if (put.error) {
       return put;
     }
@@ -386,7 +386,7 @@ upon = function(arg$, value, args){
     In = arr.length;
     while (I < In) {
       key = arr[I];
-      put = execKey(shape, G, value[key], args, key);
+      put = exec_key(shape, G, value[key], args, key);
       if (put.error) {
         return put;
       }
@@ -403,7 +403,7 @@ upon = function(arg$, value, args){
     In = fun.length;
     while (I < In) {
       ref$ = fun[I], key = ref$[0], shape = ref$[1], G = ref$[2];
-      put = execKey(shape, G, value[key], args, key);
+      put = exec_key(shape, G, value[key], args, key);
       if (put.error) {
         return put;
       }
@@ -422,7 +422,7 @@ upon = function(arg$, value, args){
       ref$ = fun[I], type = ref$[0], ref1$ = ref$[1], field_type = ref1$[0], field = ref1$[1], wFt = ref$[2], wFF = ref$[3];
       if (type === 'and') {
         if (field_type === 'S') {
-          put = execKey(wFt, wFF, value[field], args, field);
+          put = exec_key(wFt, wFF, value[field], args, field);
           if (put.error) {
             return put;
           }
@@ -430,7 +430,7 @@ upon = function(arg$, value, args){
         } else if (field_type === 'A') {
           for (i$ = 0, len$ = field.length; i$ < len$; ++i$) {
             each = field[i$];
-            put = execKey(wFt, wFF, value[each], args, each);
+            put = exec_key(wFt, wFF, value[each], args, each);
             if (put.error) {
               return put;
             }
@@ -443,7 +443,7 @@ upon = function(arg$, value, args){
         }
         for (i$ = 0, len$ = field.length; i$ < len$; ++i$) {
           each = field[i$];
-          put = execKey(wFt, wFF, value[each], args, each);
+          put = exec_key(wFt, wFF, value[each], args, each);
           if (put['continue']) {
             value[each] = put.value;
             break;
@@ -510,7 +510,7 @@ resolve = function(fun, put, dtype, args){
     nI = F.length;
     do {
       ref$ = F[I], type = ref$[0], G = ref$[1];
-      put = execTop(type, G, value, args);
+      put = exec_top(type, G, value, args);
       if (put['continue']) {
         return put;
       }
@@ -522,7 +522,7 @@ resolve = function(fun, put, dtype, args){
   }
 };
 self_amorty = function(self){
-  var flaty, current, I, fin, bucket, i$, to$, item;
+  var flaty, current, I, fin, bucket, each, type, data, tbuck, item_inner, new_I, i$, to$, K, eachi;
   flaty = new Array(self.index + 1);
   current = self.all;
   I = self.index;
@@ -532,35 +532,78 @@ self_amorty = function(self){
     --I;
   }
   fin = [];
-  bucket = [];
-  for (i$ = 0, to$ = flaty.length; i$ < to$; ++i$) {
-    I = i$;
-    item = flaty[I];
-    switch (item[0]) {
-    case 'or':
-    case 'alt':
-      if (bucket.length) {
+  bucket = {
+    type: 'and',
+    item: []
+  };
+  I = 0;
+  oloop: while (I < flaty.length) {
+    each = flaty[I];
+    type = each[0], data = each[1];
+    if (type === 'or' || type === 'alt' || type === 'try') {
+      if (bucket.item.length) {
         fin.push(bucket);
-        bucket = [];
+        bucket = {
+          type: 'and',
+          item: []
+        };
       }
-      fin.push(item);
-      break;
-    default:
-      bucket.push(item);
+      switch (type) {
+      case 'try':
+        tbuck = {
+          type: 'try',
+          end: false,
+          item: []
+        };
+        item_inner = [];
+        new_I = I + 1;
+        for (i$ = new_I, to$ = flaty.length; i$ < to$; ++i$) {
+          K = i$;
+          eachi = flaty[K];
+          switch (eachi[0]) {
+          case 'try':
+            tbuck.item.push(item_inner);
+            item_inner = [];
+            break;
+          case 'end':
+            new_I = K + 1;
+            tbuck.item.push(item_inner);
+            fin.push(tbuck);
+            I = new_I;
+            tbuck.end = true;
+            continue oloop;
+          default:
+            item_inner.push(eachi);
+          }
+          new_I++;
+        }
+        I = new_I;
+        tbuck.item.push(item_inner);
+        fin.push(tbuck);
+        break;
+      case 'or':
+      case 'alt':
+        fin.push({
+          type: type,
+          item: data
+        });
+      }
+    } else {
+      bucket.item.push(each);
     }
+    I++;
   }
-  if (bucket.length) {
+  if (bucket.item.length) {
     fin.push(bucket);
   }
-  return self;
+  return fin;
 };
 tightloop = function(x){
-  var self, state, cont;
+  var self, data;
   self = this.self;
   if (!self.morty) {
-    self_amorty(self);
+    this.data = self_amorty(self);
   }
-  state = self.morty;
-  cont = true;
+  data = this.data;
 };
 module.exports = tightloop;

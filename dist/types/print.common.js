@@ -12,7 +12,7 @@ ref$.print = print;
 ref$.pkgname = pkgname;
 print.log = {};
 help = c.grey("[  docs] " + com.homepage + "\n");
-show_stack = create_stack(1, ['internal/modules/cjs', 'node:internal'], help);
+show_stack = create_stack(2, ['internal/modules/cjs', 'node:internal'], help);
 type_color = c.ok;
 print.resreq = function(arg$){
   var cat, type, methodname, txt;
@@ -61,8 +61,6 @@ print.input_fault = function(arg$){
   case 'and':
   case 'or':
     return fi.andor(data, method_name);
-  case 'catch':
-    return fi['catch'](data);
   }
 };
 show_chain = function(data){
@@ -90,7 +88,7 @@ show_chain = function(data){
   } else {
     start_chain = ' ' + flattened_chain[0];
   }
-  return l(lit([start_chain, "." + last, "(xx)", " <-- error here"], [c.grey, c.warn, c.er3, c.er3]));
+  return l(lit([start_chain, "." + last, "(xx)", " <-- error here"], [c.grey, c.er1, c.er3, c.er2]));
 };
 show_name = function(extra, type){
   type == null && (type = "[inputError] ");
@@ -115,7 +113,7 @@ print.input_fault.andor = function(arg$, method_name){
   l("");
   l(c.grey(" expected type signature :"));
   l("");
-  l(type_color(" " + method_name + " :: fun,..,.."));
+  l(type_color(" " + method_name + " :: (fun,..)"));
   return l("");
 };
 print.input_fault.custom = function(arg$){
@@ -146,24 +144,6 @@ print.input_fault.map = function(arg$){
   case 'not_function':
     l(c.grey("  first argument has to be a function."));
   }
-  return l("");
-};
-print.input_fault['catch'] = function(arg$){
-  var patt, info;
-  patt = arg$[0], info = arg$[1];
-  show_name(".catch");
-  l("");
-  switch (patt) {
-  case 'arg_count':
-  case 'not_function':
-    l(c.pink(" only accepts 1 argument of type function."));
-  }
-  l("");
-  show_chain(info);
-  l("");
-  l(c.grey(" expected type signature :"));
-  l("");
-  l(type_color(" catch :: (function|void)"));
   return l("");
 };
 x$ = on_dtype = {};
@@ -243,18 +223,18 @@ print.log = function(name){
     var str;
     switch (name) {
     case 'functor':
-      str = ':*m';
+      str = ':m';
       break;
     case 'normal':
       str = '';
       break;
     case 'core.functor':
-      str = ':*m:try';
+      str = ':m:try';
       break;
     case 'core.normal':
       str = ':try';
     }
-    return lit([pkgname, str], [c.ok, c.pink]);
+    return lit([pkgname, str], [c.pink, c.pink]);
   };
 };
 same = includes(['and', 'or', 'cont', 'jam', 'fix', 'err', 'map', 'on', 'alt', 'auth', 'edit', 'tap', 'forEach', 'wrap']);
