@@ -1,4 +1,4 @@
-var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, exec_key, exec_top, map, forEach, upon, resolve, self_amorty, tightloop;
+var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, exec_key, exec_top, map, forEach, upon, resolve, split_on_value_list, split_on, i$, len$, I, self_amorty, tightloop;
 pc = require("./print.common");
 com = pc.com, pkgname = pc.pkgname, sig = pc.sig;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
@@ -466,6 +466,7 @@ resolve = function(fun, put, dtype, args){
   var type, F, value, I, nI, ref$, G;
   type = fun[0], F = fun[1];
   value = put.value;
+  z(value);
   switch (type) {
   case 'd':
     return apply.normal.top(F, value, args);
@@ -521,6 +522,12 @@ resolve = function(fun, put, dtype, args){
     return put;
   }
 };
+split_on_value_list = ['or', 'alt', 'try', 'or.multi', 'alt.multi'];
+split_on = {};
+for (i$ = 0, len$ = split_on_value_list.length; i$ < len$; ++i$) {
+  I = split_on_value_list[i$];
+  split_on[I] = true;
+}
 self_amorty = function(self){
   var flaty, current, I, fin, bucket, each, type, data, tbuck, item_inner, new_I, i$, to$, K, eachi;
   flaty = new Array(self.index + 1);
@@ -540,7 +547,7 @@ self_amorty = function(self){
   oloop: while (I < flaty.length) {
     each = flaty[I];
     type = each[0], data = each[1];
-    if (type === 'or' || type === 'alt' || type === 'try') {
+    if (split_on[type]) {
       if (bucket.item.length) {
         fin.push(bucket);
         bucket = {
@@ -583,6 +590,8 @@ self_amorty = function(self){
         break;
       case 'or':
       case 'alt':
+      case 'or.multi':
+      case 'alt.multi':
         fin.push({
           type: type,
           item: data
@@ -599,11 +608,31 @@ self_amorty = function(self){
   return fin;
 };
 tightloop = function(x){
-  var self, data;
+  var self, data, I, ref$, type, item;
   self = this.self;
   if (!self.morty) {
     this.data = self_amorty(self);
   }
   data = this.data;
+  z.j(data);
+  I = 0;
+  oloop: do {
+    ref$ = data[I], type = ref$.type, item = ref$.item;
+    switch (type) {
+    case 'and':
+      data;
+      break;
+    case 'or':
+      break;
+    case 'try':
+      break;
+    case 'alt':
+      break;
+    case 'or.multi':
+      break;
+    case 'alt.multi':
+    }
+    I++;
+  } while (I < data.length);
 };
 module.exports = tightloop;

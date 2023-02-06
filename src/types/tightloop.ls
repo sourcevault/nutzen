@@ -524,6 +524,14 @@ resolve = (fun,put,dtype,args) ->
 
   | otherwise => put
 
+split_on_value_list = [\or,\alt,\try,\or.multi,\alt.multi]
+
+split_on = {}
+
+for I in split_on_value_list
+
+  split_on[I] = true
+
 self_amorty = (self)->
 
   flaty = new Array self.index + 1
@@ -552,7 +560,7 @@ self_amorty = (self)->
 
     [type,data] = each
 
-    if (type in [\or,\alt,\try])
+    if split_on[type]
 
       if bucket.item.length
 
@@ -607,8 +615,7 @@ self_amorty = (self)->
 
         fin.push tbuck
 
-      | \or,\alt =>
-
+      | \or,\alt,\or.multi,\alt.multi =>
 
         fin.push {type:type,item:data}
 
@@ -635,8 +642,33 @@ tightloop = (x) !->
 
   data = @data
 
-  
+  z.j data
 
+  I = 0
+
+  put = {}
+
+  :oloop do
+
+    {type,item} = data[I]
+
+    switch type
+    | \and       =>
+
+      # resolve item,put,dtype,x
+
+    | \or        =>
+    | \try       =>
+    | \alt       =>
+    | \or.multi  =>
+    | \alt.multi =>
+
+
+
+
+    I++
+
+  while I < data.length
 
 
 module.exports = tightloop

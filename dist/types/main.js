@@ -91,6 +91,6 @@ for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
   C = define.basis.empty(name);
   be.known[name] = C;
 }
-V = be.arr.or(function(){}, function(){});
+V = be.arr.and(function(){}).and(function(){}, function(){});
 V.auth([]);
 module.exports = be;

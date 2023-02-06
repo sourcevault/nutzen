@@ -470,8 +470,10 @@ guard.rest = xop # [\and \or \alt \cont \tap \edit \err \jam \fix \map]
 
     #----------------------------------
 
+
     switch type
-    | \and,\or =>
+
+    | \and,\or,\alt =>
 
       list = [cato I for I in args]
 
@@ -485,7 +487,7 @@ guard.rest = xop # [\and \or \alt \cont \tap \edit \err \jam \fix \map]
         type = type + "." + \multi
         F = list
 
-    | \map,\alt,\forEach,\onor =>
+    | \map,\forEach,\onor =>
 
       F = cato args[0]
 
@@ -497,10 +499,16 @@ guard.rest = xop # [\and \or \alt \cont \tap \edit \err \jam \fix \map]
 
       F = void
 
+    switch type
+    | \and =>
+      node = F
+    | otherwise =>
+      node = [type,F]
+
     data =
       *type:state.type
        all:
-        *node:[type,F]
+        *node:node
          back:state.all
        index:state.index + 1
        mode:state.mode
@@ -527,7 +535,7 @@ define.basis = (name,F,type = name) !->
   data =
     *type     : type
      str      : [name]
-     all      : node:[\and,[\d,F]]
+     all      : node:[\d,F]
      index    : 0
      mode     : \normal
 

@@ -135,14 +135,17 @@ V = be.arr
 
 # .try
 # .on [1,3],->
-# .and ->
+.and ->
+.and ->,->
+
 # .try
 # .try
 # .on 2,->
 # .and ->,->
+
 # .end
 
-.or ->,->
+# .or ->,->
 
 # .or ->
 

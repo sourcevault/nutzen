@@ -333,10 +333,11 @@ validate.rest = function(funs, state, type){
   }
 };
 guard.rest = xop.wh(validate.rest, function(args, state, type){
-  var list, res$, i$, len$, I, len, F, data;
+  var list, res$, i$, len$, I, len, F, node, data;
   switch (type) {
   case 'and':
   case 'or':
+  case 'alt':
     res$ = [];
     for (i$ = 0, len$ = args.length; i$ < len$; ++i$) {
       I = args[i$];
@@ -355,7 +356,6 @@ guard.rest = xop.wh(validate.rest, function(args, state, type){
     }
     break;
   case 'map':
-  case 'alt':
   case 'forEach':
   case 'onor':
     F = cato(args[0]);
@@ -371,10 +371,17 @@ guard.rest = xop.wh(validate.rest, function(args, state, type){
   case 'try':
     F = void 8;
   }
+  switch (type) {
+  case 'and':
+    node = F;
+    break;
+  default:
+    node = [type, F];
+  }
   data = {
     type: state.type,
     all: {
-      node: [type, F],
+      node: node,
       back: state.all
     },
     index: state.index + 1,
@@ -400,7 +407,7 @@ define.basis = function(name, F, type){
     type: type,
     str: [name],
     all: {
-      node: ['and', ['d', F]]
+      node: ['d', F]
     },
     index: 0,
     mode: 'normal'
