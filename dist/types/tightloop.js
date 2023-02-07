@@ -466,7 +466,6 @@ resolve = function(fun, put, dtype, args){
   var type, F, value, I, nI, ref$, G;
   type = fun[0], F = fun[1];
   value = put.value;
-  z(value);
   switch (type) {
   case 'd':
     return apply.normal.top(F, value, args);
@@ -529,7 +528,7 @@ for (i$ = 0, len$ = split_on_value_list.length; i$ < len$; ++i$) {
   split_on[I] = true;
 }
 self_amorty = function(self){
-  var flaty, current, I, fin, bucket, each, type, data, tbuck, item_inner, new_I, i$, to$, K, eachi;
+  var flaty, current, I, fin, bucket, each, type, data, tbuck, item_inner, new_I, i$, to$, K, eachi, len$;
   flaty = new Array(self.index + 1);
   current = self.all;
   I = self.index;
@@ -605,34 +604,33 @@ self_amorty = function(self){
   if (bucket.item.length) {
     fin.push(bucket);
   }
+  for (i$ = 0, len$ = fin.length; i$ < len$; ++i$) {
+    I = fin[i$];
+    if (I.type !== 'and') {
+      continue;
+    }
+    if (I.item.length === 1) {
+      I.item = I.item[0];
+    } else {
+      I.type = 'and.multi';
+    }
+  }
   return fin;
 };
 tightloop = function(x){
-  var self, data, I, ref$, type, item;
+  var self, data, dtype, I, olen, put;
   self = this.self;
   if (!self.morty) {
     this.data = self_amorty(self);
   }
   data = this.data;
-  z.j(data);
+  dtype = this.self.type;
   I = 0;
-  oloop: do {
-    ref$ = data[I], type = ref$.type, item = ref$.item;
-    switch (type) {
-    case 'and':
-      data;
-      break;
-    case 'or':
-      break;
-    case 'try':
-      break;
-    case 'alt':
-      break;
-    case 'or.multi':
-      break;
-    case 'alt.multi':
-    }
-    I++;
-  } while (I < data.length);
+  olen = data.length;
+  put = {
+    'continue': true,
+    error: false,
+    value: x
+  };
 };
 module.exports = tightloop;

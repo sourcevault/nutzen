@@ -58,7 +58,13 @@ cato = (arg) ->
 
     fun
 
-proto_link = (origin,target) !-> target.prototype = Object.create origin.prototype
+proto_link = !-> 
+
+  [[origin],pros] = R.splitAt 1, arguments
+
+  for I in pros
+
+    I.prototype = Object.create origin.prototype
 
 # -------------------------------------------------------
 
@@ -90,24 +96,25 @@ validate   = {}
   ..rest   = null
 
 proto       = {}
+
   ..normal  = assign_self!
   ..functor = assign_self!
-  ..core    = {}
+
+  ..core =  assign_self!
+  ..try = {}
     ..functor = assign_self!
     ..normal = assign_self!
 
 #---------------------------------------------------------
 
 proto_link do
-  proto.core.normal
-  proto.core.functor
+  proto.core
+  proto.try.functor
+  proto.try.normal
 
 proto_link do
-  proto.core.normal
+  proto.core
   proto.normal
-
-proto_link do
-  proto.core.functor
   proto.functor
 
 user_wrap = ->
@@ -116,13 +123,13 @@ user_wrap = ->
 
   -> (F.auth.apply F,arguments).value
 
-p_core = proto.core.normal.prototype
+p_core = proto.core.prototype
 
 p_core[symbols.htypes] = true
 
 p_core.auth = tightloop
 
-p_core.wrap = user_wrap
+Object.defineProperty p_core,\wrap,(get:user_wrap,enumerable:true)
 
 wrap.rest = (type) -> -> guard.rest arguments,@self,type
 
@@ -132,11 +139,12 @@ for val in [\and \cont \tap \edit \err \jam \fix]
 
   p_core[val]  = F
 
-create_new_core = (data,type = data.type)->
+create_new_try = (data,type = data.type)->
 
+  z type
   switch type
-  | \obj,\arr      => new proto.core.functor data
-  | otherwise      => new proto.core.normal data
+  | \obj,\arr      => new proto.try.functor data
+  | otherwise      => new proto.try.normal data
 
 get = {}
 
@@ -155,7 +163,7 @@ get.try = ->
     mode:\try
     str:[\try,state.str]
 
-  create_new_core data
+  create_new_try data
 
 
 get.end = ->
@@ -183,13 +191,17 @@ Object.defineProperty p_core,\try,get:get.try
 
 p_core[uic] = print.log \core.normal
 
-Object.defineProperty p_core,\end,get:get.end
+ge = (get:get.end,enumerable:true)
+
+Object.defineProperty proto.try.functor.prototype,\end,ge
+
+Object.defineProperty proto.try.normal.prototype,\end,ge
 
 wrap.on = (type) -> -> guard.on arguments,@self,type
 
 #---------------------------------------------------------
 
-p = proto.core.functor.prototype
+p = proto.functor.prototype
 
 p.map = wrap.rest \map
 
@@ -199,27 +211,26 @@ p.on = wrap.on \on
 
 p.onor = wrap.on \onor
 
-p[uic] = print.log \core.functor
+
+
+
+p.or = wrap.rest \or
+
+p.alt = wrap.rest \alt
+
+p[uic] = print.log \functor
 
 #---------------------------------------------------------
 
 pn = proto.normal.prototype
 
-pn.or = wrap.rest \or
+pn.or = p.or
 
-pn.alt = wrap.rest \alt
+pn.alt = p.alt
 
 pn[uic] = print.log \normal
 
-#---------------------------------------------------------
 
-p = proto.functor.prototype
-
-p.or = pn.or
-
-p.alt = pn.alt
-
-p[uic] = print.log \functor
 
 #---------------------------------------------------------
 
@@ -247,7 +258,7 @@ custom = xop
 
   data =
      *type    : \custom
-      all     : [\and,G]
+      all     : node:G
       index   : 0
       str     : ["{..}"]
       mode    : \normal
@@ -469,23 +480,19 @@ guard.rest = xop # [\and \or \alt \cont \tap \edit \err \jam \fix \map]
   (args,state,type) ->
 
     #----------------------------------
-
-
     switch type
 
-    | \and,\or,\alt =>
+    |\and, \or,\alt =>
 
       list = [cato I for I in args]
 
       len = list.length
 
-      switch len
-      | 1         =>
-        type = type
-        F = list[0]
-      | otherwise =>
+      if len isnt 1
         type = type + "." + \multi
         F = list
+      else
+        F = list[0]
 
     | \map,\forEach,\onor =>
 
@@ -516,7 +523,7 @@ guard.rest = xop # [\and \or \alt \cont \tap \edit \err \jam \fix \map]
 
     if (type is \try) or (state.mode is \try)
 
-      create_new_core data
+      create_new_try data
 
     else
 

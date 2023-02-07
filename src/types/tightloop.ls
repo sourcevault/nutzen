@@ -534,6 +534,8 @@ for I in split_on_value_list
 
 self_amorty = (self)->
 
+  # flatly ----------
+
   flaty = new Array self.index + 1
 
   current = self.all
@@ -547,6 +549,8 @@ self_amorty = (self)->
     current = current.back
 
     --I
+
+  # flatly ----------
 
   fin = []
 
@@ -619,7 +623,7 @@ self_amorty = (self)->
 
         fin.push {type:type,item:data}
 
-    else 
+    else
 
       bucket.item.push each
 
@@ -628,9 +632,26 @@ self_amorty = (self)->
   if bucket.item.length
     fin.push bucket
 
+  for I in fin
+
+    if I.type isnt \and
+      continue
+
+    if I.item.length is 1
+
+      I.item = I.item[0]
+
+    else
+
+      I.type = \and.multi
+
+
+  # z.j fin
+
   # --- done ---
 
   fin
+
 
 tightloop = (x) !->
 
@@ -640,35 +661,67 @@ tightloop = (x) !->
 
     @data = self_amorty self
 
+  # ----------------------
+
   data = @data
 
-  z.j data
+  dtype = @self.type
 
   I = 0
 
-  put = {}
+  olen = data.length
 
-  :oloop do
+  put = {continue:true,error:false,value:x}
 
-    {type,item} = data[I]
+  # # ----------------------
 
-    switch type
-    | \and       =>
+  # z.j data
 
-      # resolve item,put,dtype,x
+  # :oloop do
 
-    | \or        =>
-    | \try       =>
-    | \alt       =>
-    | \or.multi  =>
-    | \alt.multi =>
+  #   {type,item} = data[I]
 
 
+  #   switch type
+  #   | \and       =>
 
+  #     K = 0
 
-    I++
+  #     ilen = item.length
 
-  while I < data.length
+  #     do
+
+  #       fun = item[K]
+
+  #       if put.error
+
+  #         put = blunder fun,put,arguments
+
+  #       else
+
+  #         put = resolve fun,put,dtype,arguments
+
+  #       K++
+
+  #     while K < ilen
+
+  #   | \or        =>
+
+  #     # put.message = [put.message]
+
+  #     # K = 0
+
+  #   | \try       =>
+  #   | \alt       =>
+  #   | \or.multi  =>
+
+  #   | \alt.multi =>
+
+  #   I++
+
+  # while I < olen
+
+  # return put
 
 
 module.exports = tightloop

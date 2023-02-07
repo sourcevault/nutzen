@@ -131,12 +131,22 @@ for [name,type] in props
 
 #------------------------------
 
+rf = -> false
+
 V = be.arr
 
+.try
+# .map ->
+# .and ->
+# .and ->
+# .and ->
+
+z V
+# .end
 # .try
 # .on [1,3],->
-.and ->
-.and ->,->
+# .and ->
+# .and ->,->
 
 # .try
 # .try
@@ -149,7 +159,7 @@ V = be.arr
 
 # .or ->
 
-V.auth []
+V.auth null
 
 
 
