@@ -1,14 +1,12 @@
-ext = require \../utils/main
-
-xop = require \../guard/main
+pkg = require \../guard/main
 
 print      = {}
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
 
-com = ext.com
+com = pkg.com
 
-{l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack,version} = com
+{l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack,version,loopError} = com
 
 pkgversion = version
 
@@ -16,7 +14,7 @@ pkgname    = \hoplon.types
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
 
-export {...ext,print,pkgname}
+export {...pkg,print,pkgname}
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -----------------
 
@@ -56,13 +54,13 @@ print.resreq = ([cat,type]) ->
 
 print.input_fault = ([method_name,data]) ->
 
-  fi = @input_fault
+  input_fault = @input_fault
 
   switch method_name
-  | \on       => fi.on data
-  | \map      => fi.map data
-  | \custom   => fi.custom data
-  | \and,\or  => fi.andor data,method_name
+  | \on       => input_fault.on data
+  | \map      => input_fault.map data
+  | \custom   => input_fault.custom data
+  | \and,\or  => input_fault.andor data,method_name
 
 
 show_chain = (data) ->
@@ -127,7 +125,7 @@ print.input_fault.andor = ([type,info],method_name)->
   l ""
 
 
-print.input_fault.custom = ([patt,loc]) ->
+print.input_fault.custom = (patt) ->
 
   show_name "custom validator"
 
@@ -136,18 +134,21 @@ print.input_fault.custom = ([patt,loc]) ->
   switch patt
   | \arg_count =>
 
-    l c.grey do
-      "  no value passed."
-      "\n\n"
-      " minimum of 1 argument of function type is needed."
+    l c.er1 do
+      " accepts only 1 argument of type function."
 
   | \not_function =>
 
-    l c.er1 "  first argument has to be a function / hoplon.types object ."
+    l c.er1 " first argument has to be a function / hoplon.types object."
 
   l ""
 
-print.input_fault.map = ([patt,loc]) ->
+map_str = 
+  *c.ok " map/1 :: fun"
+   c.ok " map/2 :: [num,num],fun"
+   c.ok " map/2 :: [num,num,num],fun"
+
+print.input_fault.map = ([[patt,extra],loc]) ->
 
   show_name ".map"
 
@@ -158,30 +159,66 @@ print.input_fault.map = ([patt,loc]) ->
   l ""
 
   switch patt
-  | \arg_count    =>
+  | \undefined_error =>
 
-    l c.grey "  only accepts 1 argument required of function type."
+    l c.er3 " unexpected error, expected types:\n"
 
-  | \not_function =>
+    l map_str.join "\n"
 
-    l c.grey "  first argument has to be a function."
+  | \num_count =>
+
+    l c.er3 " range values has to be either 2 or 3.\n"
+
+    l lit [" map :: (","[num]",",fun)"],[c.ok,c.er2,c.ok]
+
+  | \range =>
+
+    l c.er2 " first argument (range) has to be an array.\n"
+
+    l lit [" map :: (","[num,..]",",fun)"],[c.ok,c.er3,c.ok]
+
+  | \arg_count =>
+
+    l c.er3 " only accepts 1 or 2 argument: \n"
+
+    l map_str.join "\n"
+
+  | \num =>
+
+    num = (c.er3(extra) + c.er2(":num"))
+
+    l c.er3 " range values have be all numbers.\n"
+
+    l lit [" map :: (",num,",fun)"],[c.ok,null,c.ok]
+
+  | \fun =>
+
+    l c.er3 " The #{extra} argument has to a function.\n"
+
+    switch extra
+    | \first =>
+
+      l lit [" map/1 :: ","fun"],[c.ok,c.er2]
+
+    | \second =>
+
+      l lit [" map/2 :: [num,...],","fun"],[c.ok,c.er2]
 
 
   l ""
-
 
 on_dtype = {}
   ..string       = "(string|number),function"
   ..array        = "[(string|number),..],function"
   ..object       = "object{*:function}"
 
-print.input_fault.on = ([patt,loc])->
+print.input_fault.on = (data)->
 
-  eType = switch patt
-  | \typeError => \typeError
-  | otherwise  => \inputError
+  [patt,loc] = data
 
-  show_name ".#{loc[1]}","[#{eType}] "
+  [__,fname] = loc
+
+  show_name ".#{fname}"
 
   l ""
 
@@ -190,16 +227,14 @@ print.input_fault.on = ([patt,loc])->
   l ""
 
   switch patt
-  | \typeError,\arg_count =>
+
+  | \typeError,void,\arg_count =>
 
     switch patt
-    | \typeError =>
-
-      l c.er3 "  unable to pattern match on user input."
-
     | \arg_count =>
-
-      l c.er3 "  only accepts 1 or 2 arguments."
+      l c.er3 " only accepts 1 or 2 arguments."
+    | \typeError,void =>
+      l c.er3 " unable to pattern match on user input."
 
     l ""
 
@@ -207,18 +242,19 @@ print.input_fault.on = ([patt,loc])->
 
     l ""
 
-    lines = [type_color (" - ." + loc[1] + " :: #{val}") for key,val of on_dtype].join "\n\n"
+    lines = [type_color (" - " + loc[1] + " :: #{val}") for key,val of on_dtype].join "\n\n"
 
     l lines
 
+  | \string,\array,\object  =>
 
-  | otherwise  =>
+    l c.er3 " user input is incorrect.\n"
+
+    l c.grey " expected signature:\n"
 
     dtype = on_dtype[patt]
 
-    l lit do
-      [" .#{loc[1]}", " :: ",dtype," <-- expected signature."]
-      [  c.ok,   c.ok,        c.ok,                      c.ok]
+    l lit [" #{loc[1]}", " :: ",dtype],[c.ok,c.ok,c.ok]
 
   l ""
 
@@ -230,6 +266,8 @@ print.route = ([E,ECLASS,info]) ->
   | \input.fault  => print.input_fault info
 
   show_stack E
+
+  loopError!
 
 # ------------------------------------------------------------------------
 
@@ -253,9 +291,9 @@ print.log = (name) -> ->
     str = ':m'
   | \normal       =>
     str = ''
-  | \core.functor =>
+  | \try.functor =>
     str = ':m:try'
-  | \core.normal  =>
+  | \try.normal  =>
     str = ':try'
 
   # prop = sort (getprop @)

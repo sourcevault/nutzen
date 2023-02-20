@@ -1,4 +1,4 @@
-var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, util, util_inspect_custom, uic, noop, jspc_def, jspc, z, get_all_protos, loopfault, ansi_wrap, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, tupnest_recurse, tupnest, generic_log, veri, ap, isA, get, pub, com, y$, symbols, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, version, util, util_inspect_custom, uic, noop, jspc_def, jspc, z, get_all_protos, loopfault, ansi_wrap, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, tupnest_recurse, tupnest, generic_log, veri_err_str, veri, ap, isA, get, pub, com, y$, symbols, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 vendor = require("./vendor");
 l = console.log;
 flat = vendor.flat;
@@ -8,6 +8,7 @@ alpha_sort = vendor.alpha_sort;
 R = require("ramda");
 esp = require("error-stack-parser");
 _jspc = vendor.stringify;
+version = '2.0.0';
 if (typeof window === "undefined" && typeof module === "object") {
   util = require('util');
   util_inspect_custom = util.inspect.custom;
@@ -16,7 +17,7 @@ if (typeof window === "undefined" && typeof module === "object") {
 }
 uic = util_inspect_custom;
 noop = function(){};
-noop[util_inspect_custom] = function(){
+noop[uic] = function(){
   return this[util_inspect_custom];
 };
 jspc_def = {
@@ -53,7 +54,7 @@ get_all_protos = function(obj){
   while (cont) {
     disp.push(obj);
     cp = obj.__proto__;
-    if (cp === null) {
+    if (cp === null || cp === void 8) {
       cont = false;
     }
     obj = cp;
@@ -235,7 +236,7 @@ tupnest_recurse = function(a, index){
     return a[index];
   }
   ot = a[index];
-  if (R.type(a[index]) === 'Array') {
+  if (R.type(ot) === 'Array') {
     return arrayFrom$(ot).concat([tupnest_recurse(a, index + 1)]);
   } else {
     return [ot, tupnest_recurse(a, index + 1)];
@@ -267,18 +268,37 @@ tupnest.concat = function(da, ta){
 generic_log = function(state){
   return state;
 };
-veri = function(arglen, fun, uget, state, ulog){
-  switch (arglen) {
-  case 0:
-    l("[argument.error] top level function did not recieve any argument.");
+veri_err_str = c.er3("[hoplon.utils.binapi#" + version + "][argument.error]\n");
+veri = function(){
+  var arglen, str, fun, uget, state, uk, user_map, ulog, log;
+  arglen = arguments.length;
+  str = veri_err_str;
+  if (!(arglen === 4 || arglen === 5)) {
+    str += c.er1(" top level function did not recieve correct number of argument.");
+    l(str);
     return null;
+  }
+  switch (arglen) {
+  case 4:
+    fun = arguments[0]; uget = arguments[1]; state = arguments[2]; uk = arguments[3];
+    switch (R.type(uk)) {
+    case 'Function':
+      user_map = {};
+      ulog = uk;
+      break;
+    case 'Object':
+      user_map = uk;
+    }
+    break;
+  case 5:
+    fun = arguments[0]; uget = arguments[1]; state = arguments[2]; ulog = arguments[3]; user_map = arguments[4];
   }
   switch (typeof fun) {
   case 'function':
     0;
     break;
   default:
-    l("[argument.type.error] second argument can only be a function");
+    str += c.er1(" first argument can only be a function");
     return null;
   }
   switch (typeof uget) {
@@ -286,25 +306,32 @@ veri = function(arglen, fun, uget, state, ulog){
     0;
     break;
   default:
-    l("[argument.type.error] third argument can only be a function");
+    str += c.er1(" second argument can only be a function");
+    l(str);
     return null;
   }
-  switch (typeof ulog) {
-  case 'function':
-    return ulog;
-  default:
-    return generic_log;
+  log = (function(){
+    switch (typeof ulog) {
+    case 'function':
+      return ulog;
+    default:
+      return generic_log;
+    }
+  }());
+  if (!user_map[uic]) {
+    user_map[uic] = ulog;
   }
+  return user_map;
 };
 ap = function(__, ___, args){
   return this.fun(this.state, args);
 };
 isA = Array.isArray;
 get = function(__, ukey, ___){
-  var ret, sortir, cont, state, data, P;
-  switch (ukey) {
-  case uic:
-    return this.log(this.state);
+  var exists, ret, sortir, cont, state, handle, P;
+  exists = this.user_map[ukey];
+  if (exists) {
+    return exists(this.state);
   }
   ret = this.cache[ukey];
   if (ret) {
@@ -319,43 +346,43 @@ get = function(__, ukey, ___){
   } else {
     state = sortir;
   }
-  data = {
+  handle = {
     cache: {},
-    log: this.log,
-    fun: this.fun,
     state: state,
     apply: ap,
     get: get,
-    uget: this.uget
+    fun: this.fun,
+    uget: this.uget,
+    user_map: this.user_map
   };
-  P = new Proxy(noop, data);
+  P = new Proxy(noop, handle);
   this.cache[ukey] = P;
   return P;
 };
-pub = function(fun, uget, state, ulog){
-  var log, data, P;
-  log = veri(arguments.length, fun, uget, state, ulog);
-  switch (log) {
+pub = function(fun, uget, state, ulog, user_map){
+  var handle, P;
+  user_map = veri.apply(null, arguments);
+  switch (user_map) {
   case null:
     return;
   }
-  data = {
-    log: log,
+  handle = {
     fun: fun,
     state: state,
     uget: uget,
     cache: {},
     apply: ap,
-    get: get
+    get: get,
+    user_map: user_map
   };
-  P = new Proxy(noop, data);
+  P = new Proxy(noop, handle);
   return P;
 };
 com = {
   z: z,
   l: l,
-  c: c,
-  R: R,
+  c: Object.freeze(c),
+  R: Object.freeze(R),
   esp: esp,
   lit: lit,
   flat: flat,
@@ -363,8 +390,8 @@ com = {
   wait: wait,
   jspc: jspc,
   binapi: pub,
-  tupnest: tupnest,
-  pad: advanced_pad,
+  tupnest: Object.freeze(tupnest),
+  pad: Object.freeze(advanced_pad),
   loopError: loopfault,
   print_fail: print_fail,
   alpha_sort: alpha_sort,
@@ -372,12 +399,12 @@ com = {
   deep_freeze: deep_freeze,
   create_stack: create_stack
 };
-com.version = '2.0.0';
+com.version = version;
 com.homepage = 'https://github.com/sourcevault/hoplon#readme.md';
 y$ = symbols = {};
 y$.htypes = Symbol('hoplon.types');
 y$.guard = Symbol('hoplon.guard');
-com = Object.freeze(com);
+symbols = Object.freeze(symbols);
 module.exports = {
   com: com,
   symbols: symbols

@@ -1,8 +1,8 @@
-pc = require "./print.common"
+pc = require \./print.common
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
-{com,pkgname,sig} = pc
+{com,pkgname} = pc
 
 {l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack} = com
 

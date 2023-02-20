@@ -1,4 +1,4 @@
-var ext, com, verify, print, l, z, R, uic, binapi, loopError, resolve, unshift_resolve, UNDEC, ob, n, a, core, n_n, n_a, arn, arwhn, arnwh, arnwhn, arcap, isArray, arwh, ar, tightloop, main, handle, genfun, props, cat, getter, topcache, init, entry, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ext, com, verify, print, l, z, R, uic, binapi, loopError, resolve, unshift_resolve, UNDEC, ob, n, a, core, n_n, n_a, arn, arwhn, arnwh, arnwhn, arcap, isArray, arwh, ar, tightloop, main, handle, genfun, props, cat, getter, topcache, init, entry, proto_log, guard, link, proto, proto_fn, pkg, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ext = require("./verify.print.common");
 com = ext.com, verify = ext.verify, print = ext.print;
 l = com.l, z = com.z, R = com.R, uic = com.uic, binapi = com.binapi, loopError = com.loopError;
@@ -24,10 +24,10 @@ unshift_resolve = function(F, init, A){
       return f(init, A[0]);
     case 2:
       return f(init, A[0], A[1]);
-    case 0:
-      return f(init);
     case 3:
       return f(init, A[0], A[1], A[2]);
+    case 0:
+      return f(init);
     case 4:
       return f(init, A[0], A[1], A[2], A[3]);
     case 5:
@@ -42,10 +42,10 @@ unshift_resolve = function(F, init, A){
       return f.auth(init, A[0]);
     case 2:
       return f.auth(init, A[0], A[1]);
-    case 0:
-      return f.auth(init);
     case 3:
       return f.auth(init, A[0], A[1], A[2]);
+    case 0:
+      return f.auth(init);
     case 4:
       return f.auth(init, A[0], A[1], A[2], A[3]);
     case 5:
@@ -219,7 +219,7 @@ core.cap = function(da, ta){
   }
 };
 core.cap[2] = function(da, ta){
-  var exec, ref$, vtype, vF, ret, vd, narg;
+  var exec, ref$, vtype, vF, ret, vd, as_obj, narg;
   exec = ta[0], ref$ = ta[1], vtype = ref$[0], vF = ref$[1];
   switch (vtype) {
   case 'f':
@@ -233,7 +233,11 @@ core.cap[2] = function(da, ta){
     if (vd['continue']) {
       return unshift_resolve(exec, vd.value, da.arg);
     } else {
-      narg = [vd.message, vd.path].concat(da.arg);
+      as_obj = {
+        message: vd.message,
+        path: vd.path
+      };
+      narg = [as_obj].concat(arrayFrom$(da.arg));
       ret = lastview.apply(void 8, narg);
       if (ret !== void 8) {
         return ret;
@@ -248,7 +252,7 @@ core.cap[2] = function(da, ta){
   return UNDEC;
 };
 core.cap[3] = function(da, ta){
-  var exec, ref$, vtype, vF, lastview, ret, cont, msg, narg, lvret, vd;
+  var exec, ref$, vtype, vF, lastview, ret, cont, msg, narg, lvret, vd, as_obj;
   exec = ta[0], ref$ = ta[1], vtype = ref$[0], vF = ref$[1], lastview = ta[2];
   switch (vtype) {
   case 'f':
@@ -258,7 +262,7 @@ core.cap[3] = function(da, ta){
       if (cont) {
         return unshift_resolve(exec, msg, da.arg);
       } else {
-        narg = [msg].concat(da.arg);
+        narg = [msg].concat(arrayFrom$(da.arg));
         lvret = lastview.apply(void 8, narg);
       }
     } else {
@@ -277,7 +281,11 @@ core.cap[3] = function(da, ta){
     if (vd['continue']) {
       return unshift_resolve(exec, vd.value, da.arg);
     } else {
-      narg = [vd.message, vd.path].concat(da.arg);
+      as_obj = {
+        message: vd.message,
+        path: vd.path
+      };
+      narg = [as_obj].concat(arrayFrom$(da.arg));
       ret = lastview.apply(void 8, narg);
       if (ret !== void 8) {
         return ret;
@@ -548,11 +556,95 @@ entry = function(data, args){
   topcache[str] = put;
   return put[key].apply(put, args);
 };
-pkg = binapi(entry, getter, {
+proto_log = function(state){
+  var diff, keys;
+  diff = R.difference(['unary', 'debug', 'def'], state.path);
+  keys = arrayFrom$(props).concat(arrayFrom$(diff));
+  return keys;
+};
+guard = binapi(entry, getter, {
   path: [],
   lock: false,
   sorted_path: [],
   str: "",
   key: null
-}, print.log.prox);
+}, print.log.prox, {
+  __proto__: proto_log
+});
+link = {};
+proto = {
+  1: function(origin){
+    return function(){
+      return proto.def.apply(proto, [origin].concat(arrayFrom$(arguments)));
+    };
+  },
+  def: function(){
+    var args, targets, res$, i$, to$, I, origin, len$, prop;
+    args = arguments;
+    res$ = [];
+    for (i$ = 1, to$ = args.length; i$ < to$; ++i$) {
+      I = i$;
+      res$.push(args[I]);
+    }
+    targets = res$;
+    origin = args[0];
+    for (i$ = 0, len$ = targets.length; i$ < len$; ++i$) {
+      prop = targets[i$];
+      prop.prototype = Object.create(origin.prototype);
+    }
+  }
+};
+link.proto = guard.ar(proto).def(proto.def);
+proto_fn = {
+  1: function(origin){
+    return function(){
+      var args, targets, res$, i$, to$, I;
+      args = arguments;
+      res$ = [];
+      for (i$ = 1, to$ = args.length; i$ < to$; ++i$) {
+        I = i$;
+        res$.push(args[I]);
+      }
+      targets = res$;
+      return proto_fn.main(origin, [args[0], targets]);
+    };
+  },
+  2: function(origin, fnames){
+    return function(){
+      var targets;
+      targets = arguments;
+      return proto_fn.main(origin, [fnames, targets]);
+    };
+  },
+  def: function(){
+    var args, origin, fnames, targets, res$, i$, to$, I;
+    args = arguments;
+    origin = args[0], fnames = args[1];
+    res$ = [];
+    for (i$ = 2, to$ = args.length; i$ < to$; ++i$) {
+      I = i$;
+      res$.push(args[I]);
+    }
+    targets = res$;
+    return proto_fn.main(origin, [fnames, targets]);
+  },
+  main: function(origin, arg$){
+    var fnames, targets, i$, len$, N, j$, len1$, T;
+    fnames = arg$[0], targets = arg$[1];
+    for (i$ = 0, len$ = fnames.length; i$ < len$; ++i$) {
+      N = fnames[i$];
+      for (j$ = 0, len1$ = targets.length; j$ < len1$; ++j$) {
+        T = targets[j$];
+        T.prototype[N] = origin[N];
+      }
+    }
+  }
+};
+link.proto_fn = guard.ar(proto_fn).def(proto_fn.def);
+pkg = {};
+ext.com.link = Object.freeze(link);
+ext.com = Object.freeze(ext.com);
+pkg.guard = guard;
+pkg.com = ext.com;
+pkg.symbols = ext.symbols;
 module.exports = pkg;

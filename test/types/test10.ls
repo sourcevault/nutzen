@@ -1,16 +1,18 @@
-{utils,types} = require \../../dist/main
+
+pkg = require \../../dist/types/main
+
+{utils,types} = pkg
 
 {z,l,R,j,print_fail} = utils
 
-be = types
+xop = pkg.guard
 
-# get = ->
-#   z arguments
-#   z @
+be = pkg.types
 
-# P = Object.defineProperty {a:1},\try,get:get
+# V = be null
 
-# V = be.arr.map ->
+# .onor null,null
 
 
-# z.p V
+
+

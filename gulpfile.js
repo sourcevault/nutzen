@@ -25,11 +25,6 @@ def = function(done){
   })).on('error', gutil.log).on('error', function(it){
     throw it;
   }).pipe(gulp.dest("."));
-  gulp.src("./src/main.ls").pipe(gulpLivescript({
-    bare: true
-  })).on('error', gutil.log).on('error', function(it){
-    throw it;
-  }).pipe(gulp.dest("./dist"));
   ls = gulp.src("./src/*/*.ls").pipe(gulpLivescript({
     bare: true
   })).on('error', gutil.log).on('error', function(it){

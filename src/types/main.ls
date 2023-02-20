@@ -1,13 +1,13 @@
-{com,symbols,print} = require \./print.common
+pkg = require \./print.common
 
+internal = require \./internal
+
+{com,print} = pkg
 # ------------------------------------------------------------------
-
 
 {z,l,R,j,deep_freeze,uic,loopError,noop} = com
 
-oxo = require \../guard/main
-
-internal = require \./internal
+xop = pkg.guard
 
 {custom,define,defset} = internal
 
@@ -91,9 +91,9 @@ be.not = (F) ->
 
 # --------------------------------------------------------
 
-be.undefnull = be undefnull
+# be.undefnull = be undefnull
 
-be.not.undefnull = be.not undefnull
+# be.not.undefnull = be.not undefnull
 
 # --------------------------------------------------------
 
@@ -136,12 +136,14 @@ rf = -> false
 V = be.arr
 
 .try
+
 # .map ->
 # .and ->
 # .and ->
 # .and ->
 
-z V
+# z V
+
 # .end
 # .try
 # .on [1,3],->
@@ -270,15 +272,15 @@ V.auth null
 
 #   return false
 
-# reqError = oxo.wh do
+# reqError = xop.wh do
 #   not-arrayof-str-or-num \req
 #   loopError
 
-# resError = oxo.wh do
+# resError = xop.wh do
 #   not-arrayof-str-or-num \res
 #   loopError
 
-# reqresError = oxo.wh do
+# reqresError = xop.wh do
 #   (req,res) ->
 
 #     if not (((R.type req) is "Array") and (((R.type res) is "Array")))
@@ -596,7 +598,17 @@ V.auth null
 
 # -----------------------------------
 
-module.exports = be
+pkg = {}
+
+pkg.types = be
+
+pkg.guard = xop
+
+pkg.utils = com
+
+pkg = Object.freeze pkg
+
+module.exports = pkg
 
 
 

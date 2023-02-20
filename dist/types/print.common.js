@@ -1,13 +1,12 @@
-var ext, xop, print, com, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, version, pkgversion, pkgname, ref$, help, show_stack, type_color, show_chain, show_name, x$, on_dtype, getprop, includes, sort, same, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-ext = require('../utils/main');
-xop = require('../guard/main');
+var pkg, print, com, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, version, loopError, pkgversion, pkgname, ref$, help, show_stack, type_color, show_chain, show_name, map_str, x$, on_dtype, getprop, includes, sort, same, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+pkg = require('../guard/main');
 print = {};
-com = ext.com;
-l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack, version = com.version;
+com = pkg.com;
+l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack, version = com.version, loopError = com.loopError;
 pkgversion = version;
 pkgname = 'hoplon.types';
 ref$ = out$;
-import$(ref$, ext);
+import$(ref$, pkg);
 ref$.print = print;
 ref$.pkgname = pkgname;
 print.log = {};
@@ -48,19 +47,19 @@ print.resreq = function(arg$){
   return l(lit(['\n', txt, '\n'], [0, c.warn, 0]));
 };
 print.input_fault = function(arg$){
-  var method_name, data, fi;
+  var method_name, data, input_fault;
   method_name = arg$[0], data = arg$[1];
-  fi = this.input_fault;
+  input_fault = this.input_fault;
   switch (method_name) {
   case 'on':
-    return fi.on(data);
+    return input_fault.on(data);
   case 'map':
-    return fi.map(data);
+    return input_fault.map(data);
   case 'custom':
-    return fi.custom(data);
+    return input_fault.custom(data);
   case 'and':
   case 'or':
-    return fi.andor(data, method_name);
+    return input_fault.andor(data, method_name);
   }
 };
 show_chain = function(data){
@@ -116,33 +115,57 @@ print.input_fault.andor = function(arg$, method_name){
   l(type_color(" " + method_name + " :: (fun,..)"));
   return l("");
 };
-print.input_fault.custom = function(arg$){
-  var patt, loc;
-  patt = arg$[0], loc = arg$[1];
+print.input_fault.custom = function(patt){
   show_name("custom validator");
   l("");
   switch (patt) {
   case 'arg_count':
-    l(c.grey("  no value passed.", "\n\n", " minimum of 1 argument of function type is needed."));
+    l(c.er1(" accepts only 1 argument of type function."));
     break;
   case 'not_function':
-    l(c.er1("  first argument has to be a function / hoplon.types object ."));
+    l(c.er1(" first argument has to be a function / hoplon.types object."));
   }
   return l("");
 };
+map_str = [c.ok(" map/1 :: fun"), c.ok(" map/2 :: [num,num],fun"), c.ok(" map/2 :: [num,num,num],fun")];
 print.input_fault.map = function(arg$){
-  var patt, loc;
-  patt = arg$[0], loc = arg$[1];
+  var ref$, patt, extra, loc, num;
+  ref$ = arg$[0], patt = ref$[0], extra = ref$[1], loc = arg$[1];
   show_name(".map");
   l("");
   show_chain(loc);
   l("");
   switch (patt) {
-  case 'arg_count':
-    l(c.grey("  only accepts 1 argument required of function type."));
+  case 'undefined_error':
+    l(c.er3(" unexpected error, expected types:\n"));
+    l(map_str.join("\n"));
     break;
-  case 'not_function':
-    l(c.grey("  first argument has to be a function."));
+  case 'num_count':
+    l(c.er3(" range values has to be either 2 or 3.\n"));
+    l(lit([" map :: (", "[num]", ",fun)"], [c.ok, c.er2, c.ok]));
+    break;
+  case 'range':
+    l(c.er2(" first argument (range) has to be an array.\n"));
+    l(lit([" map :: (", "[num,..]", ",fun)"], [c.ok, c.er3, c.ok]));
+    break;
+  case 'arg_count':
+    l(c.er3(" only accepts 1 or 2 argument: \n"));
+    l(map_str.join("\n"));
+    break;
+  case 'num':
+    num = c.er3(extra) + c.er2(":num");
+    l(c.er3(" range values have be all numbers.\n"));
+    l(lit([" map :: (", num, ",fun)"], [c.ok, null, c.ok]));
+    break;
+  case 'fun':
+    l(c.er3(" The " + extra + " argument has to a function.\n"));
+    switch (extra) {
+    case 'first':
+      l(lit([" map/1 :: ", "fun"], [c.ok, c.er2]));
+      break;
+    case 'second':
+      l(lit([" map/2 :: [num,...],", "fun"], [c.ok, c.er2]));
+    }
   }
   return l("");
 };
@@ -150,30 +173,25 @@ x$ = on_dtype = {};
 x$.string = "(string|number),function";
 x$.array = "[(string|number),..],function";
 x$.object = "object{*:function}";
-print.input_fault.on = function(arg$){
-  var patt, loc, eType, lines, key, val, dtype;
-  patt = arg$[0], loc = arg$[1];
-  eType = (function(){
-    switch (patt) {
-    case 'typeError':
-      return 'typeError';
-    default:
-      return 'inputError';
-    }
-  }());
-  show_name("." + loc[1], "[" + eType + "] ");
+print.input_fault.on = function(data){
+  var patt, loc, __, fname, lines, key, val, dtype;
+  patt = data[0], loc = data[1];
+  __ = loc[0], fname = loc[1];
+  show_name("." + fname);
   l("");
   show_chain(loc);
   l("");
   switch (patt) {
   case 'typeError':
+  case void 8:
   case 'arg_count':
     switch (patt) {
-    case 'typeError':
-      l(c.er3("  unable to pattern match on user input."));
-      break;
     case 'arg_count':
-      l(c.er3("  only accepts 1 or 2 arguments."));
+      l(c.er3(" only accepts 1 or 2 arguments."));
+      break;
+    case 'typeError':
+    case void 8:
+      l(c.er3(" unable to pattern match on user input."));
     }
     l("");
     l(c.grey(" types that may match :"));
@@ -182,15 +200,19 @@ print.input_fault.on = function(arg$){
       var ref$, results$ = [];
       for (key in ref$ = on_dtype) {
         val = ref$[key];
-        results$.push(type_color(" - ." + loc[1] + (" :: " + val)));
+        results$.push(type_color(" - " + loc[1] + (" :: " + val)));
       }
       return results$;
     }()).join("\n\n");
     l(lines);
     break;
-  default:
+  case 'string':
+  case 'array':
+  case 'object':
+    l(c.er3(" user input is incorrect.\n"));
+    l(c.grey(" expected signature:\n"));
     dtype = on_dtype[patt];
-    l(lit([" ." + loc[1], " :: ", dtype, " <-- expected signature."], [c.ok, c.ok, c.ok, c.ok]));
+    l(lit([" " + loc[1], " :: ", dtype], [c.ok, c.ok, c.ok]));
   }
   return l("");
 };
@@ -204,7 +226,8 @@ print.route = function(arg$){
   case 'input.fault':
     print.input_fault(info);
   }
-  return show_stack(E);
+  show_stack(E);
+  return loopError();
 };
 getprop = function(item){
   var fin, I;
@@ -228,10 +251,10 @@ print.log = function(name){
     case 'normal':
       str = '';
       break;
-    case 'core.functor':
+    case 'try.functor':
       str = ':m:try';
       break;
-    case 'core.normal':
+    case 'try.normal':
       str = ':try';
     }
     return lit([pkgname, str], [c.pink, c.pink]);

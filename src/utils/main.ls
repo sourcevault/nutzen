@@ -19,6 +19,8 @@ esp              = require "error-stack-parser"
 _jspc            = vendor.stringify
 
 
+version = \__VERSION__
+
 if (typeof window is "undefined") and (typeof module is "object")
 
   util = require \util
@@ -35,7 +37,7 @@ uic = util_inspect_custom
 
 noop                      = !->
 
-noop[util_inspect_custom] = -> @[util_inspect_custom]
+noop[uic] = -> @[util_inspect_custom]
 
 # --------------------------------------------------------------------------------------
 
@@ -76,7 +78,7 @@ get_all_protos = (obj) ->
 
     cp = obj.__proto__
 
-    if cp is null
+    if cp in [null,void]
 
       cont = false
 
@@ -265,7 +267,7 @@ tupnest_recurse = (a,index = 0) ->
 
   ot = a[index]
 
-  if (R.type a[index]) is \Array
+  if (R.type ot) is \Array
 
     [...ot,tupnest_recurse(a,index+1)]
 
@@ -308,28 +310,63 @@ tupnest.concat = (da,ta) ->
 
 generic_log = (state) -> state
 
-veri = (arglen,fun,uget,state,ulog) ->
+veri_err_str = c.er3 "[hoplon.utils.binapi\##{version}][argument.error]\n"
+
+veri = ->
+
+  arglen = arguments.length
+
+  str = veri_err_str
+
+  if not (arglen in [4,5])
+
+    str += c.er1 " top level function did not recieve correct number of argument."
+
+    l str
+
+    return null
 
   switch arglen
-  | 0 =>
-    l "[argument.error] top level function did not recieve any argument."
-    return null
+  | 4 =>
+
+    [fun,uget,state,uk] = arguments
+
+    switch R.type uk
+    | \Function =>
+
+      user_map = {}
+
+      ulog = uk
+
+    | \Object =>
+
+      user_map = uk
+
+  | 5 =>
+
+    [fun,uget,state,ulog,user_map] = arguments
 
   switch typeof fun
   | \function => 0
   | otherwise =>
-    l "[argument.type.error] second argument can only be a function"
+    str += c.er1 " first argument can only be a function"
     return null
 
   switch typeof uget
   | \function => 0
   | otherwise =>
-    l "[argument.type.error] third argument can only be a function"
+    str += c.er1 " second argument can only be a function"
+    l str
     return null
 
-  switch typeof ulog
+  log = switch typeof ulog
   | \function => ulog
   | otherwise => generic_log
+
+  if not user_map[uic]
+    user_map[uic] = ulog
+
+  user_map
 
 # -----------------------------------------------
 
@@ -341,8 +378,10 @@ isA = Array.isArray
 
 get = (__,ukey,___) ->
 
-  switch ukey
-  | uic       => return @log @state
+  exists = @user_map[ukey]
+
+  if exists
+    return exists @state
 
   ret = @cache[ukey]
 
@@ -355,51 +394,55 @@ get = (__,ukey,___) ->
     [cont,state] = sortir
 
     if not cont
+
       return state
+
   else
 
     state = sortir
 
-  data =
+  handle =
    *cache:{}
-    log:@log
-    fun:@fun
     state:state
     apply:ap
     get:get
+    fun:@fun
     uget:@uget
+    user_map:@user_map
 
-  P = new Proxy(noop,data)
+  P = new Proxy(noop,handle)
 
   @cache[ukey] = P
 
   return P
 
-pub = (fun,uget,state,ulog) ->
+pub = (fun,uget,state,ulog,user_map) -> # u stands for user 
 
-  log = veri arguments.length,fun,uget,state,ulog
+  user_map = veri.apply null,arguments
 
-  switch log
+  # arguments.length,fun,uget,state,ulog,user_map
+
+  switch user_map
   | null => return
 
-  data =
-    log:log
+  handle =
     fun:fun
     state:state
     uget:uget
     cache:{}
     apply:ap
     get:get
+    user_map:user_map
 
-  P = new Proxy(noop,data)
+  P = new Proxy(noop,handle)
 
   P
 
 com =
   *z:z
    l:l
-   c:c
-   R:R
+   c:Object.freeze(c)
+   R:Object.freeze(R)
    esp:esp
    lit:lit
    flat:flat
@@ -407,8 +450,8 @@ com =
    wait:wait
    jspc:jspc
    binapi:pub
-   tupnest:tupnest
-   pad:advanced_pad
+   tupnest:Object.freeze(tupnest)
+   pad:Object.freeze(advanced_pad)
    loopError:loopfault
    print_fail:print_fail
    alpha_sort:alpha_sort
@@ -416,7 +459,7 @@ com =
    deep_freeze:deep_freeze
    create_stack:create_stack
 
-com.version = \__VERSION__
+com.version = version
 
 com.homepage = \https://github.com/sourcevault/hoplon#readme.md
 
@@ -425,9 +468,9 @@ symbols = {}
   ..htypes = Symbol \hoplon.types
   ..guard = Symbol \hoplon.guard
 
-com = Object.freeze com
+symbols = Object.freeze symbols
 
-module.exports = {com:com,symbols}
+module.exports = {com,symbols}
 
 # ------------------------------------------------------------------
 

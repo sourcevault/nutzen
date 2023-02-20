@@ -44,15 +44,15 @@ def = (done) ->
 
   ## ------------------------------
 
-  gulp.src "./src/main.ls"
+  # gulp.src "./src/main.ls"
 
-  .pipe gulp-livescript bare:true
+  # .pipe gulp-livescript bare:true
 
-  .on \error,gutil.log
+  # .on \error,gutil.log
 
-  .on \error -> throw it
+  # .on \error -> throw it
 
-  .pipe gulp.dest "./dist"
+  # .pipe gulp.dest "./dist"
 
   ## ------------------------------
 

@@ -25,8 +25,8 @@ unshift_resolve = (F,init,A) -> # when arguments require manipulation
     switch A.length
     | 1 => f init,A[0]
     | 2 => f init,A[0],A[1]
-    | 0 => f init
     | 3 => f init,A[0],A[1],A[2]
+    | 0 => f init
     | 4 => f init,A[0],A[1],A[2],A[3]
     | 5 => f init,A[0],A[1],A[2],A[3],A[4]
     | otherwise =>
@@ -40,8 +40,8 @@ unshift_resolve = (F,init,A) -> # when arguments require manipulation
     switch A.length
     | 1 => f.auth init,A[0]
     | 2 => f.auth init,A[0],A[1]
-    | 0 => f.auth init
     | 3 => f.auth init,A[0],A[1],A[2]
+    | 0 => f.auth init
     | 4 => f.auth init,A[0],A[1],A[2],A[3]
     | 5 => f.auth init,A[0],A[1],A[2],A[3],A[4]
     | otherwise =>
@@ -252,6 +252,7 @@ core.cap.2 = (da,ta) ->
     ret = vF.apply void,da.arg
 
     if ret isnt false
+
       return unshift_resolve exec,ret,da.arg
 
   | \v => # hoplon validator
@@ -264,7 +265,9 @@ core.cap.2 = (da,ta) ->
 
     else
 
-      narg = [vd.message,vd.path].concat da.arg
+      as_obj = (message:vd.message,path:vd.path)
+
+      narg = [as_obj,...da.arg]
 
       ret = lastview.apply void,narg
 
@@ -282,7 +285,7 @@ core.cap.3 = (da,ta) ->
 
   [exec,[vtype,vF],lastview] = ta
 
-  switch vtype  
+  switch vtype
   | \f =>
 
     ret = vF.apply void,da.arg
@@ -297,7 +300,7 @@ core.cap.3 = (da,ta) ->
 
       else
 
-        narg = [msg].concat da.arg
+        narg = [msg,...da.arg]
 
         lvret = lastview.apply void,narg
 
@@ -323,7 +326,9 @@ core.cap.3 = (da,ta) ->
 
     else
 
-      narg = [vd.message,vd.path].concat da.arg
+      as_obj = (message:vd.message,path:vd.path)
+
+      narg = [as_obj,...da.arg]
 
       ret = lastview.apply void,narg
 
@@ -677,7 +682,7 @@ entry = (data,args) ->
   {path,lock,key} = data
 
   ob = {} # {unary:true},{unary:true,immutable:true}
-
+# 
   for ke in path
     ob[ke] = true
 
@@ -689,9 +694,85 @@ entry = (data,args) ->
 
   put[key] ...args
 
-pkg = binapi do
+
+proto_log = (state)->
+
+  diff = R.difference [\unary,\debug,\def],state.path
+
+  keys = [...props,...diff]
+
+  keys
+
+guard = binapi do
   entry,getter,{path:[],lock:false,sorted_path:[],str:"",key:null}
   print.log.prox
+  __proto__:proto_log
 
+link = {}
+
+proto =
+  1:(origin) -> -> proto.def ...[origin,...arguments]
+
+  def:!->
+
+    args = arguments
+
+    targets = [args[I] for I from 1 til args.length]
+
+    [origin] = args
+
+    for prop in targets
+
+      prop.prototype = Object.create origin.prototype
+
+link.proto = guard.ar(proto).def(proto.def)
+
+proto_fn =
+
+ 1:(origin) -> ->
+
+  args = arguments
+
+  targets = [args[I] for I from 1 til args.length]
+
+  proto_fn.main origin,[args[0],targets]
+
+ 2:(origin,fnames) -> ->
+
+  targets = arguments
+
+  proto_fn.main origin,[fnames,targets]
+
+ def:->
+
+  args = arguments
+
+  [origin,fnames] = args
+
+  targets = [args[I] for I from 2 til args.length]
+
+  proto_fn.main origin,[fnames,targets]
+
+ main: (origin,[fnames,targets]) !->
+
+  for N in fnames
+
+    for T in targets
+
+      T.prototype[N] = origin[N]
+
+link.proto_fn = guard.ar(proto_fn).def(proto_fn.def)
+
+pkg = {}
+
+ext.com.link = Object.freeze link
+
+ext.com = Object.freeze ext.com
+
+pkg.guard = guard
+
+pkg.com = ext.com
+
+pkg.symbols = ext.symbols
 
 module.exports = pkg

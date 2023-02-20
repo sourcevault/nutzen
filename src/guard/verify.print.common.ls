@@ -10,7 +10,6 @@ export {...ext,verify:V}
 
 NumIsInt = Number.isInteger
 
-
 customTypeoOf = (unknown) ->
 
   type = R.type unknown

@@ -1,6 +1,6 @@
-var pc, com, pkgname, sig, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, exec_key, exec_top, map, forEach, upon, resolve, split_on_value_list, split_on, i$, len$, I, self_amorty, tightloop;
-pc = require("./print.common");
-com = pc.com, pkgname = pc.pkgname, sig = pc.sig;
+var pc, com, pkgname, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, exec_key, exec_top, map, forEach, upon, resolve, split_on_value_list, split_on, i$, len$, I, self_amorty, tightloop;
+pc = require('./print.common');
+com = pc.com, pkgname = pc.pkgname;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
 sanatize = function(x, UFO){
   var unknown, path, npath, msg;

@@ -1,8 +1,9 @@
-var ref$, com, symbols, print, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, noop, xop, defset, def_or_normal, assort, cato, proto_link, assign_self, x$, wrap, y$, guard, z$, define, z1$, validate, z2$, proto, z3$, user_wrap, p_core, i$, len$, val, F, create_new_try, get, ge, p, pn, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-ref$ = require('./print.common'), com = ref$.com, symbols = ref$.symbols, print = ref$.print;
+var pkg, com, symbols, print, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, noop, link, xop, defset, def_or_normal, assort, cato, assign_self, x$, wrap, y$, guard, z$, define, z1$, validate, z2$, proto, z3$, user_wrap, p_core, main, i$, ref$, len$, val, create_new_try, get, ge, link_from_main, custom, ha, functor, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+pkg = require('./print.common');
+com = pkg.com, symbols = pkg.symbols, print = pkg.print;
 tightloop = require('./tightloop');
-z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError, tupnest = com.tupnest, noop = com.noop;
-xop = require('../guard/main');
+z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError, tupnest = com.tupnest, noop = com.noop, link = com.link;
+xop = pkg.guard;
 defset = new Set();
 def_or_normal = function(F){
   if (F[symbols.htypes] || defset.has(F)) {
@@ -39,14 +40,6 @@ cato = function(arg){
     return fun;
   }
 };
-proto_link = function(){
-  var ref$, origin, pros, i$, len$, I;
-  ref$ = R.splitAt(1, arguments), origin = ref$[0][0], pros = ref$[1];
-  for (i$ = 0, len$ = pros.length; i$ < len$; ++i$) {
-    I = pros[i$];
-    I.prototype = Object.create(origin.prototype);
-  }
-};
 assign_self = function(){
   return function(self){
     this.self = self;
@@ -55,12 +48,11 @@ assign_self = function(){
 };
 x$ = wrap = {};
 x$.on = null;
-x$.rest = null;
-x$['catch'] = null;
+x$.functor = null;
+x$.core = null;
 y$ = guard = {};
 y$.on = null;
 y$.rest = null;
-y$['catch'] = null;
 z$ = define = {};
 z$.and = null;
 z$.or = null;
@@ -68,10 +60,13 @@ z$.proto = null;
 z$.on = null;
 z$.basis = null;
 z$.block = null;
-z$['catch'] = null;
+z$.functor = null;
+z$.rest = null;
+z$.misc = null;
 z1$ = validate = {};
 z1$.on = null;
 z1$.rest = null;
+z1$.core = null;
 z2$ = proto = {};
 z2$.normal = assign_self();
 z2$.functor = assign_self();
@@ -79,8 +74,7 @@ z2$.core = assign_self();
 z3$ = z2$['try'] = {};
 z3$.functor = assign_self();
 z3$.normal = assign_self();
-proto_link(proto.core, proto['try'].functor, proto['try'].normal);
-proto_link(proto.core, proto.normal, proto.functor);
+link.proto(proto.core, proto['try'].functor, proto['try'].normal, proto.normal, proto.functor);
 user_wrap = function(){
   var F;
   F = this;
@@ -95,19 +89,45 @@ Object.defineProperty(p_core, 'wrap', {
   get: user_wrap,
   enumerable: true
 });
-wrap.rest = function(type){
+wrap.core = function(type){
   return function(){
-    return guard.rest(arguments, this.self, type);
+    return guard.core(arguments, this.self, type);
   };
 };
-for (i$ = 0, len$ = (ref$ = ['and', 'cont', 'tap', 'edit', 'err', 'jam', 'fix']).length; i$ < len$; ++i$) {
+wrap.on = function(type){
+  return function(){
+    return guard.on(arguments, this.self, type);
+  };
+};
+wrap.functor = function(type){
+  return function(){
+    return define.functor(arguments, this.self, type);
+  };
+};
+wrap.misc = function(type){
+  return function(){
+    return define.misc(arguments, this.self, type);
+  };
+};
+main = {};
+for (i$ = 0, len$ = (ref$ = ['and', 'tap', 'or', 'alt']).length; i$ < len$; ++i$) {
   val = ref$[i$];
-  F = wrap.rest(val);
-  p_core[val] = F;
+  main[val] = wrap.core(val);
+}
+for (i$ = 0, len$ = (ref$ = ['on', 'onor']).length; i$ < len$; ++i$) {
+  val = ref$[i$];
+  main[val] = wrap.on(val);
+}
+for (i$ = 0, len$ = (ref$ = ['map', 'forEach']).length; i$ < len$; ++i$) {
+  val = ref$[i$];
+  main[val] = wrap.functor(val);
+}
+for (i$ = 0, len$ = (ref$ = ['cont', 'edit', 'err', 'jam', 'fix']).length; i$ < len$; ++i$) {
+  val = ref$[i$];
+  main[val] = wrap.misc(val);
 }
 create_new_try = function(data, type){
   type == null && (type = data.type);
-  z(type);
   switch (type) {
   case 'obj':
   case 'arr':
@@ -158,41 +178,24 @@ get.end = function(){
 Object.defineProperty(p_core, 'try', {
   get: get['try']
 });
-p_core[uic] = print.log('core.normal');
 ge = {
   get: get.end,
   enumerable: true
 };
 Object.defineProperty(proto['try'].functor.prototype, 'end', ge);
 Object.defineProperty(proto['try'].normal.prototype, 'end', ge);
-wrap.on = function(type){
-  return function(){
-    return guard.on(arguments, this.self, type);
-  };
-};
-p = proto.functor.prototype;
-p.map = wrap.rest('map');
-p.forEach = wrap.rest('forEach');
-p.on = wrap.on('on');
-p.onor = wrap.on('onor');
-p.or = wrap.rest('or');
-p.alt = wrap.rest('alt');
-p[uic] = print.log('functor');
-pn = proto.normal.prototype;
-pn.or = p.or;
-pn.alt = p.alt;
-pn[uic] = print.log('normal');
-handleError = function(info){
-  print.route(info);
-  return loopError();
-};
-custom = xop.arn(1, function(){
-  return handleError(tupnest(new Error(), 'input.fault', 'custom', 'arg_count'));
-}).whn(function(f){
-  return R.type(f) === 'Function' || def_or_normal(f);
-}, function(){
-  return handleError(tupnest(new Error(), 'input.fault', 'custom', 'not_function'));
-}).def(function(F){
+link_from_main = link.proto_fn(main);
+link_from_main(['and', 'cont', 'tap', 'edit', 'err', 'jam', 'fix'], proto.core);
+link_from_main(['or', 'alt'], proto.normal, proto.functor);
+link_from_main(['map', 'forEach', 'on', 'onor'], proto.functor);
+link_from_main(['map', 'forEach', 'on', 'onor'], proto['try'].functor);
+p_core[uic] = print.log('core.normal');
+proto['try'].functor.prototype[uic] = print.log('try.functor');
+proto['try'].normal.prototype[uic] = print.log('try.normal');
+proto.normal.prototype[uic] = print.log('normal');
+proto.functor.prototype[uic] = print.log('functor');
+custom = {};
+custom.main = function(F){
   var G, data;
   G = cato(F);
   data = {
@@ -205,8 +208,19 @@ custom = xop.arn(1, function(){
     mode: 'normal'
   };
   return new proto.normal(data);
-});
-custom.is_instance = function(x){
+};
+custom.err = function(type){
+  return function(){
+    var edata;
+    edata = tupnest([new Error(), 'input.fault'], 'custom', type);
+    return print.route(edata);
+  };
+};
+custom.is_fun = function(F){
+  return R.type(F) === 'Function' && def_or_normal(F);
+};
+custom.exp = xop.arn(1, custom.err('arg_count')).whn(custom.is_fun, custom.err('not_function')).def(custom.main);
+custom.exp.is_instance = function(x){
   switch (x[symbols.htypes]) {
   case true:
     return true;
@@ -248,60 +262,63 @@ define.on = function(cat, args, state, ftype){
   };
   return new proto.functor(data);
 };
-guard.on = xop.unary.arn([1, 2], function(args, state, type){
-  return handleError(tupnest([new Error(), 'input.fault'], 'on', 'arg_count', [state.str, type]));
-}).arcap(1, function(args, state, which_on){
+ha = {};
+ha.err = function(err_type, args, state, type){
+  var edata;
+  edata = tupnest([new Error(), 'input.fault'], 'on', [err_type], [state.str, type]);
+  return print.route(edata);
+};
+ha.err_static = function(type){
+  return function(){
+    return ha.err.apply(ha, [type].concat(arrayFrom$(arguments)));
+  };
+};
+ha.validate_obj = function(args, state, which_on){
   var maybe_object, type, I, val;
   maybe_object = args[0];
   type = R.type(maybe_object);
   if (type === 'Object') {
     for (I in maybe_object) {
       val = maybe_object[I];
-      if (!(R.type(val) === 'Function' || def_or_normal(val))) {
-        return tupnest(false, [new Error(), 'input.fault'], 'on', 'object', [state.str, which_on]);
+      if (R.type(val) !== 'Function' || !def_or_normal(val)) {
+        return [false, 'object'];
       }
     }
     return [true, 'object'];
   } else {
-    return tupnest(false, [new Error(), 'input.fault'], 'on', 'typeError', [state.str, which_on]);
+    return [false, 'typeError'];
   }
-}, function(data){
-  if (data[1] === 'input.fault') {
-    return handleError(data);
-  }
-  return loopError();
-}, define.on).arcap(2, function(arg$, state, type){
-  var first, second, i$, len$, I, ref$;
+};
+ha.validate_rest = function(arg$, state, which_on){
+  var first, second, i$, len$, index, I, ref$;
   first = arg$[0], second = arg$[1];
   switch (R.type(first)) {
   case 'Array':
     for (i$ = 0, len$ = first.length; i$ < len$; ++i$) {
+      index = i$;
       I = first[i$];
       if (!((ref$ = R.type(I)) === 'String' || ref$ === 'Number')) {
-        return tupnest(false, [new Error(), 'input.fault'], 'on', 'array', [state.str, type]);
+        return [false, 'array'];
       }
     }
-    if (!(R.type(second) === 'Function' || def_or_normal(second))) {
-      return tupnest(false, [new Error(), 'input.fault'], 'on', 'array', [state.str, type]);
+    if (R.type(second) !== 'Function' || !def_or_normal(second)) {
+      return [false, 'array'];
     }
     return [true, 'array'];
   case 'String':
   case 'Number':
-    if (!(R.type(second) === 'Function' || def_or_normal(second))) {
-      return tupnest(false, [new Error(), 'input.fault'], 'on', 'string', [state.str, type]);
+    if (R.type(second) !== 'Function' || !def_or_normal(second)) {
+      return [false, 'string'];
     }
     return [true, 'string'];
   default:
-    return false;
+    return [false];
   }
-}, function(E_info){
-  return handleError(E_info);
-}, define.on).def(function(args, state, type){
-  var error_obj;
-  error_obj = tupnest([new Error(), 'input.fault'], 'on', 'typeError', [state.str, type]);
-  return handleError(error_obj);
-});
-validate.rest = function(funs, state, type){
+};
+ha[1] = [ha.validate_obj, ha.err, define.on];
+ha[2] = [ha.validate_rest, ha.err, define.on];
+guard.on = xop.unary.arn([1, 2], ha.err_static('arg_count')).arcap(ha).def(ha.err_static('typeError'));
+validate.core = function(funs, state, type){
   var i$, len$, F;
   switch (type) {
   case 'and':
@@ -319,9 +336,7 @@ validate.rest = function(funs, state, type){
       }
     }
     return true;
-  case 'map':
   case 'tap':
-  case 'forEach':
     if (!(funs.length === 1)) {
       print.route(tupnest([new Error(), 'input.fault'], type, 'arg_count', [state.str, type]));
       return false;
@@ -344,7 +359,56 @@ validate.rest = function(funs, state, type){
     return false;
   }
 };
-guard.rest = xop.wh(validate.rest, function(args, state, type){
+functor = {};
+functor.main = function(){};
+functor.validate_range = function(arg$){
+  var range, F, ref$, i$, len$, index, item;
+  range = arg$[0], F = arg$[1];
+  if (R.type(range) !== 'Array') {
+    return [false, ['range']];
+  }
+  if (!((ref$ = range.length) === 2 || ref$ === 3)) {
+    return [false, ['num_count']];
+  }
+  for (i$ = 0, len$ = range.length; i$ < len$; ++i$) {
+    index = i$;
+    item = range[i$];
+    if (R.type(item) !== 'Number') {
+      return [false, ['num', index]];
+    }
+  }
+  if (R.type(F) !== 'Function') {
+    return [false, ['fun', 'second']];
+  }
+  return true;
+};
+functor.validate = function(arg$){
+  var F;
+  F = arg$[0];
+  if (R.type(F) !== 'Function') {
+    return [false, ['fun', 'first']];
+  }
+  return true;
+};
+functor.err_static = function(val){
+  return function(){
+    return functor.err.apply(functor, [[val]].concat(arrayFrom$(arguments)));
+  };
+};
+functor.err = function(err_type, args, state, type){
+  var edata;
+  edata = tupnest([new Error(), 'input.fault'], type, [err_type], [state.str, type]);
+  return print.route(edata);
+};
+functor[1] = [
+  functor.validate, functor.err, function(F){
+    return functor.main([0, Infinity], F);
+  }
+];
+functor[2] = [functor.validate_range, functor.err, functor.main];
+functor.def = functor.err_static('undefined_error');
+define.functor = xop.unary.arcap(functor).arn([1, 2], functor.err_static('arg_count')).def(functor.def);
+define.misc = function(args, state, type){
   var list, res$, i$, len$, I, len, F, node, data;
   switch (type) {
   case 'and':
@@ -366,7 +430,6 @@ guard.rest = xop.wh(validate.rest, function(args, state, type){
     break;
   case 'map':
   case 'forEach':
-  case 'onor':
     F = cato(args[0]);
     break;
   case 'err':
@@ -408,7 +471,8 @@ guard.rest = xop.wh(validate.rest, function(args, state, type){
       return new proto.normal(data);
     }
   }
-}).def(loopError);
+};
+guard.core = xop.wh(validate.core, define.misc).def(loopError);
 define.basis = function(name, F, type){
   var data;
   type == null && (type = name);
@@ -452,7 +516,7 @@ define.basis.empty = function(name, type){
   return inherited;
 };
 module.exports = {
-  custom: custom,
+  custom: custom.exp,
   define: define,
   defset: defset
 };
