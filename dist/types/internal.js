@@ -6,7 +6,6 @@ z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.dee
 xop = pkg.guard;
 defset = new Set();
 def_or_normal = function(F){
-  z(F);
   if (F[symbols.htypes] || defset.has(F)) {
     return true;
   }
