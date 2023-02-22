@@ -615,6 +615,7 @@ self_amorty = function(self){
       I.type = 'and.multi';
     }
   }
+  z.j(fin);
   return fin;
 };
 tightloop = function(x){

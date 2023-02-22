@@ -646,7 +646,7 @@ self_amorty = (self)->
       I.type = \and.multi
 
 
-  # z.j fin
+  z.j fin
 
   # --- done ---
 

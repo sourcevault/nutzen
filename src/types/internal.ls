@@ -85,12 +85,10 @@ define = {}
   ..block   = null
   ..functor = null
   ..rest    = null
-  ..misc    = null
 
 validate   = {}
   ..on     = null
   ..rest   = null
-  ..core   = null
 
 proto       = {}
 
@@ -137,7 +135,7 @@ wrap.on = (type) -> -> guard.on arguments,@self,type
 
 wrap.functor = (type) -> -> define.functor arguments,@self,type
 
-wrap.misc = (type) -> -> define.misc arguments,@self,type 
+wrap.misc = (type) -> -> define.rest arguments,@self,type 
 
 main = {}
 
@@ -270,7 +268,6 @@ custom.err = (type) -> ->
     [new Error!,\input.fault]
     \custom
     type
-
 
   print.route edata
 
@@ -412,59 +409,20 @@ guard.on = xop.unary
 
 #-----------------------------------------------------------------------
 
-validate.core = (funs,state,type) ->
-
-  switch type
-
-  | \and,\or,\alt  =>
-
-    if (funs.length is 0)
-
-      print.route tupnest [new Error!,\input.fault],type,\arg_count,[state.str,type]
-
-      return false
-
-    for F in funs
-
-      if not (((R.type F) is \Function) or def_or_normal F)
-
-        print.route tupnest [(new Error!),\input.fault],type,\not_function,[state.str,type]
-
-        return false
-
-    return true
-
-  | \tap =>
-
-    if not (funs.length is 1)
-
-      print.route tupnest [(new Error!),\input.fault],type,\arg_count,[state.str,type]
-
-      return false
-
-    return true
-
-    [F] = funs
-
-    if not (((R.type f) is \Function) or def_or_normal F)
-
-      print.route tupnest [(new Error!),\input.fault],type,\not_function,[state.str,type]
-
-      return false
-
-    return true
-
-  | \err,\fix,\cont,\jam,\edit,\try  =>
-
-    return true
-
-  | otherwise => false
-
-#-----------------------------------------------------------------------
-
 functor = {}
 
-functor.main = ->
+functor.main = (args,state,ftype)->
+
+  data =
+    *type     : state.type
+     all      :
+      *node:args
+       back:state.all
+     index    : state.index + 1
+     str      : [ftype,state.str]
+     mode     : state.mode
+
+  new proto.functor data
 
 functor.validate_range = ([range,F]) ->
 
@@ -505,7 +463,8 @@ functor.err = (err_type,args,state,type) ->
 functor[1] =
   *functor.validate
    functor.err
-   (F) -> functor.main [0,Infinity],F
+   ([F],state,fname)-> functor.main [[0,Infinity,1],F],state,fname
+
 
 functor[2] =
   *functor.validate_range
@@ -522,7 +481,9 @@ define.functor = xop.unary
 
 .def(functor.def)
 
-define.misc = (args,state,type) ->
+#-----------------------------------------
+
+define.rest = (args,state,type) ->
 
     #----------------------------------
 
@@ -579,9 +540,63 @@ define.misc = (args,state,type) ->
       | otherwise =>
         new proto.normal data
 
+core = {}
+
+core.err_static = (type) -> -> core.err ...[type,...arguments]
+
+core.err = (err_type,args,state,type) ->
+
+  edata = tupnest do
+    [new Error!,\input.fault]
+    \rest
+    type
+    [err_type]
+    [state.str,type]
+
+  print.route edata
+
+core.validate = (funs,state,type) ->
+
+  switch type
+
+  | \and,\or,\alt  =>
+
+    if (funs.length is 0)
+
+      return [false,\arg_count]
+
+    for F in funs
+
+      if (R.type(F) isnt \Function) or not def_or_normal(F)
+
+        return [false,\not_function]
+
+    return true
+
+  | \tap =>
+
+    if not (funs.length is 1)
+
+      return [false,\arg_count]
+
+    [F] = funs
+
+    if (R.type(F) isnt \Function) or not def_or_normal(F)
+
+      return [false,\not_function]
+
+    return true
+
+  | otherwise => false
+
+#-----------------------------------------------------------------------
+
 guard.core = xop
-.wh(validate.core,define.misc)
-.def(loopError)
+.cap do
+  core.validate
+  core.err
+  define.rest
+.def core.err_static \undefined_error
 
 #-----------------------------------------------------------------------
 
@@ -626,8 +641,6 @@ define.basis.empty = (name,type = name) ->
     new proto.normal data
 
   inherited
-
-# ------------------------------------------------------------------
 
 #-------------------------------------------------------------------
 

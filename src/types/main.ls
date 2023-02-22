@@ -133,11 +133,13 @@ for [name,type] in props
 
 rf = -> false
 
-V = be.arr
+z R.type be.arr
 
-.try
+# V = be.arr
 
-# .map ->
+# .try
+
+# .map -> true
 # .and ->
 # .and ->
 # .and ->
@@ -161,7 +163,7 @@ V = be.arr
 
 # .or ->
 
-V.auth null
+# V.auth null
 
 
 

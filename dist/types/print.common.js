@@ -60,6 +60,8 @@ print.input_fault = function(arg$){
   case 'and':
   case 'or':
     return input_fault.andor(data, method_name);
+  case 'rest':
+    return input_fault.rest(data);
   }
 };
 show_chain = function(data){
@@ -92,6 +94,27 @@ show_chain = function(data){
 show_name = function(extra, type){
   type == null && (type = "[inputError] ");
   return l(lit(["[" + pkgname + ":v" + pkgversion + "]", type, extra], [c.er2, c.er2, c.er2]));
+};
+print.input_fault.rest = function(data){
+  var fname, info, etype, loc, txt;
+  fname = data[0], info = data[1];
+  etype = info[0], loc = info[1];
+  show_name("." + fname);
+  l("");
+  show_chain(loc);
+  l("");
+  txt = (function(){
+    switch (etype) {
+    case 'arg_count':
+      return " incorrect number of argument provided.";
+    case 'not_function':
+      return " one of the argument is not a function.";
+    case 'undefined_error':
+      return " illegal error, please report to original author.";
+    }
+  }());
+  l(c.er3(txt));
+  return l("");
 };
 print.input_fault.andor = function(arg$, method_name){
   var type, info, txt;
@@ -137,7 +160,7 @@ print.input_fault.map = function(arg$){
   l("");
   switch (patt) {
   case 'undefined_error':
-    l(c.er3(" unexpected error, expected types:\n"));
+    l(c.er3(" unexpected error (please report to author) expected types:\n"));
     l(map_str.join("\n"));
     break;
   case 'num_count':

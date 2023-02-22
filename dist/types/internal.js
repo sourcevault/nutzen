@@ -1,4 +1,4 @@
-var pkg, com, symbols, print, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, noop, link, xop, defset, def_or_normal, assort, cato, assign_self, x$, wrap, y$, guard, z$, define, z1$, validate, z2$, proto, z3$, user_wrap, p_core, main, i$, ref$, len$, val, create_new_try, get, ge, link_from_main, custom, ha, functor, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var pkg, com, symbols, print, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, noop, link, xop, defset, def_or_normal, assort, cato, assign_self, x$, wrap, y$, guard, z$, define, z1$, validate, z2$, proto, z3$, user_wrap, p_core, main, i$, ref$, len$, val, create_new_try, get, ge, link_from_main, custom, ha, functor, core, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 pkg = require('./print.common');
 com = pkg.com, symbols = pkg.symbols, print = pkg.print;
 tightloop = require('./tightloop');
@@ -6,6 +6,7 @@ z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.dee
 xop = pkg.guard;
 defset = new Set();
 def_or_normal = function(F){
+  z(F);
   if (F[symbols.htypes] || defset.has(F)) {
     return true;
   }
@@ -62,11 +63,9 @@ z$.basis = null;
 z$.block = null;
 z$.functor = null;
 z$.rest = null;
-z$.misc = null;
 z1$ = validate = {};
 z1$.on = null;
 z1$.rest = null;
-z1$.core = null;
 z2$ = proto = {};
 z2$.normal = assign_self();
 z2$.functor = assign_self();
@@ -106,7 +105,7 @@ wrap.functor = function(type){
 };
 wrap.misc = function(type){
   return function(){
-    return define.misc(arguments, this.self, type);
+    return define.rest(arguments, this.self, type);
   };
 };
 main = {};
@@ -318,49 +317,21 @@ ha.validate_rest = function(arg$, state, which_on){
 ha[1] = [ha.validate_obj, ha.err, define.on];
 ha[2] = [ha.validate_rest, ha.err, define.on];
 guard.on = xop.unary.arn([1, 2], ha.err_static('arg_count')).arcap(ha).def(ha.err_static('typeError'));
-validate.core = function(funs, state, type){
-  var i$, len$, F;
-  switch (type) {
-  case 'and':
-  case 'or':
-  case 'alt':
-    if (funs.length === 0) {
-      print.route(tupnest([new Error(), 'input.fault'], type, 'arg_count', [state.str, type]));
-      return false;
-    }
-    for (i$ = 0, len$ = funs.length; i$ < len$; ++i$) {
-      F = funs[i$];
-      if (!(R.type(F) === 'Function' || def_or_normal(F))) {
-        print.route(tupnest([new Error(), 'input.fault'], type, 'not_function', [state.str, type]));
-        return false;
-      }
-    }
-    return true;
-  case 'tap':
-    if (!(funs.length === 1)) {
-      print.route(tupnest([new Error(), 'input.fault'], type, 'arg_count', [state.str, type]));
-      return false;
-    }
-    return true;
-    F = funs[0];
-    if (!(R.type(f) === 'Function' || def_or_normal(F))) {
-      print.route(tupnest([new Error(), 'input.fault'], type, 'not_function', [state.str, type]));
-      return false;
-    }
-    return true;
-  case 'err':
-  case 'fix':
-  case 'cont':
-  case 'jam':
-  case 'edit':
-  case 'try':
-    return true;
-  default:
-    return false;
-  }
-};
 functor = {};
-functor.main = function(){};
+functor.main = function(args, state, ftype){
+  var data;
+  data = {
+    type: state.type,
+    all: {
+      node: args,
+      back: state.all
+    },
+    index: state.index + 1,
+    str: [ftype, state.str],
+    mode: state.mode
+  };
+  return new proto.functor(data);
+};
 functor.validate_range = function(arg$){
   var range, F, ref$, i$, len$, index, item;
   range = arg$[0], F = arg$[1];
@@ -401,14 +372,16 @@ functor.err = function(err_type, args, state, type){
   return print.route(edata);
 };
 functor[1] = [
-  functor.validate, functor.err, function(F){
-    return functor.main([0, Infinity], F);
+  functor.validate, functor.err, function(arg$, state, fname){
+    var F;
+    F = arg$[0];
+    return functor.main([[0, Infinity, 1], F], state, fname);
   }
 ];
 functor[2] = [functor.validate_range, functor.err, functor.main];
 functor.def = functor.err_static('undefined_error');
 define.functor = xop.unary.arcap(functor).arn([1, 2], functor.err_static('arg_count')).def(functor.def);
-define.misc = function(args, state, type){
+define.rest = function(args, state, type){
   var list, res$, i$, len$, I, len, F, node, data;
   switch (type) {
   case 'and':
@@ -472,7 +445,47 @@ define.misc = function(args, state, type){
     }
   }
 };
-guard.core = xop.wh(validate.core, define.misc).def(loopError);
+core = {};
+core.err_static = function(type){
+  return function(){
+    return core.err.apply(core, [type].concat(arrayFrom$(arguments)));
+  };
+};
+core.err = function(err_type, args, state, type){
+  var edata;
+  edata = tupnest([new Error(), 'input.fault'], 'rest', type, [err_type], [state.str, type]);
+  return print.route(edata);
+};
+core.validate = function(funs, state, type){
+  var i$, len$, F;
+  switch (type) {
+  case 'and':
+  case 'or':
+  case 'alt':
+    if (funs.length === 0) {
+      return [false, 'arg_count'];
+    }
+    for (i$ = 0, len$ = funs.length; i$ < len$; ++i$) {
+      F = funs[i$];
+      if (R.type(F) !== 'Function' || !def_or_normal(F)) {
+        return [false, 'not_function'];
+      }
+    }
+    return true;
+  case 'tap':
+    if (!(funs.length === 1)) {
+      return [false, 'arg_count'];
+    }
+    F = funs[0];
+    if (R.type(F) !== 'Function' || !def_or_normal(F)) {
+      return [false, 'not_function'];
+    }
+    return true;
+  default:
+    return false;
+  }
+};
+guard.core = xop.cap(core.validate, core.err, define.rest).def(core.err_static('undefined_error'));
 define.basis = function(name, F, type){
   var data;
   type == null && (type = name);

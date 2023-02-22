@@ -9,9 +9,12 @@ xop = pkg.guard
 
 be = pkg.types
 
-# V = be null
+V = be.arr
 
-# .onor null,null
+# V.map -> true
+
+
+
 
 
 

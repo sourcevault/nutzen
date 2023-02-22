@@ -61,6 +61,7 @@ print.input_fault = ([method_name,data]) ->
   | \map      => input_fault.map data
   | \custom   => input_fault.custom data
   | \and,\or  => input_fault.andor data,method_name
+  | \rest     => input_fault.rest data
 
 
 show_chain = (data) ->
@@ -96,6 +97,29 @@ show_name = (extra,type = "[inputError] ") ->
   l lit do
     ["[#{pkgname}:v#{pkgversion}]", type,extra]
     [                       c.er2, c.er2,c.er2]
+
+print.input_fault.rest = (data)->
+
+  [fname,info] = data
+
+  [etype,loc] = info
+
+  show_name ".#{fname}"
+
+  l ""
+
+  show_chain loc
+
+  l ""
+
+  txt = switch etype
+  | \arg_count    => " incorrect number of argument provided."
+  | \not_function => " one of the argument is not a function."
+  | \undefined_error => " illegal error, please report to original author."
+
+  l c.er3 txt
+
+  l ""
 
 print.input_fault.andor = ([type,info],method_name)->
 
@@ -161,7 +185,7 @@ print.input_fault.map = ([[patt,extra],loc]) ->
   switch patt
   | \undefined_error =>
 
-    l c.er3 " unexpected error, expected types:\n"
+    l c.er3 " unexpected error (please report to author) expected types:\n"
 
     l map_str.join "\n"
 
