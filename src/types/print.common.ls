@@ -191,9 +191,9 @@ print.input_fault.map = ([[patt,extra],loc]) ->
 
   | \num_count =>
 
-    l c.er3 " range values has to be either 2 or 3.\n"
+    l c.er3 " range values has to be either 1, 2 or 3.\n"
 
-    l lit [" map :: (","[num]",",fun)"],[c.ok,c.er2,c.ok]
+    l lit [" map :: (","[num,..]",",fun)"],[c.ok,c.er2,c.ok]
 
   | \range =>
 
@@ -324,7 +324,7 @@ print.log = (name) -> ->
 
   # lit ["{.*} ",prop.join " "],[c.warn,c.grey]
 
-  lit [pkgname,str],[c.pink,c.pink]
+  lit [pkgname,str],[c.ok,c.ok]
 
 
 same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit','tap','forEach','wrap']

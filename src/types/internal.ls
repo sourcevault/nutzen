@@ -180,7 +180,6 @@ get.try = ->
 
   create_new_try data
 
-
 get.end = ->
 
   state = @self
@@ -271,7 +270,7 @@ custom.err = (type) -> ->
 
   print.route edata
 
-custom.is_fun = (F) -> ((R.type F) is \Function) and def_or_normal F
+custom.is_fun = (F) -> R.type(F) is \Function
 
 custom.exp = xop
 
@@ -351,7 +350,7 @@ ha.validate_obj = (args,state,which_on) ->
 
     for I,val of maybe_object
 
-      if ((R.type val) isnt \Function) or not (def_or_normal val)
+      if R.type(val) isnt \Function
 
         return [false,\object]
 
@@ -373,7 +372,7 @@ ha.validate_rest = ([first,second],state,which_on)->
 
         return [false,\array]
 
-    if ((R.type second) isnt \Function) or (not def_or_normal second)
+    if R.type(second) isnt \Function
 
       return [false,\array]
 
@@ -381,7 +380,7 @@ ha.validate_rest = ([first,second],state,which_on)->
 
   | \String,\Number =>
 
-    if ((R.type second) isnt \Function) or not (def_or_normal second)
+    if R.type(second) isnt \Function
 
       return [false,\string]
 
@@ -413,10 +412,19 @@ functor = {}
 
 functor.main = (args,state,ftype)->
 
+
+  range = args[0]
+
+  mod_range = switch range.length
+  | 1 => [range[0],Infinity,1]
+  | 2 => [range[0],range[1],1]
+
+  args[0] = mod_range
+
   data =
     *type     : state.type
      all      :
-      *node:args
+      *node:[ftype,args]
        back:state.all
      index    : state.index + 1
      str      : [ftype,state.str]
@@ -429,7 +437,7 @@ functor.validate_range = ([range,F]) ->
   if R.type(range) isnt \Array
     return [false,[\range]]
 
-  if not (range.length in [2,3])
+  if not (range.length in [1,2,3])
     return [false,[\num_count]]
 
   for item,index in range
@@ -567,7 +575,7 @@ core.validate = (funs,state,type) ->
 
     for F in funs
 
-      if (R.type(F) isnt \Function) or not def_or_normal(F)
+      if (R.type(F) isnt \Function)
 
         return [false,\not_function]
 
@@ -581,7 +589,7 @@ core.validate = (funs,state,type) ->
 
     [F] = funs
 
-    if (R.type(F) isnt \Function) or not def_or_normal(F)
+    if R.type(F) isnt \Function
 
       return [false,\not_function]
 

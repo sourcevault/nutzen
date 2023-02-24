@@ -1,4 +1,4 @@
-var pkg, internal, com, print, z, l, R, j, deep_freeze, uic, loopError, noop, xop, custom, define, defset, be, non_map_props, props, base, not_base, undefnull, F, i$, len$, ref$, name, type, A, B, C, rf, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var pkg, internal, com, print, z, l, R, j, deep_freeze, uic, loopError, noop, xop, custom, define, defset, be, non_map_props, props, base, not_base, undefnull, F, i$, len$, ref$, name, type, A, B, C, rf, rt, V, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 pkg = require('./print.common');
 internal = require('./internal');
 com = pkg.com, print = pkg.print;
@@ -93,7 +93,11 @@ for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
 rf = function(){
   return false;
 };
-z(R.type(be.arr));
+rt = function(){
+  return true;
+};
+V = be.arr['try'].and(rt).map(rt)['try'].and(rt);
+V.auth(null);
 pkg = {};
 pkg.types = be;
 pkg.guard = xop;

@@ -1,4 +1,4 @@
-var pc, com, pkgname, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, blunder, exec_key, exec_top, map, forEach, upon, resolve, split_on_value_list, split_on, i$, len$, I, self_amorty, tightloop;
+var pc, com, pkgname, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, red, exec_key, exec_top, map, forEach, upon, green, split_on_value_list, split_on, i$, len$, I, self_amorty, tightloop;
 pc = require('./print.common');
 com = pc.com, pkgname = pc.pkgname;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
@@ -85,7 +85,7 @@ y$.top = null;
 z$ = x$.auth = {};
 z$.key = null;
 z$.top = null;
-blunder = function(fun, put, args){
+red = function(fun, put, args){
   var patt, F, data;
   patt = fun[0], F = fun[1];
   switch (patt) {
@@ -462,7 +462,7 @@ upon = function(arg$, value, args){
     };
   }
 };
-resolve = function(fun, put, dtype, args){
+green = function(fun, put, dtype, args){
   var type, F, value, I, nI, ref$, G;
   type = fun[0], F = fun[1];
   value = put.value;
@@ -615,11 +615,10 @@ self_amorty = function(self){
       I.type = 'and.multi';
     }
   }
-  z.j(fin);
   return fin;
 };
 tightloop = function(x){
-  var self, data, dtype, I, olen, put;
+  var self, data, dtype, I, olen, cond, ref$, type, item, K, ilen, fun, ncond, J, klen, eachTry, jlen;
   self = this.self;
   if (!self.morty) {
     this.data = self_amorty(self);
@@ -628,10 +627,87 @@ tightloop = function(x){
   dtype = this.self.type;
   I = 0;
   olen = data.length;
-  put = {
+  cond = {
     'continue': true,
     error: false,
     value: x
   };
+  z.j(data);
+  oloop: do {
+    ref$ = data[I], type = ref$.type, item = ref$.item;
+    switch (type) {
+    case 'and':
+      if (cond.error) {
+        cond = red(item, cond, arguments);
+      } else {
+        cond = green(item, cond, dtype, arguments);
+      }
+      break;
+    case 'and.multi':
+      K = 0;
+      ilen = item.length;
+      do {
+        fun = item[K];
+        if (cond.error) {
+          cond = red(fun, cond, arguments);
+        } else {
+          cond = green(fun, cond, dtype, arguments);
+        }
+        K++;
+      } while (K < ilen);
+      break;
+    case 'or':
+    case 'alt':
+      cond.message = [cond.message];
+      ncond = green(item, cond, dtype, arguments);
+      if (ncond.error) {
+        if (ncond.message !== void 8) {
+          cond.message.push(ncond.message);
+        }
+      } else {
+        cond = ncond;
+        if (type === 'or') {
+          break oloop;
+        }
+      }
+      break;
+    case 'or.multi':
+    case 'alt.multi':
+      J = 0;
+      ilen = item.length;
+      cond.message = [cond.message];
+      do {
+        fun = item[J];
+        ncond = green(fun, cond, dtype, arguments);
+        if (ncond.error) {
+          if (ncond.message !== void 8) {
+            cond.message.push(ncond.message);
+          }
+          J += 1;
+        } else {
+          cond = ncond;
+          if (type === 'or') {
+            break oloop;
+          }
+        }
+      } while (J < ilen);
+      break;
+    case 'try':
+      K = 0;
+      klen = item.length;
+      kloop: do {
+        eachTry = item[K];
+        jlen = eachTry.length;
+        J = 0;
+        jloop: do {
+          fun = eachTry[J];
+          J += 1;
+        } while (J < jlen);
+        K += 1;
+      } while (K < klen);
+    }
+    I += 1;
+  } while (I < olen);
+  return cond;
 };
 module.exports = tightloop;

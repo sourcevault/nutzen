@@ -81,7 +81,7 @@ apply = {}
     ..key = null
     ..top = null
 
-blunder = (fun,put,args) ->
+red = (fun,put,args) ->
 
   [patt,F] = fun
 
@@ -190,7 +190,6 @@ apply.normal.top = (F,val,args) ->
     A.unshift val
 
     F ...A
-
 
 apply.auth.top = (F,val,args) ->
 
@@ -452,11 +451,12 @@ upon = ([type,fun],value,args) ->
     {continue:true,error:false,value:value}
 
 
-resolve = (fun,put,dtype,args) ->
+green = (fun,put,dtype,args) ->
 
   [type,F] = fun
 
   {value}  = put
+
 
   switch type
   | \d => apply.normal.top F,value,args
@@ -630,6 +630,7 @@ self_amorty = (self)->
     I++
 
   if bucket.item.length
+
     fin.push bucket
 
   for I in fin
@@ -644,9 +645,6 @@ self_amorty = (self)->
     else
 
       I.type = \and.multi
-
-
-  z.j fin
 
   # --- done ---
 
@@ -671,57 +669,136 @@ tightloop = (x) !->
 
   olen = data.length
 
-  put = {continue:true,error:false,value:x}
+  cond = {continue:true,error:false,value:x}
 
   # # ----------------------
 
-  # z.j data
+  :oloop do
 
-  # :oloop do
+    {type,item} = data[I]
 
-  #   {type,item} = data[I]
+    switch type
+    | \and =>
+
+      if cond.error
+
+        cond = red item,cond,arguments
+
+      else
+
+        cond = green item,cond,dtype,arguments
+
+    | \and.multi  =>
+
+      K = 0
+
+      ilen = item.length
+
+      do
+
+        fun = item[K]
+
+        if cond.error
+
+          cond = red fun,cond,arguments
+
+        else
+
+          cond = green fun,cond,dtype,arguments
+
+        K++
+
+      while K < ilen
+
+    | \or,\alt =>
+
+      cond.message = [cond.message]
+
+      ncond = green item,cond,dtype,arguments
+
+      if ncond.error
+
+        if (ncond.message isnt void)
+
+          cond.message.push ncond.message
+
+      else
+
+        cond = ncond
+
+        if type is \or
+          break oloop
 
 
-  #   switch type
-  #   | \and       =>
+    | \or.multi,\alt.multi =>
 
-  #     K = 0
+      J = 0
+      ilen = item.length
+      cond.message = [cond.message]
 
-  #     ilen = item.length
+      do
 
-  #     do
+        fun = item[J]
 
-  #       fun = item[K]
+        ncond = green fun,cond,dtype,arguments
 
-  #       if put.error
+        if ncond.error
 
-  #         put = blunder fun,put,arguments
+          if (ncond.message isnt void)
 
-  #       else
+            cond.message.push ncond.message
 
-  #         put = resolve fun,put,dtype,arguments
+          J += 1
 
-  #       K++
+        else
 
-  #     while K < ilen
+          cond = ncond
 
-  #   | \or        =>
+          if type is \or
+            break oloop
 
-  #     # put.message = [put.message]
+      while J < ilen
 
-  #     # K = 0
 
-  #   | \try       =>
-  #   | \alt       =>
-  #   | \or.multi  =>
+    | \try       =>
 
-  #   | \alt.multi =>
+      K = 0
 
-  #   I++
+      klen = item.length
 
-  # while I < olen
+      :kloop do
 
-  # return put
+        eachTry = item[K]
+
+        jlen = eachTry.length
+
+        J = 0
+
+        :jloop do
+
+          fun = eachTry[J]
+
+          # ncond = green fun,cond,dtype,arguments
+
+          # if ncond.error
+
+          #   cond = ncond
+
+          #   break jloop
+
+          J += 1
+
+        while J < jlen
+
+        K += 1
+
+      while K < klen
+
+    I += 1
+
+  while I < olen
+
+  return cond
 
 
 module.exports = tightloop

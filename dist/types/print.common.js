@@ -164,8 +164,8 @@ print.input_fault.map = function(arg$){
     l(map_str.join("\n"));
     break;
   case 'num_count':
-    l(c.er3(" range values has to be either 2 or 3.\n"));
-    l(lit([" map :: (", "[num]", ",fun)"], [c.ok, c.er2, c.ok]));
+    l(c.er3(" range values has to be either 1, 2 or 3.\n"));
+    l(lit([" map :: (", "[num,..]", ",fun)"], [c.ok, c.er2, c.ok]));
     break;
   case 'range':
     l(c.er2(" first argument (range) has to be an array.\n"));
@@ -280,7 +280,7 @@ print.log = function(name){
     case 'try.normal':
       str = ':try';
     }
-    return lit([pkgname, str], [c.pink, c.pink]);
+    return lit([pkgname, str], [c.ok, c.ok]);
   };
 };
 same = includes(['and', 'or', 'cont', 'jam', 'fix', 'err', 'map', 'on', 'alt', 'auth', 'edit', 'tap', 'forEach', 'wrap']);

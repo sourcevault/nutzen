@@ -215,7 +215,7 @@ custom.err = function(type){
   };
 };
 custom.is_fun = function(F){
-  return R.type(F) === 'Function' && def_or_normal(F);
+  return R.type(F) === 'Function';
 };
 custom.exp = xop.arn(1, custom.err('arg_count')).whn(custom.is_fun, custom.err('not_function')).def(custom.main);
 custom.exp.is_instance = function(x){
@@ -278,7 +278,7 @@ ha.validate_obj = function(args, state, which_on){
   if (type === 'Object') {
     for (I in maybe_object) {
       val = maybe_object[I];
-      if (R.type(val) !== 'Function' || !def_or_normal(val)) {
+      if (R.type(val) !== 'Function') {
         return [false, 'object'];
       }
     }
@@ -299,13 +299,13 @@ ha.validate_rest = function(arg$, state, which_on){
         return [false, 'array'];
       }
     }
-    if (R.type(second) !== 'Function' || !def_or_normal(second)) {
+    if (R.type(second) !== 'Function') {
       return [false, 'array'];
     }
     return [true, 'array'];
   case 'String':
   case 'Number':
-    if (R.type(second) !== 'Function' || !def_or_normal(second)) {
+    if (R.type(second) !== 'Function') {
       return [false, 'string'];
     }
     return [true, 'string'];
@@ -318,11 +318,21 @@ ha[2] = [ha.validate_rest, ha.err, define.on];
 guard.on = xop.unary.arn([1, 2], ha.err_static('arg_count')).arcap(ha).def(ha.err_static('typeError'));
 functor = {};
 functor.main = function(args, state, ftype){
-  var data;
+  var range, mod_range, data;
+  range = args[0];
+  mod_range = (function(){
+    switch (range.length) {
+    case 1:
+      return [range[0], Infinity, 1];
+    case 2:
+      return [range[0], range[1], 1];
+    }
+  }());
+  args[0] = mod_range;
   data = {
     type: state.type,
     all: {
-      node: args,
+      node: [ftype, args],
       back: state.all
     },
     index: state.index + 1,
@@ -337,7 +347,7 @@ functor.validate_range = function(arg$){
   if (R.type(range) !== 'Array') {
     return [false, ['range']];
   }
-  if (!((ref$ = range.length) === 2 || ref$ === 3)) {
+  if (!((ref$ = range.length) === 1 || ref$ === 2 || ref$ === 3)) {
     return [false, ['num_count']];
   }
   for (i$ = 0, len$ = range.length; i$ < len$; ++i$) {
@@ -466,7 +476,7 @@ core.validate = function(funs, state, type){
     }
     for (i$ = 0, len$ = funs.length; i$ < len$; ++i$) {
       F = funs[i$];
-      if (R.type(F) !== 'Function' || !def_or_normal(F)) {
+      if (R.type(F) !== 'Function') {
         return [false, 'not_function'];
       }
     }
@@ -476,7 +486,7 @@ core.validate = function(funs, state, type){
       return [false, 'arg_count'];
     }
     F = funs[0];
-    if (R.type(F) !== 'Function' || !def_or_normal(F)) {
+    if (R.type(F) !== 'Function') {
       return [false, 'not_function'];
     }
     return true;
