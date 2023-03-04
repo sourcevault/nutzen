@@ -2,7 +2,7 @@ pc = require \./print.common
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
-{com,pkgname} = pc
+{com,pkgname,print} = pc
 
 {l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack} = com
 
@@ -81,15 +81,17 @@ apply = {}
     ..key = null
     ..top = null
 
-red = (fun,put,args) ->
+red = (fun,cond,args) ->
 
   [patt,F] = fun
+
+  put = {...cond}
 
   switch patt
   | \err =>
 
     data = switch typeof F
-    | \function => apply.normal.err F,args,put
+    | \function => apply.normal.err F,args,cond
     | otherwise => F
 
     # ----------------------------------
@@ -120,15 +122,11 @@ red = (fun,put,args) ->
 
   | \fix =>
 
+    put = {continue:true,error:false}
+
     put.value = switch typeof F
-    | \function => apply.normal.key F,put.value,args,put.path
+    | \function => apply.normal.key F,cond.value,args,cond.path
     | otherwise => F
-
-    put.continue = true
-    put.error    = false
-    put.message  = undefined
-
-  | otherwise => void
 
   put
 
@@ -235,109 +233,190 @@ apply.auth.key = (F,val,args,key) ->
 
 exec_key = (type,F,val,args,key) ->
 
-  sortir = switch type
+  cond = switch type
   | \d => apply.normal.key F,val,args,key
   | \i => apply.auth.key F,val,args,key
   | \f => sanatize do
     val
     apply.normal.key F,val,args,key
 
-  if sortir.error
-    if sortir.path
-      sortir.path = [key] ++ sortir.path
+  if cond.error
+    if cond.path
+      cond.path = [key] ++ cond.path
     else
-      sortir.path = [key]
+      cond.path = [key]
 
-    sortir.value = val
+    cond.value = val
 
-  sortir
+  cond
 
-exec_top = (type,F,val,args) ->
+lopy = {}
 
-  switch type
-  | \d => apply.normal.top F,val,args
-  | \i => apply.auth.top F,val,args
-  | \f => sanatize do
-    val
-    apply.normal.top F,val,args
+lopy.fix_num = (A,num) ->
 
-map = (dtype,fun,value,args) ->
+  value = void
 
-  [type,F] = fun
+  len = A.length
+
+  if num is -Infinity
+
+    value = 0
+
+  else if num is Infinity
+
+    value = len
+
+  else if num < 0
+
+    mid = len + num
+
+    value = mid
+
+    if mid < 0
+
+      value = 0
+
+  else
+
+    value = num
+
+  return value
+
+lopy.reverse = (to_add,user_array,start,end,step,[type,F],args)->
+
+  I = start
+
+  len = end - 1
+
+  arr = new Array(...user_array)
+
+  while I > len
+
+    cond = exec_key type,F,user_array[I],args,I
+
+    if to_add
+
+      if cond.error
+
+        cond.value = user_array
+
+        return cond
+
+      arr[I] = cond.value
+
+    I -= step
+
+  {continue:true,error:false,value:arr}
+
+lopy.forward = (to_add,user_array,start,end,step,[type,F],args)->
+
+  I = start
+
+  arr = new Array(...user_array)
+
+  len = end + 1
+
+  while I < len
+
+    cond = exec_key type,F,user_array[I],args,I
+
+    if to_add
+
+      if cond.error
+
+        cond.value = user_array
+
+        return cond
+
+      arr[I] = cond.value
+
+    I += step
+
+  {continue:true,error:false,value:arr}
+
+lopy.main = (to_add,fun,user_array,args) ->
+
+  [[u_start,u_end,step],F] = fun
+
+  start = @fix_num user_array,u_start
+
+  end = @fix_num user_array,u_end
+
+  if step < 0
+
+    step = Math.abs step
+
+    cond = @reverse to_add,user_array,start,end,step,F,args
+
+  else
+
+    cond = @forward to_add,user_array,start,end,step,F,args
+
+  return cond
+
+functor_EMsg = "[#{pkgname}][runtimeError] most likely due to changing mappable object to non-mappable one."
+
+map = (dtype,fun,udata,args) ->
+
+  if (typeof (udata)) isnt \object
+
+    return {continue:false,error:true,message:functor_EMsg}
 
   switch dtype
 
   | \arr =>
 
-    I = 0
-
-    In = value.length
-
-    put = null
-
-    arr = []
-
-    while I < In
-
-      put = exec_key type,F,value[I],args,I
-
-      if put.error
-
-        return put
-
-      arr.push put.value
-
-      I += 1
-
-    {continue:true,error:false,value:arr}
+    lopy.main true,fun,udata,args
 
   | \obj =>
+
+    [[type,F]] = fun
 
     ob = {}
 
-    put = null
+    cond = null
 
-    for key,val of value
+    for key,val of udata
 
-      put = exec_key type,F,val,args,key
+      cond = exec_key type,F,val,args,key
 
-      if put.error
-        return put
+      if cond.error
 
-      ob[key] = put.value
+        return cond
+
+      ob[key] = cond.value
 
     {continue:true,error:false,value:ob}
 
-forEach = (dtype,fun,value,args) ->
+forEach = (dtype,fun,udata,args) ->
 
-  [type,F] = fun
+  if (typeof (udata)) isnt \object
+
+    return {continue:false,error:true,message:functor_EMsg}
+
+  cond = {continue:true,error:false,value:udata}
 
   switch dtype
 
   | \arr =>
 
-    I = 0
-
-    In = value.length
-
-    while I < In
-
-      exec_key type,F,value[I],args,I
-
-      I += 1
-
-    return {continue:true,error:false,value:value}
+    lopy.main false,fun,udata,args
 
   | \obj =>
+
+    [[type,F]] = fun
 
     for key,val of value
 
       exec_key type,F,val,args,key
 
-    {continue:true,error:false,value:value}
-
+  cond
 
 upon = ([type,fun],value,args) ->
+
+  if (typeof (value)) isnt \object
+
+    return {continue:false,error:true,message:functor_EMsg}
 
   switch type
   | \string =>
@@ -397,73 +476,49 @@ upon = ([type,fun],value,args) ->
 
     {continue:true,error:false,value:value}
 
-  | \single_array =>
+onor = (F,value,args)->
 
-    I  = 0
+  if (typeof (value)) isnt \object
 
-    In = fun.length
+    return {continue:false,error:true,message:functor_EMsg}
 
-    while I < In
+  [arr,shape,G] = F
 
-      [type,[field_type,field],wFt,wFF] = fun[I]
+  I = 0
 
-      if (type is \and)
+  In = arr.length
 
-        if field_type is \S
+  while I < In
 
-          put = exec_key wFt,wFF,value[field],args,field
+    key = arr[I]
 
-          if put.error
-            return put
+    put = exec_key shape,G,value[key],args,key
 
-          value[field] = put.value
+    if put.continue
 
-        else if field_type is \A
+      value[key] = put.value
 
-          for each in field
+      return {continue:true,error:false,value:value}
 
-            put = exec_key wFt,wFF,value[each],args,each
+    I += 1
 
-            if put.error
-              return put
-
-            value[each] = put.value
-
-      else if type is \alt
-
-        if field_type is \S
-
-          field = [field]
-
-        for each in field
-
-          put = exec_key wFt,wFF,value[each],args,each
-
-          if put.continue
-            value[each] = put.value
-            break
-
-        if put.error
-          return put
-
-      I += 1
-
-    {continue:true,error:false,value:value}
+  {continue:false,error:true,value:value}
 
 
-green = (fun,put,dtype,args) ->
+green = (fun,cond,dtype,args) ->
 
   [type,F] = fun
 
-  {value}  = put
+  value  = cond.value
 
-
-  switch type
+  ncond = switch type
   | \d => apply.normal.top F,value,args
   | \i => apply.auth.top F,value,args
-  | \f => sanatize do
-    value
-    apply.normal.top F,value,args
+  | \f =>
+
+    vixod = apply.normal.top F,value,args
+
+    sanatize value,vixod
 
   # ------------------------------------------------------
 
@@ -473,21 +528,25 @@ green = (fun,put,dtype,args) ->
 
   | \on            => upon F,value,args
 
-  | \cont,\edit    =>
+  | \onor          => onor F,value,args
 
-    put.value   = switch typeof F
+  | \cont          =>
+
+    cond.value   = switch typeof F
     | \function => apply.normal.top F,value,args
     | otherwise => F
 
-    put
+    cond
 
   | \tap         =>
 
     apply.normal.top F,value,args
 
-    put
+    cond
 
   | \jam         =>
+
+    put = {continue:false,error:true}
 
     put.message  = switch typeof F
 
@@ -495,34 +554,15 @@ green = (fun,put,dtype,args) ->
 
     | otherwise  => F
 
-    put.continue = false
+    put
 
-    put.error    = true
+  | otherwise => cond
 
-    return put
+  if ncond.error
 
-  | \alt          =>
+    ncond.value = value
 
-    I          = 0
-
-    nI         = F.length
-
-    do
-
-      [type,G] = F[I]
-
-      put = exec_top type,G,value,args
-
-      if put.continue
-        return put
-
-      I += 1
-
-    while I < nI
-
-    return put
-
-  | otherwise => put
+  ncond
 
 split_on_value_list = [\or,\alt,\try,\or.multi,\alt.multi]
 
@@ -650,7 +690,6 @@ self_amorty = (self)->
 
   fin
 
-
 tightloop = (x) !->
 
   self = @self
@@ -671,13 +710,17 @@ tightloop = (x) !->
 
   cond = {continue:true,error:false,value:x}
 
-  # # ----------------------
+  # ----------------------
 
   :oloop do
 
-    {type,item} = data[I]
+    cd = data[I]
 
-    switch type
+    {type,item} = cd
+
+    I += 1
+
+    switch cd.type
     | \and =>
 
       if cond.error
@@ -706,11 +749,14 @@ tightloop = (x) !->
 
           cond = green fun,cond,dtype,arguments
 
-        K++
+        K += 1
+
 
       while K < ilen
 
     | \or,\alt =>
+
+      if not cond.error then continue oloop
 
       cond.message = [cond.message]
 
@@ -729,11 +775,14 @@ tightloop = (x) !->
         if type is \or
           break oloop
 
-
     | \or.multi,\alt.multi =>
 
+      if (not cond.error) then continue oloop
+
       J = 0
+
       ilen = item.length
+
       cond.message = [cond.message]
 
       do
@@ -759,16 +808,25 @@ tightloop = (x) !->
 
       while J < ilen
 
-
     | \try       =>
+
+      if cond.error then continue oloop
+
+      end = cd.end
+
+      start_cond = cond
 
       K = 0
 
       klen = item.length
 
+      el = []
+
       :kloop do
 
         eachTry = item[K]
+
+        K += 1
 
         jlen = eachTry.length
 
@@ -778,23 +836,37 @@ tightloop = (x) !->
 
           fun = eachTry[J]
 
-          # ncond = green fun,cond,dtype,arguments
-
-          # if ncond.error
-
-          #   cond = ncond
-
-          #   break jloop
-
           J += 1
+
+          if cond.error
+
+            cond = red fun,cond,arguments
+
+          else
+
+            cond = green fun,cond,dtype,arguments
+
 
         while J < jlen
 
-        K += 1
+        if cond.continue
+
+          break kloop
+
+        el.push cond.message
+
+        if (K < klen)
+
+          cond = start_cond
 
       while K < klen
 
-    I += 1
+      if cond.error
+
+        cond.message = el.reverse!
+
+        cond.value = start_cond.value
+
 
   while I < olen
 

@@ -16,9 +16,15 @@ defset = new Set!
 
 def_or_normal = (F) ->
 
-  if ((F[symbols.htypes]) or (defset.has F)) then return true
+  switch R.type(F)
+  | \Function => return true
+  | \Object =>
 
-  false
+    if ((F[symbols.htypes]) or (defset.has F)) then return true
+
+    return false
+
+  return false
 
 # ------------------------------------------------------------------
 
@@ -39,7 +45,6 @@ assort = (F) ->
   else
 
     [\f,F]
-
 
 cato = (arg) ->
 
@@ -313,6 +318,12 @@ define.on = (cat,args,state,ftype) ->
 
     [\object,fun]
 
+  | \onor.array =>
+
+    [props,F] = args
+
+    [(R.uniq props),...(cato F)]
+
   data =
     *type     : state.type
      all      :
@@ -362,7 +373,13 @@ ha.validate_obj = (args,state,which_on) ->
 
 ha.validate_rest = ([first,second],state,which_on)->
 
-  switch R.type first
+  type = R.type first
+
+  if (which_on is \onor) and (type isnt \Array)
+
+    return [false,\onor_type]
+
+  switch type
 
   | \Array =>
 
@@ -372,15 +389,21 @@ ha.validate_rest = ([first,second],state,which_on)->
 
         return [false,\array]
 
-    if R.type(second) isnt \Function
+    if not def_or_normal(second)
 
       return [false,\array]
 
-    return [true,\array]
+    if which_on is \onor
+
+      return [true,\onor.array]
+
+    else
+
+      return [true,\array]
 
   | \String,\Number =>
 
-    if R.type(second) isnt \Function
+    if not def_or_normal(second)
 
       return [false,\string]
 
@@ -412,14 +435,22 @@ functor = {}
 
 functor.main = (args,state,ftype)->
 
+  if state.type is \arr
 
-  range = args[0]
+    range = args[0]
 
-  mod_range = switch range.length
-  | 1 => [range[0],Infinity,1]
-  | 2 => [range[0],range[1],1]
+    mod_range = switch range.length
+    | 1 => [range[0],Infinity,1]
+    | 2 => [range[0],range[1],1]
+    | otherwise => range
 
-  args[0] = mod_range
+    args[0] = mod_range
+
+    args[1] = cato args[1]
+
+  else
+
+    args[0] = cato args[0]
 
   data =
     *type     : state.type
@@ -432,27 +463,43 @@ functor.main = (args,state,ftype)->
 
   new proto.functor data
 
-functor.validate_range = ([range,F]) ->
+functor.validate_range = ([range,F],state,type) ->
+
+  if state.type is \obj
+
+    return [false,[\range.obj]]
 
   if R.type(range) isnt \Array
     return [false,[\range]]
-
-  if not (range.length in [1,2,3])
-    return [false,[\num_count]]
 
   for item,index in range
 
     if R.type(item) isnt \Number
       return [false,[\num,index]]
 
-  if (R.type(F) isnt \Function)
+  switch range.length
+
+  | 1,2 => void
+
+  | 3 =>
+
+    step = range[2]
+
+    return [false,[\inf_step]]
+
+  | otherwise =>
+
+    return [false,[\num_count]]
+
+  if not def_or_normal(F)
+
     return [false,[\fun,\second]]
 
   true
 
-functor.validate = ([F]) ->
+functor.validate = ([F],state) ->
 
-  if (R.type(F) isnt \Function) then return [false,[\fun,\first]]
+  if not def_or_normal(F) then return [false,[\fun,\first]]
 
   true
 
@@ -471,8 +518,14 @@ functor.err = (err_type,args,state,type) ->
 functor[1] =
   *functor.validate
    functor.err
-   ([F],state,fname)-> functor.main [[0,Infinity,1],F],state,fname
+   ([F],state,fname)-> 
 
+    if state.type is \arr
+      arg = [[0,Infinity,1],F]
+    else
+      arg = [F]
+
+    functor.main arg,state,fname
 
 functor[2] =
   *functor.validate_range
@@ -489,64 +542,63 @@ define.functor = xop.unary
 
 .def(functor.def)
 
-#-----------------------------------------
+#------------------------------
 
 define.rest = (args,state,type) ->
 
-    #----------------------------------
+  #----------------------------------
 
-    switch type
+  fname = type
 
-    |\and,\or,\alt =>
+  switch type
 
-      list = [cato I for I in args]
+  |\and,\or,\alt =>
 
-      len = list.length
+    list = [cato I for I in args]
 
-      if len isnt 1
-        type = type + "." + \multi
-        F = list
-      else
-        F = list[0]
+    len = list.length
 
-    | \map,\forEach =>
-
-      F = cato args[0]
-
-    | \err,\fix,\cont,\jam,\edit,\tap =>
-
-      F = args[0]
-
-    | \try =>
-
-      F = void
-
-    switch type
-    | \and =>
-      node = F
-    | otherwise =>
-      node = [type,F]
-
-    data =
-      *type:state.type
-       all:
-        *node:node
-         back:state.all
-       index:state.index + 1
-       mode:state.mode
-       str:[type,state.str]
-
-    if (type is \try) or (state.mode is \try)
-
-      create_new_try data
-
+    if len isnt 1
+      fname = type + "." + \multi
+      F = list
     else
+      F = list[0]
 
-      switch data.type
-      | \obj,\arr =>
-        new proto.functor data
-      | otherwise =>
-        new proto.normal data
+  | \edit =>
+    fname = \cont
+    fallthrough
+  | \err,\fix,\cont,\jam,\edit,\tap =>
+
+    F = args[0]
+
+  switch type
+  | \and =>
+    node = F
+  | \try =>
+    node = [fname]
+  | otherwise =>
+    node = [fname,F]
+
+  data =
+    *type:state.type
+     all:
+       *node:node
+        back:state.all
+     index:state.index + 1
+     mode:state.mode
+     str:[type,state.str]
+
+  if (type is \try) or (state.mode is \try)
+
+    create_new_try data
+
+  else
+
+    switch data.type
+    | \obj,\arr =>
+      new proto.functor data
+    | otherwise =>
+      new proto.normal data
 
 core = {}
 

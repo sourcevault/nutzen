@@ -6,8 +6,14 @@ z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.dee
 xop = pkg.guard;
 defset = new Set();
 def_or_normal = function(F){
-  if (F[symbols.htypes] || defset.has(F)) {
+  switch (R.type(F)) {
+  case 'Function':
     return true;
+  case 'Object':
+    if (F[symbols.htypes] || defset.has(F)) {
+      return true;
+    }
+    return false;
   }
   return false;
 };
@@ -246,6 +252,9 @@ define.on = function(cat, args, state, ftype){
       }
       fun = res$;
       return ['object', fun];
+    case 'onor.array':
+      props = args[0], F = args[1];
+      return [R.uniq(props)].concat(arrayFrom$(cato(F)));
     }
   }());
   data = {
@@ -288,9 +297,13 @@ ha.validate_obj = function(args, state, which_on){
   }
 };
 ha.validate_rest = function(arg$, state, which_on){
-  var first, second, i$, len$, index, I, ref$;
+  var first, second, type, i$, len$, index, I, ref$;
   first = arg$[0], second = arg$[1];
-  switch (R.type(first)) {
+  type = R.type(first);
+  if (which_on === 'onor' && type !== 'Array') {
+    return [false, 'onor_type'];
+  }
+  switch (type) {
   case 'Array':
     for (i$ = 0, len$ = first.length; i$ < len$; ++i$) {
       index = i$;
@@ -299,13 +312,17 @@ ha.validate_rest = function(arg$, state, which_on){
         return [false, 'array'];
       }
     }
-    if (R.type(second) !== 'Function') {
+    if (!def_or_normal(second)) {
       return [false, 'array'];
     }
-    return [true, 'array'];
+    if (which_on === 'onor') {
+      return [true, 'onor.array'];
+    } else {
+      return [true, 'array'];
+    }
   case 'String':
   case 'Number':
-    if (R.type(second) !== 'Function') {
+    if (!def_or_normal(second)) {
       return [false, 'string'];
     }
     return [true, 'string'];
@@ -319,16 +336,23 @@ guard.on = xop.unary.arn([1, 2], ha.err_static('arg_count')).arcap(ha).def(ha.er
 functor = {};
 functor.main = function(args, state, ftype){
   var range, mod_range, data;
-  range = args[0];
-  mod_range = (function(){
-    switch (range.length) {
-    case 1:
-      return [range[0], Infinity, 1];
-    case 2:
-      return [range[0], range[1], 1];
-    }
-  }());
-  args[0] = mod_range;
+  if (state.type === 'arr') {
+    range = args[0];
+    mod_range = (function(){
+      switch (range.length) {
+      case 1:
+        return [range[0], Infinity, 1];
+      case 2:
+        return [range[0], range[1], 1];
+      default:
+        return range;
+      }
+    }());
+    args[0] = mod_range;
+    args[1] = cato(args[1]);
+  } else {
+    args[0] = cato(args[0]);
+  }
   data = {
     type: state.type,
     all: {
@@ -341,14 +365,14 @@ functor.main = function(args, state, ftype){
   };
   return new proto.functor(data);
 };
-functor.validate_range = function(arg$){
-  var range, F, ref$, i$, len$, index, item;
+functor.validate_range = function(arg$, state, type){
+  var range, F, i$, len$, index, item, step;
   range = arg$[0], F = arg$[1];
+  if (state.type === 'obj') {
+    return [false, ['range.obj']];
+  }
   if (R.type(range) !== 'Array') {
     return [false, ['range']];
-  }
-  if (!((ref$ = range.length) === 1 || ref$ === 2 || ref$ === 3)) {
-    return [false, ['num_count']];
   }
   for (i$ = 0, len$ = range.length; i$ < len$; ++i$) {
     index = i$;
@@ -357,15 +381,25 @@ functor.validate_range = function(arg$){
       return [false, ['num', index]];
     }
   }
-  if (R.type(F) !== 'Function') {
+  switch (range.length) {
+  case 1:
+  case 2:
+    break;
+  case 3:
+    step = range[2];
+    return [false, ['inf_step']];
+  default:
+    return [false, ['num_count']];
+  }
+  if (!def_or_normal(F)) {
     return [false, ['fun', 'second']];
   }
   return true;
 };
-functor.validate = function(arg$){
+functor.validate = function(arg$, state){
   var F;
   F = arg$[0];
-  if (R.type(F) !== 'Function') {
+  if (!def_or_normal(F)) {
     return [false, ['fun', 'first']];
   }
   return true;
@@ -382,16 +416,22 @@ functor.err = function(err_type, args, state, type){
 };
 functor[1] = [
   functor.validate, functor.err, function(arg$, state, fname){
-    var F;
+    var F, arg;
     F = arg$[0];
-    return functor.main([[0, Infinity, 1], F], state, fname);
+    if (state.type === 'arr') {
+      arg = [[0, Infinity, 1], F];
+    } else {
+      arg = [F];
+    }
+    return functor.main(arg, state, fname);
   }
 ];
 functor[2] = [functor.validate_range, functor.err, functor.main];
 functor.def = functor.err_static('undefined_error');
 define.functor = xop.unary.arcap(functor).arn([1, 2], functor.err_static('arg_count')).def(functor.def);
 define.rest = function(args, state, type){
-  var list, res$, i$, len$, I, len, F, node, data;
+  var fname, list, res$, i$, len$, I, len, F, node, data;
+  fname = type;
   switch (type) {
   case 'and':
   case 'or':
@@ -404,16 +444,15 @@ define.rest = function(args, state, type){
     list = res$;
     len = list.length;
     if (len !== 1) {
-      type = type + "." + 'multi';
+      fname = type + "." + 'multi';
       F = list;
     } else {
       F = list[0];
     }
     break;
-  case 'map':
-  case 'forEach':
-    F = cato(args[0]);
-    break;
+  case 'edit':
+    fname = 'cont';
+    // fallthrough
   case 'err':
   case 'fix':
   case 'cont':
@@ -421,16 +460,16 @@ define.rest = function(args, state, type){
   case 'edit':
   case 'tap':
     F = args[0];
-    break;
-  case 'try':
-    F = void 8;
   }
   switch (type) {
   case 'and':
     node = F;
     break;
+  case 'try':
+    node = [fname];
+    break;
   default:
-    node = [type, F];
+    node = [fname, F];
   }
   data = {
     type: state.type,

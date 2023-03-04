@@ -8,6 +8,8 @@ com = pkg.com
 
 {l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack,version,loopError} = com
 
+{wait} = com
+
 pkgversion = version
 
 pkgname    = \hoplon.types
@@ -168,9 +170,10 @@ print.input_fault.custom = (patt) ->
   l ""
 
 map_str = 
-  *c.ok " map/1 :: fun"
-   c.ok " map/2 :: [num,num],fun"
-   c.ok " map/2 :: [num,num,num],fun"
+  *c.ok " obj/map/1   :: fun"
+   c.ok " arr/map/1   :: fun"
+   c.ok " arr/map/2/2 :: [num,num],fun"
+   c.ok " arr/map/2/3 :: [num,num,num],fun"
 
 print.input_fault.map = ([[patt,extra],loc]) ->
 
@@ -183,23 +186,35 @@ print.input_fault.map = ([[patt,extra],loc]) ->
   l ""
 
   switch patt
+  | \range.obj =>
+
+    l c.er3 " .obj cannot have a range parameter, only accepts: \n"
+
+    l map_str[0]
+
   | \undefined_error =>
 
     l c.er3 " unexpected error (please report to author) expected types:\n"
 
     l map_str.join "\n"
 
+  | \inf_step =>
+
+    l c.er3 " step cannot be value 0.\n"
+
+    l lit [" arr/map/2/3 :: ([num,num,","num","],fun)"],[c.ok,c.er3,c.ok]
+
   | \num_count =>
 
     l c.er3 " range values has to be either 1, 2 or 3.\n"
 
-    l lit [" map :: (","[num,..]",",fun)"],[c.ok,c.er2,c.ok]
+    l lit [" arr/map :: (","[num,..]",",fun)"],[c.ok,c.er2,c.ok]
 
   | \range =>
 
     l c.er2 " first argument (range) has to be an array.\n"
 
-    l lit [" map :: (","[num,..]",",fun)"],[c.ok,c.er3,c.ok]
+    l lit [" arr/map :: (","[num,..]",",fun)"],[c.ok,c.er3,c.ok]
 
   | \arg_count =>
 
@@ -213,7 +228,7 @@ print.input_fault.map = ([[patt,extra],loc]) ->
 
     l c.er3 " range values have be all numbers.\n"
 
-    l lit [" map :: (",num,",fun)"],[c.ok,null,c.ok]
+    l lit [" arr/map :: (",num,",fun)"],[c.ok,null,c.ok]
 
   | \fun =>
 
@@ -226,8 +241,7 @@ print.input_fault.map = ([[patt,extra],loc]) ->
 
     | \second =>
 
-      l lit [" map/2 :: [num,...],","fun"],[c.ok,c.er2]
-
+      l lit [" arr/map/2 :: [num,...],","fun"],[c.ok,c.er2]
 
   l ""
 
@@ -280,6 +294,14 @@ print.input_fault.on = (data)->
 
     l lit [" #{loc[1]}", " :: ",dtype],[c.ok,c.ok,c.ok]
 
+  | \onor_type =>
+
+    l c.er3 " only accepts array as first value.\n"
+
+    dtype = on_dtype.array
+
+    l lit [" onor :: ","[(string|number),..]",",function"],[c.ok,c.er2,c.ok]
+
   l ""
 
 
@@ -325,7 +347,6 @@ print.log = (name) -> ->
   # lit ["{.*} ",prop.join " "],[c.warn,c.grey]
 
   lit [pkgname,str],[c.ok,c.ok]
-
 
 same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit','tap','forEach','wrap']
 

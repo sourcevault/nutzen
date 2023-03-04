@@ -131,57 +131,6 @@ for [name,type] in props
 
 #------------------------------
 
-rf = -> false
-
-rt = -> true
-
-V = be.arr
-
-.try
-.and rt
-.map rt
-.try
-.and rt
-
-# .and ->
-# .map ->
-# .end
-# .on [1,3],->
-# .and ->
-# .and ->,->
-# .try
-# .try
-# .on 2,->
-# .and ->,->
-# .end
-# .or ->,->
-# .or ->
-
-V.auth null
-
-
-
-
-# .alt ->
-
-# .and ->
-# .and ->
-
-# .try
-# .and ->
-# .and ->
-
-# .and ->
-# .or ->
-# .and ->
-
-# .catch!
-
-
-# z.pa V
-
-
-
 # for [name] in non_map_props
 
 #   be.maybe[name] = be.maybe be[name]
@@ -191,43 +140,42 @@ V.auth null
 # be.maybe.arr = be.arr.or be.undef
 
 # ------------------------------
-# .and ->
-# .or ->
 
-# z V
+V = be.arr
 
-# z a
+.try
 
-# z a
+.on 0,be.num
 
-# .and ->
-# .try!
-# .edit null
-# .onor 0,->
-# .catch ->
+.err (arr) -> \num
+.err (arr) -> \num1
+.fix (x) -> x
+.try
 
-# V.auth 4
+.on 1,be.str
 
-# .and noop
-# .try!
+.err (arr) -> \str
+.err (arr) -> \str1
 
-# .and noop
 
-# .map noop
-# .edit noop
-# .edit noop'
-# .and noop
+augh = V.auth []
 
-# B = be.arr.and noop
+z "---- V.auth [] ----"
 
-# console.dir B
+z augh
 
-# .on 2,noop
-# .on 3,noop
+augh = V.auth [1]
 
-# z V
+z "---- V.auth [1] ----"
 
-# .and be.int.neg
+z augh
+
+augh = V.auth ['s']
+
+z "---- V.auth ['s'] ----"
+
+z augh
+
 
 # V = be.known.obj
 # .on do

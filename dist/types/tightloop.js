@@ -1,6 +1,6 @@
-var pc, com, pkgname, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, red, exec_key, exec_top, map, forEach, upon, green, split_on_value_list, split_on, i$, len$, I, self_amorty, tightloop;
+var pc, com, pkgname, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, red, exec_key, lopy, functor_EMsg, map, forEach, upon, onor, green, split_on_value_list, split_on, i$, len$, I, self_amorty, tightloop;
 pc = require('./print.common');
-com = pc.com, pkgname = pc.pkgname;
+com = pc.com, pkgname = pc.pkgname, print = pc.print;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
 sanatize = function(x, UFO){
   var unknown, path, npath, msg;
@@ -85,15 +85,16 @@ y$.top = null;
 z$ = x$.auth = {};
 z$.key = null;
 z$.top = null;
-red = function(fun, put, args){
-  var patt, F, data;
+red = function(fun, cond, args){
+  var patt, F, put, data;
   patt = fun[0], F = fun[1];
+  put = (import$({}, cond));
   switch (patt) {
   case 'err':
     data = (function(){
       switch (typeof F) {
       case 'function':
-        return apply.normal.err(F, args, put);
+        return apply.normal.err(F, args, cond);
       default:
         return F;
       }
@@ -124,20 +125,18 @@ red = function(fun, put, args){
     }
     break;
   case 'fix':
+    put = {
+      'continue': true,
+      error: false
+    };
     put.value = (function(){
       switch (typeof F) {
       case 'function':
-        return apply.normal.key(F, put.value, args, put.path);
+        return apply.normal.key(F, cond.value, args, cond.path);
       default:
         return F;
       }
     }());
-    put['continue'] = true;
-    put.error = false;
-    put.message = undefined;
-    break;
-  default:
-
   }
   return put;
 };
@@ -265,8 +264,8 @@ apply.auth.key = function(F, val, args, key){
 'i';
 'f';
 exec_key = function(type, F, val, args, key){
-  var sortir;
-  sortir = (function(){
+  var cond;
+  cond = (function(){
     switch (type) {
     case 'd':
       return apply.normal.key(F, val, args, key);
@@ -276,58 +275,127 @@ exec_key = function(type, F, val, args, key){
       return sanatize(val, apply.normal.key(F, val, args, key));
     }
   }());
-  if (sortir.error) {
-    if (sortir.path) {
-      sortir.path = [key].concat(sortir.path);
+  if (cond.error) {
+    if (cond.path) {
+      cond.path = [key].concat(cond.path);
     } else {
-      sortir.path = [key];
+      cond.path = [key];
     }
-    sortir.value = val;
+    cond.value = val;
   }
-  return sortir;
+  return cond;
 };
-exec_top = function(type, F, val, args){
-  switch (type) {
-  case 'd':
-    return apply.normal.top(F, val, args);
-  case 'i':
-    return apply.auth.top(F, val, args);
-  case 'f':
-    return sanatize(val, apply.normal.top(F, val, args));
+lopy = {};
+lopy.fix_num = function(A, num){
+  var value, len, mid;
+  value = void 8;
+  len = A.length;
+  if (num === -Infinity) {
+    value = 0;
+  } else if (num === Infinity) {
+    value = len;
+  } else if (num < 0) {
+    mid = len + num;
+    value = mid;
+    if (mid < 0) {
+      value = 0;
+    }
+  } else {
+    value = num;
   }
+  return value;
 };
-map = function(dtype, fun, value, args){
-  var type, F, I, In, put, arr, ob, key, val;
-  type = fun[0], F = fun[1];
+lopy.reverse = function(to_add, user_array, start, end, step, arg$, args){
+  var type, F, I, len, arr, cond;
+  type = arg$[0], F = arg$[1];
+  I = start;
+  len = end - 1;
+  arr = (function(func, args, ctor) {
+    ctor.prototype = func.prototype;
+    var child = new ctor, result = func.apply(child, args), t;
+    return (t = typeof result)  == "object" || t == "function" ? result || child : child;
+  })(Array, user_array, function(){});
+  while (I > len) {
+    cond = exec_key(type, F, user_array[I], args, I);
+    if (to_add) {
+      if (cond.error) {
+        cond.value = user_array;
+        return cond;
+      }
+      arr[I] = cond.value;
+    }
+    I -= step;
+  }
+  return {
+    'continue': true,
+    error: false,
+    value: arr
+  };
+};
+lopy.forward = function(to_add, user_array, start, end, step, arg$, args){
+  var type, F, I, arr, len, cond;
+  type = arg$[0], F = arg$[1];
+  I = start;
+  arr = (function(func, args, ctor) {
+    ctor.prototype = func.prototype;
+    var child = new ctor, result = func.apply(child, args), t;
+    return (t = typeof result)  == "object" || t == "function" ? result || child : child;
+  })(Array, user_array, function(){});
+  len = end + 1;
+  while (I < len) {
+    cond = exec_key(type, F, user_array[I], args, I);
+    if (to_add) {
+      if (cond.error) {
+        cond.value = user_array;
+        return cond;
+      }
+      arr[I] = cond.value;
+    }
+    I += step;
+  }
+  return {
+    'continue': true,
+    error: false,
+    value: arr
+  };
+};
+lopy.main = function(to_add, fun, user_array, args){
+  var ref$, u_start, u_end, step, F, start, end, cond;
+  ref$ = fun[0], u_start = ref$[0], u_end = ref$[1], step = ref$[2], F = fun[1];
+  start = this.fix_num(user_array, u_start);
+  end = this.fix_num(user_array, u_end);
+  if (step < 0) {
+    step = Math.abs(step);
+    cond = this.reverse(to_add, user_array, start, end, step, F, args);
+  } else {
+    cond = this.forward(to_add, user_array, start, end, step, F, args);
+  }
+  return cond;
+};
+functor_EMsg = "[" + pkgname + "][runtimeError] most likely due to changing mappable object to non-mappable one.";
+map = function(dtype, fun, udata, args){
+  var ref$, type, F, ob, cond, key, val;
+  if (typeof udata !== 'object') {
+    return {
+      'continue': false,
+      error: true,
+      message: functor_EMsg
+    };
+  }
   switch (dtype) {
   case 'arr':
-    I = 0;
-    In = value.length;
-    put = null;
-    arr = [];
-    while (I < In) {
-      put = exec_key(type, F, value[I], args, I);
-      if (put.error) {
-        return put;
-      }
-      arr.push(put.value);
-      I += 1;
-    }
-    return {
-      'continue': true,
-      error: false,
-      value: arr
-    };
+    return lopy.main(true, fun, udata, args);
   case 'obj':
+    ref$ = fun[0], type = ref$[0], F = ref$[1];
     ob = {};
-    put = null;
-    for (key in value) {
-      val = value[key];
-      put = exec_key(type, F, val, args, key);
-      if (put.error) {
-        return put;
+    cond = null;
+    for (key in udata) {
+      val = udata[key];
+      cond = exec_key(type, F, val, args, key);
+      if (cond.error) {
+        return cond;
       }
-      ob[key] = put.value;
+      ob[key] = cond.value;
     }
     return {
       'continue': true,
@@ -336,37 +404,43 @@ map = function(dtype, fun, value, args){
     };
   }
 };
-forEach = function(dtype, fun, value, args){
-  var type, F, I, In, key, val;
-  type = fun[0], F = fun[1];
-  switch (dtype) {
-  case 'arr':
-    I = 0;
-    In = value.length;
-    while (I < In) {
-      exec_key(type, F, value[I], args, I);
-      I += 1;
-    }
+forEach = function(dtype, fun, udata, args){
+  var cond, ref$, type, F, key, val;
+  if (typeof udata !== 'object') {
     return {
-      'continue': true,
-      error: false,
-      value: value
-    };
-  case 'obj':
-    for (key in value) {
-      val = value[key];
-      exec_key(type, F, val, args, key);
-    }
-    return {
-      'continue': true,
-      error: false,
-      value: value
+      'continue': false,
+      error: true,
+      message: functor_EMsg
     };
   }
+  cond = {
+    'continue': true,
+    error: false,
+    value: udata
+  };
+  switch (dtype) {
+  case 'arr':
+    lopy.main(false, fun, udata, args);
+    break;
+  case 'obj':
+    ref$ = fun[0], type = ref$[0], F = ref$[1];
+    for (key in ref$ = value) {
+      val = ref$[key];
+      exec_key(type, F, val, args, key);
+    }
+  }
+  return cond;
 };
 upon = function(arg$, value, args){
-  var type, fun, key, shape, G, put, arr, I, In, ref$, ref1$, field_type, field, wFt, wFF, i$, len$, each;
+  var type, fun, key, shape, G, put, arr, I, In, ref$;
   type = arg$[0], fun = arg$[1];
+  if (typeof value !== 'object') {
+    return {
+      'continue': false,
+      error: true,
+      message: functor_EMsg
+    };
+  }
   switch (type) {
   case 'string':
     key = fun[0], shape = fun[1], G = fun[2];
@@ -415,111 +489,95 @@ upon = function(arg$, value, args){
       error: false,
       value: value
     };
-  case 'single_array':
-    I = 0;
-    In = fun.length;
-    while (I < In) {
-      ref$ = fun[I], type = ref$[0], ref1$ = ref$[1], field_type = ref1$[0], field = ref1$[1], wFt = ref$[2], wFF = ref$[3];
-      if (type === 'and') {
-        if (field_type === 'S') {
-          put = exec_key(wFt, wFF, value[field], args, field);
-          if (put.error) {
-            return put;
-          }
-          value[field] = put.value;
-        } else if (field_type === 'A') {
-          for (i$ = 0, len$ = field.length; i$ < len$; ++i$) {
-            each = field[i$];
-            put = exec_key(wFt, wFF, value[each], args, each);
-            if (put.error) {
-              return put;
-            }
-            value[each] = put.value;
-          }
-        }
-      } else if (type === 'alt') {
-        if (field_type === 'S') {
-          field = [field];
-        }
-        for (i$ = 0, len$ = field.length; i$ < len$; ++i$) {
-          each = field[i$];
-          put = exec_key(wFt, wFF, value[each], args, each);
-          if (put['continue']) {
-            value[each] = put.value;
-            break;
-          }
-        }
-        if (put.error) {
-          return put;
-        }
-      }
-      I += 1;
-    }
-    return {
-      'continue': true,
-      error: false,
-      value: value
-    };
   }
 };
-green = function(fun, put, dtype, args){
-  var type, F, value, I, nI, ref$, G;
-  type = fun[0], F = fun[1];
-  value = put.value;
-  switch (type) {
-  case 'd':
-    return apply.normal.top(F, value, args);
-  case 'i':
-    return apply.auth.top(F, value, args);
-  case 'f':
-    return sanatize(value, apply.normal.top(F, value, args));
-  case 'map':
-    return map(dtype, F, value, args);
-  case 'forEach':
-    return forEach(dtype, F, value, args);
-  case 'on':
-    return upon(F, value, args);
-  case 'cont':
-  case 'edit':
-    put.value = (function(){
-      switch (typeof F) {
-      case 'function':
-        return apply.normal.top(F, value, args);
-      default:
-        return F;
-      }
-    }());
-    return put;
-  case 'tap':
-    apply.normal.top(F, value, args);
-    return put;
-  case 'jam':
-    put.message = (function(){
-      switch (typeof F) {
-      case 'function':
-        return apply.normal.top(F, value, args);
-      default:
-        return F;
-      }
-    }());
-    put['continue'] = false;
-    put.error = true;
-    return put;
-  case 'alt':
-    I = 0;
-    nI = F.length;
-    do {
-      ref$ = F[I], type = ref$[0], G = ref$[1];
-      put = exec_top(type, G, value, args);
-      if (put['continue']) {
-        return put;
-      }
-      I += 1;
-    } while (I < nI);
-    return put;
-  default:
-    return put;
+onor = function(F, value, args){
+  var arr, shape, G, I, In, key, put;
+  if (typeof value !== 'object') {
+    return {
+      'continue': false,
+      error: true,
+      message: functor_EMsg
+    };
   }
+  arr = F[0], shape = F[1], G = F[2];
+  I = 0;
+  In = arr.length;
+  while (I < In) {
+    key = arr[I];
+    put = exec_key(shape, G, value[key], args, key);
+    if (put['continue']) {
+      value[key] = put.value;
+      return {
+        'continue': true,
+        error: false,
+        value: value
+      };
+    }
+    I += 1;
+  }
+  return {
+    'continue': false,
+    error: true,
+    value: value
+  };
+};
+green = function(fun, cond, dtype, args){
+  var type, F, value, ncond, vixod, put;
+  type = fun[0], F = fun[1];
+  value = cond.value;
+  ncond = (function(){
+    switch (type) {
+    case 'd':
+      return apply.normal.top(F, value, args);
+    case 'i':
+      return apply.auth.top(F, value, args);
+    case 'f':
+      vixod = apply.normal.top(F, value, args);
+      return sanatize(value, vixod);
+    case 'map':
+      return map(dtype, F, value, args);
+    case 'forEach':
+      return forEach(dtype, F, value, args);
+    case 'on':
+      return upon(F, value, args);
+    case 'onor':
+      return onor(F, value, args);
+    case 'cont':
+      cond.value = (function(){
+        switch (typeof F) {
+        case 'function':
+          return apply.normal.top(F, value, args);
+        default:
+          return F;
+        }
+      }());
+      return cond;
+    case 'tap':
+      apply.normal.top(F, value, args);
+      return cond;
+    case 'jam':
+      put = {
+        'continue': false,
+        error: true
+      };
+      put.message = (function(){
+        switch (typeof F) {
+        case 'function':
+          return apply.normal.top(F, value, args);
+        default:
+          return F;
+        }
+      }());
+      return put;
+    default:
+      return cond;
+    }
+  }());
+  if (ncond.error) {
+    ncond.value = value;
+  }
+  return ncond;
 };
 split_on_value_list = ['or', 'alt', 'try', 'or.multi', 'alt.multi'];
 split_on = {};
@@ -618,7 +676,7 @@ self_amorty = function(self){
   return fin;
 };
 tightloop = function(x){
-  var self, data, dtype, I, olen, cond, ref$, type, item, K, ilen, fun, ncond, J, klen, eachTry, jlen;
+  var self, data, dtype, I, olen, cond, cd, type, item, K, ilen, fun, ncond, J, end, start_cond, klen, el, eachTry, jlen;
   self = this.self;
   if (!self.morty) {
     this.data = self_amorty(self);
@@ -632,10 +690,11 @@ tightloop = function(x){
     error: false,
     value: x
   };
-  z.j(data);
   oloop: do {
-    ref$ = data[I], type = ref$.type, item = ref$.item;
-    switch (type) {
+    cd = data[I];
+    type = cd.type, item = cd.item;
+    I += 1;
+    switch (cd.type) {
     case 'and':
       if (cond.error) {
         cond = red(item, cond, arguments);
@@ -653,11 +712,14 @@ tightloop = function(x){
         } else {
           cond = green(fun, cond, dtype, arguments);
         }
-        K++;
+        K += 1;
       } while (K < ilen);
       break;
     case 'or':
     case 'alt':
+      if (!cond.error) {
+        continue oloop;
+      }
       cond.message = [cond.message];
       ncond = green(item, cond, dtype, arguments);
       if (ncond.error) {
@@ -673,6 +735,9 @@ tightloop = function(x){
       break;
     case 'or.multi':
     case 'alt.multi':
+      if (!cond.error) {
+        continue oloop;
+      }
       J = 0;
       ilen = item.length;
       cond.message = [cond.message];
@@ -693,21 +758,47 @@ tightloop = function(x){
       } while (J < ilen);
       break;
     case 'try':
+      if (cond.error) {
+        continue oloop;
+      }
+      end = cd.end;
+      start_cond = cond;
       K = 0;
       klen = item.length;
+      el = [];
       kloop: do {
         eachTry = item[K];
+        K += 1;
         jlen = eachTry.length;
         J = 0;
         jloop: do {
           fun = eachTry[J];
           J += 1;
+          if (cond.error) {
+            cond = red(fun, cond, arguments);
+          } else {
+            cond = green(fun, cond, dtype, arguments);
+          }
         } while (J < jlen);
-        K += 1;
+        if (cond['continue']) {
+          break kloop;
+        }
+        el.push(cond.message);
+        if (K < klen) {
+          cond = start_cond;
+        }
       } while (K < klen);
+      if (cond.error) {
+        cond.message = el.reverse();
+        cond.value = start_cond.value;
+      }
     }
-    I += 1;
   } while (I < olen);
   return cond;
 };
 module.exports = tightloop;
+function import$(obj, src){
+  var own = {}.hasOwnProperty;
+  for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+  return obj;
+}
