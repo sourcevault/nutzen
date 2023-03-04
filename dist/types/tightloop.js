@@ -519,7 +519,9 @@ onor = function(F, value, args){
   return {
     'continue': false,
     error: true,
-    value: value
+    value: value,
+    message: put.message,
+    path: put.path
   };
 };
 green = function(fun, cond, dtype, args){

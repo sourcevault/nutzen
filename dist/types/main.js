@@ -1,4 +1,4 @@
-var pkg, internal, com, print, z, l, R, j, deep_freeze, uic, loopError, noop, xop, custom, define, defset, be, non_map_props, props, base, not_base, undefnull, F, i$, len$, ref$, name, type, A, B, C, V, augh, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var pkg, internal, com, print, z, l, R, j, deep_freeze, uic, loopError, noop, xop, custom, define, defset, be, non_map_props, props, base, not_base, undefnull, F, i$, len$, ref$, name, type, A, B, C, V, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 pkg = require('./print.common');
 internal = require('./internal');
 com = pkg.com, print = pkg.print;
@@ -78,6 +78,8 @@ be.not = function(F){
     return !V.auth(x)['continue'];
   });
 };
+be.undefnull = be(undefnull);
+be.not.undefnull = be.not(undefnull);
 for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
   ref$ = props[i$], name = ref$[0], type = ref$[1];
   A = base(type);
@@ -90,26 +92,8 @@ for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
   C = define.basis.empty(name);
   be.known[name] = C;
 }
-V = be.arr['try'].on(0, be.num).err(function(arr){
-  return 'num';
-}).err(function(arr){
-  return 'num1';
-}).fix(function(x){
-  return x;
-})['try'].on(1, be.str).err(function(arr){
-  return 'str';
-}).err(function(arr){
-  return 'str1';
-});
-augh = V.auth([]);
-z("---- V.auth [] ----");
-z(augh);
-augh = V.auth([1]);
-z("---- V.auth [1] ----");
-z(augh);
-augh = V.auth(['s']);
-z("---- V.auth ['s'] ----");
-z(augh);
+V = be.obj['try'].on('remote', be.arr).end;
+l(V);
 pkg = {};
 pkg.types = be;
 pkg.guard = xop;

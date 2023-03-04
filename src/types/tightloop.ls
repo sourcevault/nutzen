@@ -502,7 +502,11 @@ onor = (F,value,args)->
 
     I += 1
 
-  {continue:false,error:true,value:value}
+  *continue:false
+   error:true
+   value:value
+   message:put.message
+   path:put.path
 
 
 green = (fun,cond,dtype,args) ->
@@ -751,7 +755,6 @@ tightloop = (x) !->
 
         K += 1
 
-
       while K < ilen
 
     | \or,\alt =>
@@ -846,7 +849,6 @@ tightloop = (x) !->
 
             cond = green fun,cond,dtype,arguments
 
-
         while J < jlen
 
         if cond.continue
@@ -866,7 +868,6 @@ tightloop = (x) !->
         cond.message = el.reverse!
 
         cond.value = start_cond.value
-
 
   while I < olen
 

@@ -267,7 +267,12 @@ define.on = function(cat, args, state, ftype){
     str: [ftype, state.str],
     mode: state.mode
   };
-  return new proto.functor(data);
+  switch (data.mode) {
+  case 'try':
+    return new proto['try'].functor(data);
+  case 'normal':
+    return new proto.functor(data);
+  }
 };
 ha = {};
 ha.err = function(err_type, args, state, type){
@@ -363,7 +368,12 @@ functor.main = function(args, state, ftype){
     str: [ftype, state.str],
     mode: state.mode
   };
-  return new proto.functor(data);
+  switch (data.mode) {
+  case 'try':
+    return new proto['try'].functor(data);
+  case 'normal':
+    return new proto.functor(data);
+  }
 };
 functor.validate_range = function(arg$, state, type){
   var range, F, i$, len$, index, item, step;

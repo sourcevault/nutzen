@@ -333,7 +333,11 @@ define.on = (cat,args,state,ftype) ->
      str      : [ftype,state.str]
      mode     : state.mode
 
-  new proto.functor data
+  switch data.mode
+  | \try =>
+    new proto.try.functor data
+  | \normal =>
+    new proto.functor data
 
 #-----------------------------------------------------------------------
 
@@ -461,7 +465,11 @@ functor.main = (args,state,ftype)->
      str      : [ftype,state.str]
      mode     : state.mode
 
-  new proto.functor data
+  switch data.mode
+  | \try =>
+    new proto.try.functor data
+  | \normal =>
+    new proto.functor data
 
 functor.validate_range = ([range,F],state,type) ->
 

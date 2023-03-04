@@ -91,9 +91,9 @@ be.not = (F) ->
 
 # --------------------------------------------------------
 
-# be.undefnull = be undefnull
+be.undefnull = be undefnull
 
-# be.not.undefnull = be.not undefnull
+be.not.undefnull = be.not undefnull
 
 # --------------------------------------------------------
 
@@ -133,7 +133,7 @@ for [name,type] in props
 
 # for [name] in non_map_props
 
-#   be.maybe[name] = be.maybe be[name]
+# be.maybe[name] = be.maybe be[name]
 
 # be.maybe.obj = be.obj.or be.undef
 
@@ -141,40 +141,35 @@ for [name,type] in props
 
 # ------------------------------
 
-V = be.arr
+
+V = be.obj
 
 .try
 
-.on 0,be.num
+.on \remote,be.arr
 
-.err (arr) -> \num
-.err (arr) -> \num1
-.fix (x) -> x
-.try
+.end
 
-.on 1,be.str
+# .onor [\remotefold,\remotehost], do
+#   be.undefnull
 
-.err (arr) -> \str
-.err (arr) -> \str1
+# .onor [\remotefold,\remotehost] do
+#   be.undefnull
+#   .jam (x,index) ->
+#     "#{index} not defined"
 
 
-augh = V.auth []
+l V
 
-z "---- V.auth [] ----"
 
-z augh
 
-augh = V.auth [1]
 
-z "---- V.auth [1] ----"
+# test1 =
+#   remote:['ls']
+#   remotefold: \code
+#   remotehost: \123.43.54.1
 
-z augh
 
-augh = V.auth ['s']
-
-z "---- V.auth ['s'] ----"
-
-z augh
 
 
 # V = be.known.obj
