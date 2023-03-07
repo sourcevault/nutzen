@@ -29,7 +29,6 @@ sanatize = (x,UFO) ->
 
       unknown = UFO[1]
       path    = UFO[2]
-
       switch R.type path
       | \Array =>
         npath = path
@@ -494,6 +493,8 @@ onor = (F,value,args)->
 
     put = exec_key shape,G,value[key],args,key
 
+    z put
+
     if put.continue
 
       value[key] = put.value
@@ -502,11 +503,9 @@ onor = (F,value,args)->
 
     I += 1
 
-  *continue:false
-   error:true
+  *continue:true
+   error:false
    value:value
-   message:put.message
-   path:put.path
 
 
 green = (fun,cond,dtype,args) ->
@@ -840,7 +839,7 @@ tightloop = (x) !->
           fun = eachTry[J]
 
           J += 1
-
+ 
           if cond.error
 
             cond = red fun,cond,arguments

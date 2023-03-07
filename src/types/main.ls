@@ -141,36 +141,31 @@ for [name,type] in props
 
 # ------------------------------
 
-
 V = be.obj
 
-.try
-
 .on \remote,be.arr
-
-.end
 
 # .onor [\remotefold,\remotehost], do
 #   be.undefnull
 
-# .onor [\remotefold,\remotehost] do
-#   be.undefnull
-#   .jam (x,index) ->
-#     "#{index} not defined"
+.on_any [\remotefold,\remotehost] do
+  be.undefnull
+  .jam (x,index) ->
+    "#{index} not defined"
 
 
-l V
+.on_any [\remotefold,\remotehost] do
+  be.undefnull
+  .jam (x,index) ->
+    "#{index} not defined"
 
 
+test =
+  remote:['ls']
+  remotefold: \code
+  # remotehost: \123.43.54.1
 
-
-# test1 =
-#   remote:['ls']
-#   remotefold: \code
-#   remotehost: \123.43.54.1
-
-
-
+l V.auth test
 
 # V = be.known.obj
 # .on do
@@ -195,7 +190,7 @@ l V
 #     [\alt,[\remotefold,\remotehost],be.undefnull]
 #    ]
 
-# # ------------------------------------------------------------------
+# ------------------------------------------------------------------
 
 # not-arrayof-str-or-num = (type) -> ->
 

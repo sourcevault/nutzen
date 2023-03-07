@@ -506,6 +506,7 @@ onor = function(F, value, args){
   while (I < In) {
     key = arr[I];
     put = exec_key(shape, G, value[key], args, key);
+    z(put);
     if (put['continue']) {
       value[key] = put.value;
       return {
@@ -517,11 +518,9 @@ onor = function(F, value, args){
     I += 1;
   }
   return {
-    'continue': false,
-    error: true,
-    value: value,
-    message: put.message,
-    path: put.path
+    'continue': true,
+    error: false,
+    value: value
   };
 };
 green = function(fun, cond, dtype, args){
