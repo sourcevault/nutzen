@@ -1,4 +1,4 @@
-var pc, com, pkgname, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, red, exec_key, lopy, functor_EMsg, map, forEach, upon, green, split_on_value_list, split_on, i$, len$, I, self_amorty, tightloop, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var pc, com, pkgname, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, red, exec_key, lopy, functor_EMsg, map, forEach, upon, green, split_on_value_list, split_on, i$, len$, I, self_amorty, tightloop;
 pc = require('./print.common');
 com = pc.com, pkgname = pc.pkgname, print = pc.print;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
@@ -640,7 +640,7 @@ self_amorty = function(self){
   return fin;
 };
 tightloop = function(x){
-  var self, von, data, dtype, I, olen, cond, cd, type, item, K, ilen, fun, ncond, J, end, start_cond, klen, el, eachTry, jlen;
+  var self, von, data, dtype, I, olen, cond, cd, type, item, K, ilen, fun, ncond, msg, J, end, start_cond, klen, el, eachTry, jlen;
   if (!this.data) {
     self = this.self;
     von = self_amorty(self);
@@ -685,11 +685,18 @@ tightloop = function(x){
       if (!cond.error) {
         continue oloop;
       }
-      cond.message = arrayFrom$(cond.message);
       ncond = green(item, cond, dtype, arguments);
       if (ncond.error) {
         if (ncond.message !== void 8) {
-          cond.message.push(ncond.message);
+          switch (R.type(cond.message)) {
+          case 'Array':
+            cond.message.push(ncond.message);
+            break;
+          default:
+            msg = [cond.message];
+            msg.push(ncond.message);
+            cond.message = msg;
+          }
         }
       } else {
         cond = ncond;

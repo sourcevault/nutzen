@@ -728,15 +728,19 @@ tightloop = (x) !->
 
       if not cond.error then continue oloop
 
-      cond.message = [cond.message]
-
       ncond = green item,cond,dtype,arguments
 
       if ncond.error
 
         if (ncond.message isnt void)
 
-          cond.message.push ncond.message
+          switch R.type cond.message
+          | \Array =>
+            cond.message.push ncond.message
+          | otherwise =>
+            msg = [cond.message]
+            msg.push ncond.message
+            cond.message = msg
 
       else
 

@@ -15,15 +15,15 @@ T = (x) -> true
 F = (x)  -> [false,\foobar]
 
 V = be.arr.map be.str
-.or be.str
+.or be.num
 .or be.obj
 .and F
 
-von = V.auth null
+von = V.auth [1,2]
 
 z von
 
-# if not (ret.message[0] is "not array")
+# if not (von.message[0] is "not array")
 #   p 1
 
 
