@@ -115,8 +115,8 @@ print.input_fault.rest = (data)->
   l ""
 
   txt = switch etype
-  | \arg_count    => " incorrect number of argument provided."
-  | \not_function => " one of the argument is not a function."
+  | \arg_count       => " incorrect number of argument provided."
+  | \type_error      => " one of the argument is not a function or hoplon.type object."
   | \undefined_error => " illegal error, please report to original author."
 
   l c.er3 txt

@@ -3,7 +3,8 @@ pkg = require \./print.common
 internal = require \./internal
 
 {com,print} = pkg
-# ------------------------------------------------------------------
+
+# --------------------------
 
 {z,l,R,j,deep_freeze,uic,loopError,noop} = com
 
@@ -15,7 +16,7 @@ be = custom
 
 be.known = {}
 
-#-------------------------------------------------------------------
+#---------------------------
 
 # first column is the function name, second column is error message.
 
@@ -58,20 +59,21 @@ not_base = (type) -> (UFO) ->
 
     {continue:true,error:false,value:UFO}
 
-# ------------------------------------------------------
+# ---------------------------
 
 undefnull = (UFO) ->
 
   if ((R.type UFO) in [\Undefined \Null])
 
     return {continue:true,error:false,value:UFO}
+
   else
 
     return {continue:false,error:true,message:"not undefined or null",value:UFO}
 
 defset.add undefnull
 
-# --------------------------------------------------------
+# ----------------------------
 
 F = base \Arguments
 
@@ -83,25 +85,44 @@ be.arg = F
 
 # -----------------------------
 
-be.not = (F) ->
+be.not = (F,msg = void) ->
 
-  V = be F
+  V = be(F)
 
-  be (x) -> not (V.auth x).continue
+  be (x) ->
 
-# --------------------------------------------------------
+    von = V.auth x
+
+    if von.continue
+
+      *continue:false
+       error:true
+       message:msg
+
+    else
+
+      *continue:true
+       error:false
+       value:von.value
+
+# ----------------------------
 
 be.undefnull = be undefnull
 
-be.not.undefnull = be.not undefnull
+be.not.undefnull = be.not do
+  undefnull
+  "is undefined or null"
 
-# --------------------------------------------------------
+# ----------------------------
 
-# be.maybe = (F) -> ((be F).or be.undef).err (msg) -> msg.pop! ; msg
+be.maybe = (F) ->
+
+  be(F).or(be.undef)
+  .err (msg) -> msg.pop! ; msg
 
 # -----------------------------
 
-# be.list  = (F) -> be.arr.map F
+be.list  = (F) -> be.arr.map F
 
 # -----------------------------
 
@@ -131,406 +152,344 @@ for [name,type] in props
 
 #------------------------------
 
-# for [name] in non_map_props
+for [name] in non_map_props
 
-# be.maybe[name] = be.maybe be[name]
+  be.maybe[name] = be.maybe be[name]
 
-# be.maybe.obj = be.obj.or be.undef
+be.maybe.obj = be.obj.or be.undef
 
-# be.maybe.arr = be.arr.or be.undef
+be.maybe.arr = be.arr.or be.undef
 
 # ------------------------------
 
-V = be.obj
+resreq = {}
 
-.on \remote,be.arr
+resreq.gen_error = (data) ->
 
-# .onor [\remotefold,\remotehost], do
-#   be.undefnull
+  print.route [(new Error!),\resreq,data]
 
-.on_any [\remotefold,\remotehost] do
-  be.undefnull
-  .jam (x,index) ->
-    "#{index} not defined"
+resreq.not_array_of_str_or_num = (type) -> ->
 
+  args = R.flatten [...arguments]
 
-.on_any [\remotefold,\remotehost] do
-  be.undefnull
-  .jam (x,index) ->
-    "#{index} not defined"
+  for key in args
 
+    if not ((R.type key) in [\String \Number])
 
-test =
-  remote:['ls']
-  remotefold: \code
-  # remotehost: \123.43.54.1
+      return [type]
 
-l V.auth test
+  return false
 
-# V = be.known.obj
-# .on do
-#   *[
-#     [\and,\remote,be.arr]
-#     [\alt,[\remotefold,\remotehost],be.undefnull]
-#    ]
+resreq.both = (req,res) ->
 
-# V = be.obj
-# .on \remote,be.arr
-# .and \remotefold,be.undef
-# .cont (x)->
-#   z "hello world"
-# .bt 1
-# .on \remotehost,be.undef
+    if not (((R.type req) is \Array) and (((R.type res) is \Array)))
 
+      return [\resreq,\prime]
 
-# V = be.obj
-# .on do
-#   *[
-#     [\and,\remote,be.arr]
-#     [\alt,[\remotefold,\remotehost],be.undefnull]
-#    ]
+    for I in req
 
-# ------------------------------------------------------------------
+      if not ((R.type I) in [\String \Number])
 
-# not-arrayof-str-or-num = (type) -> ->
+        return [\resreq,\res]
 
-#   args = R.flatten [...arguments]
+    for I in res
 
-#   for key in args
+      if not ((R.type I) in [\String \Number])
 
-#     if not ((R.type key) in [\String \Number])
+        return [\resreq,\req]
 
-#       print.route [(new Error!),\resreq,[type]]
+    false
 
-#       return true
+objarr = (be.obj.alt be.arr).err "not object or array"
 
-#   return false
+resreq.req = ->
 
-# reqError = xop.wh do
-#   not-arrayof-str-or-num \req
-#   loopError
+  props = R.flatten [...arguments]
 
-# resError = xop.wh do
-#   not-arrayof-str-or-num \res
-#   loopError
+  F = be.not.undef.err [\:req,props]
 
-# reqresError = xop.wh do
-#   (req,res) ->
+  von = objarr.on props,F
 
-#     if not (((R.type req) is "Array") and (((R.type res) is "Array")))
+  von
 
-#       print.route [(new Error!),\resreq,[\resreq,\prime]]
+reqError = xop.wh do
+  resreq.not_array_of_str_or_num \req
+  resreq.gen_error
 
-#       return true
-
-#     for I in req
-
-#       if not ((R.type I) in [\String \Number])
-
-#         print.route [(new Error!),\resreq,[\resreq,\res]]
-
-#         return true
-
-#     for I in res
-
-#       if not ((R.type I) in [\String \Number])
-
-#         print.route [(new Error!),\resreq,[\resreq,\req]]
-
-#         return true
+resError = xop.wh do
+  resreq.not_array_of_str_or_num \res
+  resreq.gen_error
 
 
-#   loopError
+resreqError = xop.cap do
+  resreq.both
+  resreq.gen_error
 
 # #------------------------------------------------------
 
-# objarr = (be.obj.alt be.arr).err "not object or array"
+be.required = reqError.def resreq.req
 
-# be.required = reqError.def ->
+# #------------------------------------------------------
 
-#   props = R.flatten [...arguments]
+restricted = (props,po) -> (obj) ->
 
-#   ret = objarr.on props,(be.not.undef.err [\:req,props])
+  keys = Object.keys obj
 
-#   ret
+  for I in keys
 
-# #-------------------------------------------------------------------------------------
+    if not po[I]
 
-# restricted = (props,po) -> (obj) ->
+      return [false,[\:res,props],I]
 
-#   keys = Object.keys obj
+  true
 
-#   for I in keys
+be.restricted = resError.def ->
 
-#     if not po[I]
+  props = R.flatten [...arguments]
 
-#       return [false,[\:res,props],I]
+  po = {}
 
-#   true
+  for I in props
 
-# be.restricted = resError.def ->
+    po[I] = true
 
-#   props = R.flatten [...arguments]
+  objarr.and restricted props,po
 
-#   po = {}
+be.resreq = resreqError.def (req,res) ->
 
-#   for I in props
+  po = {}
 
-#     po[I] = true
+  for I in res
 
-#   objarr.and restricted props,po
+    po[I] = true
 
-# be.reqres = reqresError.def (req,res) ->
+  objarr.on req, be.not.undef.err [\:req,req]
+  .and restricted res,po
 
-#   po = {}
+# #-----------------------------------------------
 
-#   for I in res
+integer = (UFO) ->
 
-#     po[I] = true
+  if not ((R.type UFO) is \Number)
 
-#   objarr.on req, be.not.undef.err [\:req,req]
-#   .and restricted res,po
+    return {continue:false,error:true,message:"not an integer ( or number )",value:UFO}
 
-# #-------------------------------------------------------------------------------------
+  residue = Math.abs (UFO - Math.round(UFO))
 
-# integer = (UFO) ->
+  if (residue > 0)
 
-#   if not ((R.type UFO) is \Number)
+    return {continue:false,error:true,message:"not an integer",value:UFO}
 
-#     return {continue:false,error:true,message:"not an integer ( or number )",value:UFO}
+  else
 
-#   residue = Math.abs (UFO - Math.round(UFO))
+    return {continue:true,error:false,value:UFO}
 
-#   if (residue > 0)
 
-#     return {continue:false,error:true,message:"not an integer",value:UFO}
+defset.add integer
 
-#   else
+# # -----------------------------------------------
 
-#     return {continue:true,error:false,value:UFO}
+boolnum = (UFO) ->
 
+  if ((R.type UFO) in [\Boolean \Number])
 
-# defset.add integer
+    return {continue:true,error:false,value:UFO}
 
-# #-------------------------------------------------------------------------------------
+  else
 
-# boolnum = (UFO) ->
+    return {continue:false,error:true,message:"not a number or boolean",value:UFO}
 
-#   if ((R.type UFO) in [\Boolean \Number])
+defset.add boolnum
 
-#     return {continue:true,error:false,value:UFO}
+# #------------------------------------------------
 
-#   else
+maybe_boolnum = (UFO) ->
 
-#     return {continue:false,error:true,message:"not a number or boolean",value:UFO}
+  if ((R.type UFO) in [\Undefined \Boolean \Number])
 
-# defset.add boolnum
+    return {continue:true,error:false,value:UFO}
 
-# #-------------------------------------------------------------------------------------
+  else
 
+    return {continue:false,error:true,message:"not a number or boolean",value:UFO}
 
-# maybe_boolnum = (UFO) ->
 
-#   if ((R.type UFO) in [\Undefined \Boolean \Number])
+defset.add maybe_boolnum
 
-#     return {continue:true,error:false,value:UFO}
+# #------------------------------------------------
 
-#   else
+be.int     = be integer
 
-#     return {continue:false,error:true,message:"not a number or boolean",value:UFO}
+be.boolnum = be boolnum
 
+# #-------------------------------------------------
 
-# defset.add maybe_boolnum
+be.int.neg  = be.int.and do
+  (x) ->
+    if (x <= 0)
+      return true
+    else
+      return [false,"not a negative integer"]
 
-# #-------------------------------------------------------
+be.int.pos  = be.int.and do
+  (x) ->
+    if (x >= 0)
+      return true
+    else
+      return [false,"not a positive integer"]
 
-# be.int     = be integer
+# #-------------------------------------------------
 
-# be.boolnum = be boolnum
+maybe          = be.maybe
 
+maybe.int      = be.int.or be.undef
 
-# #--------------------------------------------------------
+maybe.int.pos  = maybe be.int.pos
 
-# be.int.neg  = be.int.and do
-#     (x) ->
-#       if (x <= 0)
-#         return true
-#       else
-#         return [false,"not a negative integer"]
+maybe.int.neg  = maybe be.int.neg
 
-# be.int.pos  = be.int.and do
-#     (x) ->
-#       if (x >= 0)
-#         return true
-#       else
-#         return [false,"not a positive integer"]
+maybe.boolnum  = be maybe_boolnum
 
-# #--------------------------------------------------------
+# # -------------------------------------------------
 
-# maybe          = be.maybe
+list = be.list
 
-# maybe.int      = be.int.or be.undef
+list.ofstr = list be.str
+.err (msg,key)->
 
-# maybe.int.pos  = maybe be.int.pos
+  switch R.type key
+  | \Undefined => "not a list of string."
+  | otherwise  => [\:list ,[key[0],"not string type"]]
 
-# maybe.int.neg  = maybe be.int.neg
+list.ofnum = list be.num
+.err (msg,key) ->
 
-# maybe.boolnum  = be maybe_boolnum
+  switch R.type key
+  | \Undefined =>  "not a list of number."
+  | otherwise  => [\:list,[key[0],"not number type"]]
 
-# #--------------------------------------------------------
+list.ofint = list be.int
+.err (msg,key) ->
 
-# list = be.list
+  switch R.type key
+  | \Undefined => "not a list of integer."
+  | otherwise  => [\:list,[key[0],"not integer type"]]
 
-# list.ofstr = list be.str
-# .err (msg,key)->
+maybe.list = {}
 
-#   switch R.type key
-#   | \Undefined => "not a list of string."
-#   | otherwise  => [\:list ,[key[0],"not string type"]]
+maybe.list.ofstr = maybe list.ofstr
 
-# list.ofnum = list be.num
-# .err (msg,key) ->
+maybe.list.ofnum = maybe list.ofnum
 
-#   switch R.type key
-#   | \Undefined =>  "not a list of number."
-#   | otherwise  => [\:list,[key[0],"not number type"]]
-
-# list.ofint = list be.int
-# .err (msg,key) ->
-
-#   switch R.type key
-#   | \Undefined => "not a list of integer."
-#   | otherwise  => [\:list,[key[0],"not integer type"]]
-
-# maybe.list = {}
-
-# maybe.list.ofstr = maybe list.ofstr
-
-# maybe.list.ofnum = maybe list.ofnum
-
-# maybe.list.ofint = maybe list.ofint
+maybe.list.ofint = maybe list.ofint
 
 # # -----------------------------------
 
-# handleE = {}
+flatro = {}
 
-# handleE.rm_num = ([txt,msg]) ->
+flatro.sort = ([txt1],[txt2]) ->
 
-#   name = (txt.split ":")[1]
+  [__,name1,number1] = txt1.split ":"
 
-#   if msg is void then [name]
-#   else then [name,msg]
+  if (number1 is void)
 
+    number1 = 0
 
-# handleE.sort = ([txt1],[txt2]) ->
+  else
 
-#   [__,name1,number1] = txt1.split ":"
+    number1 = parseInt number1
 
-#   if (number1 is void)
+  [__,name2,number2] = txt2.split ":"
 
-#     number1 = 0
+  if (number2 is void)
 
-#   else
+    number2 = 0
 
-#     number1 = parseInt number1
+  else
 
-#   [__,name2,number2] = txt2.split ":"
+    number2 = parseInt number2
 
-#   if (number2 is void)
+  if number1 > number2 then return -1
 
-#     number2 = 0
+  if number1 < number2 then return 1
 
-#   else
+  else then return 0
 
-#     number2 = parseInt number2
+is_special_str = (str) ->
 
-#   if number1 > number2 then return -1
+  if (((R.type str) is \String) and (str[0] is ":"))
 
-#   if number1 < number2 then return 1
+    return true
 
-#   else then return 0
+  else return false
 
-# is_special_str = (str) ->
+flatro.array = (msg,fin) ->
 
-#   if (((R.type str) is \String) and (str[0] is ":"))
+  for I in msg
 
-#     return true
+    switch R.type I
 
-#   else return false
+    | \String,\Number =>
 
-# handleE.array = (msg,fin) ->
+      fin.push I
 
-#   for I in msg
+    | \Array  =>
 
-#     switch R.type I
+      uno = I[0]
 
-#     | \String,\Number =>
+      if is_special_str uno
 
-#       fin.push I
+        fin.push I
 
-#     | \Array  =>
+      else
 
-#       uno = I[0]
+        flatro.array I,fin
 
-#       if is_special_str uno
+rm_not_arrays = R.filter (x) -> ((R.type x) is \Array)
 
-#         fin.push I
+flatro.main = (msg) ->
 
-#       else
+  out = switch R.type msg
 
-#         handleE.array I,fin
+  | \String   => [msg]
 
-# rm-not-arrays = R.filter (x) -> ((R.type x) is \Array)
+  | \Array    =>
 
-# handleE.entry = (msg) ->
+    fin = []
 
-#   out = switch R.type msg
+    if is_special_str msg[0]
 
-#   | \String   => [msg]
+      msg = [msg]
 
-#   | \Array    =>
+    flatro.array msg,fin
 
-#     fin = []
+    fin
 
-#     if is_special_str msg[0]
+  | otherwise => []
 
-#       msg = [msg]
+  clean = rm_not_arrays out
 
-#     handleE.array msg,fin
+  if (clean.length is 0)
 
-#     fin
+    return [[void,out]]
 
-#   | otherwise => []
+  else
 
-#   clean = rm-not-arrays out
+    sorted = clean.sort flatro.sort
 
-#   if (clean.length is 0)
-
-#     return [[void,out]]
-
-#   else
-
-#     sorted = clean.sort handleE.sort
-
-#     return sorted
-
-# # -----------------------------------
-
-# betrue = be -> true
-
-# be.any = betrue
-
-# be.tap = (f) -> betrue.tap f
-
-# # -----------------------------------
-
-# be.flatro = handleE.entry
+    return sorted
 
 # -----------------------------------
 
-# be = deep_freeze be
+be.any = be -> true
 
-# -----------------------------------
+be.tap = (f) -> be.any.tap f
+
+# # -----------------------------------
+
+be.flatro = flatro.main
+
+# # -----------------------------------
 
 pkg = {}
 
@@ -543,15 +502,4 @@ pkg.utils = com
 pkg = Object.freeze pkg
 
 module.exports = pkg
-
-
-
-
-
-
-
-
-
-
-
 

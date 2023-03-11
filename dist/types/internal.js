@@ -98,11 +98,6 @@ wrap.core = function(type){
     return guard.core(arguments, this.self, type);
   };
 };
-wrap.on = function(type){
-  return function(){
-    return guard.on(arguments, this.self, type);
-  };
-};
 wrap.functor = function(type){
   return function(){
     return define.functor(arguments, this.self, type);
@@ -118,10 +113,9 @@ for (i$ = 0, len$ = (ref$ = ['and', 'tap', 'or', 'alt']).length; i$ < len$; ++i$
   val = ref$[i$];
   main[val] = wrap.core(val);
 }
-for (i$ = 0, len$ = (ref$ = ['on', 'onor']).length; i$ < len$; ++i$) {
-  val = ref$[i$];
-  main[val] = wrap.on(val);
-}
+main.on = function(){
+  return guard.on(arguments, this.self);
+};
 for (i$ = 0, len$ = (ref$ = ['map', 'forEach']).length; i$ < len$; ++i$) {
   val = ref$[i$];
   main[val] = wrap.functor(val);
@@ -191,8 +185,8 @@ Object.defineProperty(proto['try'].normal.prototype, 'end', ge);
 link_from_main = link.proto_fn(main);
 link_from_main(['and', 'cont', 'tap', 'edit', 'err', 'jam', 'fix'], proto.core);
 link_from_main(['or', 'alt'], proto.normal, proto.functor);
-link_from_main(['map', 'forEach', 'on', 'onor'], proto.functor);
-link_from_main(['map', 'forEach', 'on', 'onor'], proto['try'].functor);
+link_from_main(['map', 'forEach', 'on'], proto.functor);
+link_from_main(['map', 'forEach', 'on'], proto['try'].functor);
 p_core[uic] = print.log('core.normal');
 proto['try'].functor.prototype[uic] = print.log('try.functor');
 proto['try'].normal.prototype[uic] = print.log('try.normal');
@@ -220,10 +214,7 @@ custom.err = function(type){
     return print.route(edata);
   };
 };
-custom.is_fun = function(F){
-  return R.type(F) === 'Function';
-};
-custom.exp = xop.arn(1, custom.err('arg_count')).whn(custom.is_fun, custom.err('not_function')).def(custom.main);
+custom.exp = xop.arn(1, custom.err('arg_count')).whn(def_or_normal, custom.err('not_function')).def(custom.main);
 custom.exp.is_instance = function(x){
   switch (x[symbols.htypes]) {
   case true:
@@ -232,7 +223,7 @@ custom.exp.is_instance = function(x){
     return false;
   }
 };
-define.on = function(cat, args, state, ftype){
+define.on = function(cat, args, state){
   var put, props, F, key, ob, fun, val, data;
   put = (function(){
     var res$, ref$;
@@ -252,19 +243,16 @@ define.on = function(cat, args, state, ftype){
       }
       fun = res$;
       return ['object', fun];
-    case 'onor.array':
-      props = args[0], F = args[1];
-      return [R.uniq(props)].concat(arrayFrom$(cato(F)));
     }
   }());
   data = {
     type: state.type,
     all: {
-      node: [ftype, put],
+      node: ['on', put],
       back: state.all
     },
     index: state.index + 1,
-    str: [ftype, state.str],
+    str: ['on', state.str],
     mode: state.mode
   };
   switch (data.mode) {
@@ -275,9 +263,9 @@ define.on = function(cat, args, state, ftype){
   }
 };
 ha = {};
-ha.err = function(err_type, args, state, type){
+ha.err = function(err_type, args, state){
   var edata;
-  edata = tupnest([new Error(), 'input.fault'], 'on', [err_type], [state.str, type]);
+  edata = tupnest([new Error(), 'input.fault'], 'on', [err_type], [state.str, 'on']);
   return print.route(edata);
 };
 ha.err_static = function(type){
@@ -285,7 +273,7 @@ ha.err_static = function(type){
     return ha.err.apply(ha, [type].concat(arrayFrom$(arguments)));
   };
 };
-ha.validate_obj = function(args, state, which_on){
+ha.validate_obj = function(args, state){
   var maybe_object, type, I, val;
   maybe_object = args[0];
   type = R.type(maybe_object);
@@ -301,13 +289,10 @@ ha.validate_obj = function(args, state, which_on){
     return [false, 'typeError'];
   }
 };
-ha.validate_rest = function(arg$, state, which_on){
+ha.validate_rest = function(arg$, state){
   var first, second, type, i$, len$, index, I, ref$;
   first = arg$[0], second = arg$[1];
   type = R.type(first);
-  if (which_on === 'onor' && type !== 'Array') {
-    return [false, 'onor_type'];
-  }
   switch (type) {
   case 'Array':
     for (i$ = 0, len$ = first.length; i$ < len$; ++i$) {
@@ -319,9 +304,6 @@ ha.validate_rest = function(arg$, state, which_on){
     }
     if (!def_or_normal(second)) {
       return [false, 'array'];
-    }
-    if (which_on === 'onor') {
-      return [true, 'onor.array'];
     } else {
       return [true, 'array'];
     }
@@ -525,8 +507,8 @@ core.validate = function(funs, state, type){
     }
     for (i$ = 0, len$ = funs.length; i$ < len$; ++i$) {
       F = funs[i$];
-      if (R.type(F) !== 'Function') {
-        return [false, 'not_function'];
+      if (!def_or_normal(F)) {
+        return [false, 'type_error'];
       }
     }
     return true;
@@ -535,8 +517,8 @@ core.validate = function(funs, state, type){
       return [false, 'arg_count'];
     }
     F = funs[0];
-    if (R.type(F) !== 'Function') {
-      return [false, 'not_function'];
+    if (!def_or_normal(F)) {
+      return [false, 'type_error'];
     }
     return true;
   default:

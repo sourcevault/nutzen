@@ -1,4 +1,3 @@
-
 pkg = require \../../dist/types/main
 
 {utils,types} = pkg

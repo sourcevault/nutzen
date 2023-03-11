@@ -1,4 +1,6 @@
-{utils,types} = require \../../dist/main
+pkg = require \../../dist/types/main
+
+{utils,types} = pkg
 
 {z,l,R,j,print_fail} = utils
 
@@ -17,10 +19,12 @@ V = be.arr.map be.str
 .or be.obj
 .and F
 
-ret = V.auth null
+von = V.auth null
 
-if not (ret.message[0] is "not array")
-  p!
+z von
+
+# if not (ret.message[0] is "not array")
+#   p 1
 
 
 

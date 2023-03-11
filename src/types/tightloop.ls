@@ -17,7 +17,7 @@ sanatize = (x,UFO) ->
     if UFO
       return (continue:true,error:false,value:x)
     else
-      return (continue:false,error:true,value:x,message:void)
+      return (continue:false,error:true,value:x)
 
   | \Array =>
 
@@ -29,21 +29,20 @@ sanatize = (x,UFO) ->
 
       unknown = UFO[1]
       path    = UFO[2]
+
+      von =
+        *continue :false
+         error    :true
+         value    :x
+         message  :unknown
+
       switch R.type path
       | \Array =>
-        npath = path
+        von.path = path
       | \String,\Number =>
-        npath = [path]
-      | otherwise =>
-        npath = []
+        von.path = [path]
 
-      return {
-        continue :false
-        error    :true
-        value    :x
-        message  :unknown
-        path     :npath
-      }
+      return von
 
   | \Object =>
 
@@ -55,9 +54,9 @@ sanatize = (x,UFO) ->
 
     switch UFO.error
     | true  =>
-      UFO.contiue = false
+      UFO.continue = false
     | false =>
-      UFO.contiue = true
+      UFO.continue = true
 
     return UFO
 
@@ -65,12 +64,11 @@ sanatize = (x,UFO) ->
 
     msg = "[#{pkgname}][typeError][user-supplied-validator] undefined return value."
 
-    return {
-      continue : false
-      error    : true
-      value    : x
-      message  : msg
-    }
+    return
+      *continue : false
+       error    : true
+       value    : x
+       message  : msg
 
 apply = {}
   ..normal = {}
@@ -446,6 +444,7 @@ upon = ([type,fun],value,args) ->
       put = exec_key shape,G,value[key],args,key
 
       if put.error
+
         return put
 
       value[key] = put.value
@@ -475,39 +474,6 @@ upon = ([type,fun],value,args) ->
 
     {continue:true,error:false,value:value}
 
-onor = (F,value,args)->
-
-  if (typeof (value)) isnt \object
-
-    return {continue:false,error:true,message:functor_EMsg}
-
-  [arr,shape,G] = F
-
-  I = 0
-
-  In = arr.length
-
-  while I < In
-
-    key = arr[I]
-
-    put = exec_key shape,G,value[key],args,key
-
-    z put
-
-    if put.continue
-
-      value[key] = put.value
-
-      return {continue:true,error:false,value:value}
-
-    I += 1
-
-  *continue:true
-   error:false
-   value:value
-
-
 green = (fun,cond,dtype,args) ->
 
   [type,F] = fun
@@ -530,8 +496,6 @@ green = (fun,cond,dtype,args) ->
   | \forEach       => forEach dtype,F,value,args
 
   | \on            => upon F,value,args
-
-  | \onor          => onor F,value,args
 
   | \cont          =>
 
@@ -691,21 +655,25 @@ self_amorty = (self)->
 
   # --- done ---
 
+  fin.type = self.type
+
   fin
 
 tightloop = (x) !->
 
-  self = @self
+  if not @data
 
-  if not self.morty
+    self = @self
 
-    @data = self_amorty self
+    von = self_amorty self
+
+    @data = von
 
   # ----------------------
 
   data = @data
 
-  dtype = @self.type
+  dtype = data.type
 
   I = 0
 

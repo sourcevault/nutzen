@@ -251,8 +251,8 @@ print_fail = (filename) -> (message = "") !->
     "[TEST ERROR] #{filename}:"
 
   txt = switch typeof message
-  | \number   => "\n    failed at TEST NUMBER #{message}\n"
-  | \string   => "\n    #{message}\n"
+  | \number   => "\n  failed at TEST NUMBER #{message}\n"
+  | \string   => "\n  #{message}\n"
   | otherwise => ""
 
   l txt

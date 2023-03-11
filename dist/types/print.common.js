@@ -108,8 +108,8 @@ print.input_fault.rest = function(data){
     switch (etype) {
     case 'arg_count':
       return " incorrect number of argument provided.";
-    case 'not_function':
-      return " one of the argument is not a function.";
+    case 'type_error':
+      return " one of the argument is not a function or hoplon.type object.";
     case 'undefined_error':
       return " illegal error, please report to original author.";
     }

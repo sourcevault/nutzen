@@ -136,8 +136,6 @@ Object.defineProperty p_core,\wrap,(get:user_wrap,enumerable:true)
 
 wrap.core = (type) -> -> guard.core arguments,@self,type
 
-wrap.on = (type) -> -> guard.on arguments,@self,type
-
 wrap.functor = (type) -> -> define.functor arguments,@self,type
 
 wrap.misc = (type) -> -> define.rest arguments,@self,type 
@@ -148,9 +146,7 @@ for val in [\and \tap \or \alt]
 
   main[val] = wrap.core val
 
-for val in [\on \onor]
-
-  main[val] = wrap.on val
+main.on = -> guard.on arguments,@self
 
 for val in [\map \forEach]
 
@@ -232,13 +228,13 @@ link_from_main do
 #---------------------------------------------------------
 
 link_from_main do
-  [\map \forEach \on \onor]
+  [\map \forEach \on]
   proto.functor
 
 #---------------------------------------------------------
 
 link_from_main do
-  [\map \forEach \on \onor]
+  [\map \forEach \on]
   proto.try.functor
 
 #---------------------------------------------------------
@@ -275,17 +271,15 @@ custom.err = (type) -> ->
 
   print.route edata
 
-custom.is_fun = (F) -> R.type(F) is \Function
-
 custom.exp = xop
 
 .arn 1,custom.err(\arg_count)
 
 .whn do
-  custom.is_fun
+  def_or_normal
   custom.err(\not_function)
 
-.def custom.main
+.def(custom.main)
 
 custom.exp.is_instance = (x) ->
 
@@ -295,7 +289,7 @@ custom.exp.is_instance = (x) ->
 
 #--------------------------------------------------------------------------
 
-define.on = (cat,args,state,ftype) ->
+define.on = (cat,args,state) ->
 
   put = switch cat
   | \array =>
@@ -318,19 +312,13 @@ define.on = (cat,args,state,ftype) ->
 
     [\object,fun]
 
-  | \onor.array =>
-
-    [props,F] = args
-
-    [(R.uniq props),...(cato F)]
-
   data =
     *type     : state.type
      all      :
-      *node:[ftype,put]
+      *node:[\on,put]
        back:state.all
      index    : state.index + 1
-     str      : [ftype,state.str]
+     str      : [\on,state.str]
      mode     : state.mode
 
   switch data.mode
@@ -343,19 +331,19 @@ define.on = (cat,args,state,ftype) ->
 
 ha =  {}
 
-ha.err = (err_type,args,state,type)->
+ha.err = (err_type,args,state)->
 
   edata = tupnest do
     [new Error!,\input.fault]
     \on
     [err_type]
-    [state.str,type]
+    [state.str,\on]
 
   print.route edata
 
 ha.err_static = (type) -> -> ha.err ...[type,...arguments]
 
-ha.validate_obj = (args,state,which_on) ->
+ha.validate_obj = (args,state) ->
 
   [maybe_object] = args
 
@@ -375,13 +363,9 @@ ha.validate_obj = (args,state,which_on) ->
 
     return [false,\typeError]
 
-ha.validate_rest = ([first,second],state,which_on)->
+ha.validate_rest = ([first,second],state)->
 
   type = R.type first
-
-  if (which_on is \onor) and (type isnt \Array)
-
-    return [false,\onor_type]
 
   switch type
 
@@ -390,16 +374,11 @@ ha.validate_rest = ([first,second],state,which_on)->
     for I,index in first
 
       if not ((R.type I) in [\String,\Number])
-
         return [false,\array]
 
     if not def_or_normal(second)
 
       return [false,\array]
-
-    if which_on is \onor
-
-      return [true,\onor.array]
 
     else
 
@@ -635,9 +614,9 @@ core.validate = (funs,state,type) ->
 
     for F in funs
 
-      if (R.type(F) isnt \Function)
+      if not def_or_normal(F)
 
-        return [false,\not_function]
+        return [false,\type_error]
 
     return true
 
@@ -649,9 +628,9 @@ core.validate = (funs,state,type) ->
 
     [F] = funs
 
-    if R.type(F) isnt \Function
+    if not def_or_normal(F)
 
-      return [false,\not_function]
+      return [false,\type_error]
 
     return true
 

@@ -98,5 +98,23 @@ l "---- V.auth ['s'] ----"
 l augh
 
 
+# V = be.obj
+
+# .on \remote,be.arr
+
+# .on [\remotefold,\remotehost],be.not.undefnull
+
+
+# test =
+#   remote:['ls']
+#   remotefold:\code
+
+#   # remotehost: \123.43.54.1
+
+# out = V.auth test
+
+# z "---V.out---"
+
+# z out
 
 

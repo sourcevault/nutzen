@@ -215,9 +215,9 @@ print_fail = function(filename){
     txt = (function(){
       switch (typeof message) {
       case 'number':
-        return "\n    failed at TEST NUMBER " + message + "\n";
+        return "\n  failed at TEST NUMBER " + message + "\n";
       case 'string':
-        return "\n    " + message + "\n";
+        return "\n  " + message + "\n";
       default:
         return "";
       }

@@ -1,4 +1,6 @@
-{utils,types} = require \../../dist/main
+pkg = require \../../dist/types/main
+
+{utils,types} = pkg
 
 {z,l,R,j,print_fail} = utils
 
@@ -18,25 +20,23 @@ valG7 = (s)->
 
 isG7 = be.str.and valG7
 
-ret1 = isG7.auth "UK"
+von1 = isG7.auth "UK"
 
-ret2 = isG7.auth "Spain"
-
-
-if not (ret1.value is \UK)
-
-  p!
+von2 = isG7.auth "Spain"
 
 
+if not (von1.value is \UK)
 
-if not (ret2.message is "not in G7")
+  p 1
 
-  p!
 
-if (ret2.value is undefined)
+if not (von2.message is "not in G7")
+
+  p 2
+
+if (von2.value is undefined)
 
   p ".value has not been passed to {..error:true..}."
-
 
 
 

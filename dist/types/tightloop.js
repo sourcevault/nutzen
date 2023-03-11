@@ -1,9 +1,9 @@
-var pc, com, pkgname, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, red, exec_key, lopy, functor_EMsg, map, forEach, upon, onor, green, split_on_value_list, split_on, i$, len$, I, self_amorty, tightloop;
+var pc, com, pkgname, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, red, exec_key, lopy, functor_EMsg, map, forEach, upon, green, split_on_value_list, split_on, i$, len$, I, self_amorty, tightloop, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 pc = require('./print.common');
 com = pc.com, pkgname = pc.pkgname, print = pc.print;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
 sanatize = function(x, UFO){
-  var unknown, path, npath, msg;
+  var unknown, path, von, msg;
   switch (R.type(UFO)) {
   case 'Boolean':
   case 'Null':
@@ -19,8 +19,7 @@ sanatize = function(x, UFO){
       return {
         'continue': false,
         error: true,
-        value: x,
-        message: void 8
+        value: x
       };
     }
   case 'Array':
@@ -33,24 +32,21 @@ sanatize = function(x, UFO){
     } else {
       unknown = UFO[1];
       path = UFO[2];
-      switch (R.type(path)) {
-      case 'Array':
-        npath = path;
-        break;
-      case 'String':
-      case 'Number':
-        npath = [path];
-        break;
-      default:
-        npath = [];
-      }
-      return {
+      von = {
         'continue': false,
         error: true,
         value: x,
-        message: unknown,
-        path: npath
+        message: unknown
       };
+      switch (R.type(path)) {
+      case 'Array':
+        von.path = path;
+        break;
+      case 'String':
+      case 'Number':
+        von.path = [path];
+      }
+      return von;
     }
   case 'Object':
     switch (UFO['continue']) {
@@ -62,10 +58,10 @@ sanatize = function(x, UFO){
     }
     switch (UFO.error) {
     case true:
-      UFO.contiue = false;
+      UFO['continue'] = false;
       break;
     case false:
-      UFO.contiue = true;
+      UFO['continue'] = true;
     }
     return UFO;
   default:
@@ -491,38 +487,6 @@ upon = function(arg$, value, args){
     };
   }
 };
-onor = function(F, value, args){
-  var arr, shape, G, I, In, key, put;
-  if (typeof value !== 'object') {
-    return {
-      'continue': false,
-      error: true,
-      message: functor_EMsg
-    };
-  }
-  arr = F[0], shape = F[1], G = F[2];
-  I = 0;
-  In = arr.length;
-  while (I < In) {
-    key = arr[I];
-    put = exec_key(shape, G, value[key], args, key);
-    z(put);
-    if (put['continue']) {
-      value[key] = put.value;
-      return {
-        'continue': true,
-        error: false,
-        value: value
-      };
-    }
-    I += 1;
-  }
-  return {
-    'continue': true,
-    error: false,
-    value: value
-  };
-};
 green = function(fun, cond, dtype, args){
   var type, F, value, ncond, vixod, put;
   type = fun[0], F = fun[1];
@@ -542,8 +506,6 @@ green = function(fun, cond, dtype, args){
       return forEach(dtype, F, value, args);
     case 'on':
       return upon(F, value, args);
-    case 'onor':
-      return onor(F, value, args);
     case 'cont':
       cond.value = (function(){
         switch (typeof F) {
@@ -674,16 +636,18 @@ self_amorty = function(self){
       I.type = 'and.multi';
     }
   }
+  fin.type = self.type;
   return fin;
 };
 tightloop = function(x){
-  var self, data, dtype, I, olen, cond, cd, type, item, K, ilen, fun, ncond, J, end, start_cond, klen, el, eachTry, jlen;
-  self = this.self;
-  if (!self.morty) {
-    this.data = self_amorty(self);
+  var self, von, data, dtype, I, olen, cond, cd, type, item, K, ilen, fun, ncond, J, end, start_cond, klen, el, eachTry, jlen;
+  if (!this.data) {
+    self = this.self;
+    von = self_amorty(self);
+    this.data = von;
   }
   data = this.data;
-  dtype = this.self.type;
+  dtype = data.type;
   I = 0;
   olen = data.length;
   cond = {
@@ -721,7 +685,7 @@ tightloop = function(x){
       if (!cond.error) {
         continue oloop;
       }
-      cond.message = [cond.message];
+      cond.message = arrayFrom$(cond.message);
       ncond = green(item, cond, dtype, arguments);
       if (ncond.error) {
         if (ncond.message !== void 8) {
