@@ -9,6 +9,6 @@ T = function(x){
 F = function(x){
   return [false, 'foobar'];
 };
-V = be.arr.map(be.str).or(be.str).or(be.obj).and(F);
+V = be.arr.map(be.str.err([':a', 'not_string'])).or(be.str).or(be.obj).and(F);
 von = V.auth([1, 2]);
 z(von);

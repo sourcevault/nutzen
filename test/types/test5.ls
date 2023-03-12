@@ -12,7 +12,7 @@ T = (x) -> true
 
 F = (x)  -> [false,\foobar]
 
-V = be.arr.map be.str
+V = be.arr.map be.str.err [\:a,\not_string]
 .or be.str
 .or be.obj
 .and F
