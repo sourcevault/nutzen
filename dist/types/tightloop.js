@@ -640,7 +640,7 @@ self_amorty = function(self){
   return fin;
 };
 tightloop = function(x){
-  var self, von, data, dtype, I, olen, cond, cd, type, item, K, ilen, fun, ncond, msg, J, end, start_cond, klen, el, eachTry, jlen;
+  var self, von, data, dtype, I, olen, cond, cd, type, item, K, ilen, fun, ncond, old_msg, new_msg, msg, J, end, start_cond, klen, el, eachTry, jlen;
   if (!this.data) {
     self = this.self;
     von = self_amorty(self);
@@ -688,15 +688,23 @@ tightloop = function(x){
       ncond = green(item, cond, dtype, arguments);
       if (ncond.error) {
         if (ncond.message !== void 8) {
-          switch (R.type(cond.message)) {
+          old_msg = cond.message;
+          new_msg = ncond.message;
+          switch (R.type(old_msg)) {
           case 'Array':
-            cond.message.push(ncond.message);
+            msg = old_msg;
             break;
           default:
-            msg = [cond.message];
-            msg.push(ncond.message);
-            cond.message = msg;
+            msg = [old_msg];
           }
+          switch (R.type(new_msg)) {
+          case 'Array':
+            msg.push(new_msg);
+            break;
+          default:
+            msg.push(new_msg);
+          }
+          cond.message = msg;
         }
       } else {
         cond = ncond;

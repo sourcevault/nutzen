@@ -734,13 +734,26 @@ tightloop = (x) !->
 
         if (ncond.message isnt void)
 
-          switch R.type cond.message
+          old_msg = cond.message
+
+          new_msg = ncond.message
+
+          switch R.type old_msg
           | \Array =>
-            cond.message.push ncond.message
+            msg = old_msg
           | otherwise =>
-            msg = [cond.message]
-            msg.push ncond.message
-            cond.message = msg
+            msg = [old_msg]
+
+          switch R.type new_msg
+          | \Array =>
+            msg.push new_msg
+          | otherwise =>
+            msg.push new_msg
+
+          cond.message = msg
+
+
+
 
       else
 

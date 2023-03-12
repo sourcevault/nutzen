@@ -14,7 +14,7 @@ T = (x) -> true
 
 F = (x)  -> [false,\foobar]
 
-V = be.arr.map be.str
+V = be.arr.map be.str.err 'not string'
 .or be.num
 .or be.obj
 .and F
