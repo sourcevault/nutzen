@@ -17,10 +17,12 @@ V = be.arr.map be.str
 .or be.obj
 .and F
 
-ret = V.auth null
+von = V.auth [1,2]
 
-if not (ret.message[0] is "not array")
-  p!
+z von
+
+# if not (ret.message[0] is "not array")
+#   p!
 
 
 
