@@ -472,7 +472,8 @@ functor.validate_range = ([range,F],state,type) ->
 
     step = range[2]
 
-    return [false,[\inf_step]]
+    if step is 0
+      return [false,[\inf_step]]
 
   | otherwise =>
 
@@ -493,10 +494,6 @@ functor.validate = ([F],state) ->
 functor.err_static = (val) -> ->  functor.err ...[[val],...arguments]
 
 functor.err = (err_type,args,state,type) ->
-
-  z 'hello world'
-
-  z err_type
 
   edata = tupnest do
     [new Error!,\input.fault]

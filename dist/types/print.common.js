@@ -1,4 +1,4 @@
-var pkg, print, com, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, version, loopError, wait, pkgversion, pkgname, ref$, help, show_stack, type_color, show_chain, show_name, map_str, x$, on_dtype, getprop, includes, sort, same, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var pkg, print, com, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, version, loopError, wait, pkgversion, pkgname, ref$, help, show_stack, type_color, show_chain, show_name, map_str_gen, x$, on_dtype, getprop, includes, sort, same, split, find_len, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 pkg = require('../guard/main');
 print = {};
 com = pkg.com;
@@ -55,6 +55,7 @@ print.input_fault = function(arg$){
   case 'on':
     return input_fault.on(data);
   case 'map':
+  case 'forEach':
     return input_fault.map(data);
   case 'custom':
     return input_fault.custom(data);
@@ -151,43 +152,49 @@ print.input_fault.custom = function(patt){
   }
   return l("");
 };
-map_str = [c.ok(" obj/map/1   :: fun"), c.ok(" arr/map/1   :: fun"), c.ok(" arr/map/2/2 :: [num,num],fun"), c.ok(" arr/map/2/3 :: [num,num,num],fun")];
+map_str_gen = function(fname){
+  return c.ok("obj/" + fname + "/1   :: fun\narr/" + fname + "/1   :: fun\narr/" + fname + "/2/2 :: [num,num],fun\narr/" + fname + "/2/3 :: [num,num,num],fun");
+};
 print.input_fault.map = function(arg$){
-  var ref$, patt, extra, loc, num;
+  var ref$, patt, extra, loc, fname, init_str, num;
   ref$ = arg$[0], patt = ref$[0], extra = ref$[1], loc = arg$[1];
-  show_name(".map");
+  fname = loc[1];
+  show_name("." + fname);
   l("");
   show_chain(loc);
   l("");
   switch (patt) {
   case 'range.obj':
     l(c.er3(" .obj cannot have a range parameter, only accepts: \n"));
-    l(map_str[0]);
+    l(c.ok(" obj/" + fname + "/1   :: fun"));
     break;
   case 'undefined_error':
     l(c.er3(" unexpected error (please report to author) expected types:\n"));
-    l(map_str.join("\n"));
+    l(map_str_gen(fname));
     break;
   case 'inf_step':
     l(c.er3(" step cannot be value 0.\n"));
-    l(lit([" arr/map/2/3 :: ([num,num,", "num", "],fun)"], [c.ok, c.er3, c.ok]));
+    l(lit([" arr/" + fname + "/2/3 :: ([num,num,", "num", "],fun)"], [c.ok, c.er3, c.ok]));
     break;
   case 'num_count':
     l(c.er3(" range values has to be either 1, 2 or 3.\n"));
-    l(lit([" arr/map :: (", "[num,..]", ",fun)"], [c.ok, c.er2, c.ok]));
+    init_str = " arr/" + fname + " :: (";
+    l(lit([init_str, "[num,..]", ",fun)"], [c.ok, c.er2, c.ok]));
     break;
   case 'range':
     l(c.er2(" first argument (range) has to be an array.\n"));
-    l(lit([" arr/map :: (", "[num,..]", ",fun)"], [c.ok, c.er3, c.ok]));
+    init_str = " arr/" + fname + " :: (";
+    l(lit([init_str, "[num,..]", ",fun)"], [c.ok, c.er3, c.ok]));
     break;
   case 'arg_count':
     l(c.er3(" only accepts 1 or 2 argument: \n"));
-    l(map_str.join("\n"));
+    l(map_str_gen(fname));
     break;
   case 'num':
     num = c.er3(extra) + c.er2(":num");
     l(c.er3(" range values have be all numbers.\n"));
-    l(lit([" arr/map :: (", num, ",fun)"], [c.ok, null, c.ok]));
+    init_str = " arr/" + fname + " :: (";
+    l(lit([init_str, num, ",fun)"], [c.ok, null, c.ok]));
     break;
   case 'fun':
     l(c.er3(" The " + extra + " argument has to a function.\n"));
@@ -196,7 +203,7 @@ print.input_fault.map = function(arg$){
       l(lit([" map/1 :: ", "fun"], [c.ok, c.er2]));
       break;
     case 'second':
-      l(lit([" arr/map/2 :: [num,...],", "fun"], [c.ok, c.er2]));
+      l(lit([" arr/" + fname + "/2 :: [num,...],", "fun"], [c.ok, c.er2]));
     }
   }
   return l("");
@@ -245,11 +252,6 @@ print.input_fault.on = function(data){
     l(c.grey(" expected signature:\n"));
     dtype = on_dtype[patt];
     l(lit([" " + loc[1], " :: ", dtype], [c.ok, c.ok, c.ok]));
-    break;
-  case 'onor_type':
-    l(c.er3(" only accepts array as first value.\n"));
-    dtype = on_dtype.array;
-    l(lit([" onor :: ", "[(string|number),..]", ",function"], [c.ok, c.er2, c.ok]));
   }
   return l("");
 };

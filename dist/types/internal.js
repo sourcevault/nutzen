@@ -379,7 +379,10 @@ functor.validate_range = function(arg$, state, type){
     break;
   case 3:
     step = range[2];
-    return [false, ['inf_step']];
+    if (step === 0) {
+      return [false, ['inf_step']];
+    }
+    break;
   default:
     return [false, ['num_count']];
   }
@@ -403,8 +406,6 @@ functor.err_static = function(val){
 };
 functor.err = function(err_type, args, state, type){
   var edata;
-  z('hello world');
-  z(err_type);
   edata = tupnest([new Error(), 'input.fault'], type, [err_type], [state.str, type]);
   return print.route(edata);
 };

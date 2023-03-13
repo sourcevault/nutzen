@@ -4,7 +4,11 @@ pkg = require \../../dist/types/main
 
 {z,l,R,j,print_fail} = utils
 
+p = print_fail "test/types/test11.js"
+
 be = types
+
+S = JSON.stringify
 
 N = be.num.tap do
   (x,index,accum) ->
@@ -12,112 +16,90 @@ N = be.num.tap do
 
 V = {}
 
-# fin_ret = (...,fin)-> fin
+fin_ret = (...,fin)-> fin
 
 V.0 = be.arr.forEach [0,1,1],N
 
-# V.1 = be.arr.forEach [2,1,1],N
+V.1 = be.arr.forEach [2,1,1],N
 
-# V.2 = be.arr.forEach [0,-1,1],N
+V.2 = be.arr.forEach [0,-1,1],N
 
-# V.3 = be.arr.forEach [-1,0,-1],N
+V.3 = be.arr.forEach [-1,0,-1],N
 
-# V.4 = be.arr.forEach [-1,0,1],N
+V.4 = be.arr.forEach [-1,0,1],N
 
-# for name,val of V
+for name,val of V
 
-#   V[name] = val.cont(fin_ret).wrap
+  V[name] = val.cont(fin_ret).wrap
 
-# r1 = V.0 [0,1,2,3],[]
+r1 = V.0 [0,1,2,3],[]
 
-# z r1
+von = S r1
 
+if (von isnt '["a:0","a:1"]')
 
+  p "TEST NUMBER 1."
 
-# r2 = V.1 [0,1,2,3],[]
+r2 = V.1 [0,1,2,3],[]
 
-# r3 = V.2 [0,1,2,3],[]
+von = S r2
 
-# r4 = V.3 [0,1,2,3],[]
+if von isnt '[]'
 
-# r5 = V.4 [0,1,2,3],[]
+  p "TEST NUMBER 2."
 
+r3 = V.2 [0,1,2,3],[]
 
-# # []
-# # [ 'a:0', 'a:1', 'a:2', 'a:3' ]
-# # [ 'a:3', 'a:2', 'a:1', 'a:0' ]
-# # []
+von = S r3
 
-# l R.equals r1,[ 'a:0', 'a:1' ]
+if von isnt '["a:0","a:1","a:2","a:3"]'
 
+  p "TEST NUMBER 3."
 
-# F = (data)->
+r4 = V.3 [0,1,2,3],[]
 
-#   if data is 2 then return true
+von = S r4
 
-#   false
+if von isnt '["a:3","a:2","a:1","a:0"]'
 
-# V = be.arr
-
-# .onor [0,1],F
-
-
-# V.auth [1,2,3]
+  p "TEST NUMBER 4."
 
 
-# V = be.arr
+V = be.arr
 
-# .try
+.try
 
-# .on 0,be.num
+.on 0,be.num
 
-# .err (arr) -> \num
-# .err (arr) -> \num1
-# .fix (x) -> x
+.err (arr) -> \num
+.err (arr) -> \num1
 
-# .try
+.try
 
-# .on 1,be.str
+.on 0,be.str
 
-# .err (arr) -> \str
-# .err (arr) -> \str1
+.err (arr) -> \str
+.err (arr) -> \str1
 
-# augh = V.auth []
+r5 = V.auth []
 
-# l "---- V.auth [] ----"
+von = S r5.message
 
-# l augh
+if von isnt '["str1","num1"]'
 
-# augh = V.auth [1]
+  p "TEST NUMBER 5."
 
-# l "---- V.auth [1] ----"
+von = V.auth [1]
 
-# l augh
+if not von.continue
 
-# augh = V.auth ['s']
+  p "TEST NUMBER 6."
 
-# l "---- V.auth ['s'] ----"
+von = V.auth ['s']
 
-# l augh
+if not von.continue
 
+  p "TEST NUMBER 7."
 
-# V = be.obj
-
-# .on \remote,be.arr
-
-# .on [\remotefold,\remotehost],be.not.undefnull
-
-
-# test =
-#   remote:['ls']
-#   remotefold:\code
-
-#   # remotehost: \123.43.54.1
-
-# out = V.auth test
-
-# z "---V.out---"
-
-# z out
 
 
