@@ -3,7 +3,7 @@ pc = require('./print.common');
 com = pc.com, pkgname = pc.pkgname, print = pc.print;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
 sanatize = function(x, UFO){
-  var unknown, path, von, msg;
+  var unknown, path, von, priority, msg;
   switch (R.type(UFO)) {
   case 'Boolean':
   case 'Null':
@@ -49,29 +49,45 @@ sanatize = function(x, UFO){
       return von;
     }
   case 'Object':
-    switch (UFO['continue']) {
-    case true:
-      UFO.error = false;
-      break;
-    case false:
-      UFO.error = true;
+    if (UFO.hasOwnProperty('error')) {
+      priority = 'error';
+    } else {
+      if (UFO.hasOwnProperty('continue')) {
+        priority = 'continue';
+      } else {
+        priority = 'undecided';
+      }
     }
-    switch (UFO.error) {
-    case true:
-      UFO['continue'] = false;
+    switch (priority) {
+    case 'error':
+      if (UFO.error) {
+        UFO['continue'] = false;
+      } else {
+        UFO['continue'] = true;
+      }
       break;
-    case false:
-      UFO['continue'] = true;
+    case 'continue':
+      if (UFO['continue']) {
+        UFO.error = false;
+      } else {
+        UFO.error = true;
+      }
+      break;
+    case 'undecided':
+      UFO.error = true;
+      msg = "[" + pkgname + "][typeError][user-supplied-validator] return object missing field values (.continue or .error).";
+      UFO.message = msg;
     }
     return UFO;
   default:
     msg = "[" + pkgname + "][typeError][user-supplied-validator] undefined return value.";
-    return {
+    von = {
       'continue': false,
       error: true,
       value: x,
       message: msg
     };
+    return von;
   }
 };
 x$ = apply = {};
@@ -82,50 +98,49 @@ z$ = x$.auth = {};
 z$.key = null;
 z$.top = null;
 red = function(fun, cond, args){
-  var patt, F, put, data;
+  var patt, F, von, nput;
   patt = fun[0], F = fun[1];
-  put = (import$({}, cond));
   switch (patt) {
   case 'err':
-    data = (function(){
-      switch (typeof F) {
-      case 'function':
-        return apply.normal.err(F, args, cond);
-      default:
-        return F;
-      }
-    }());
-    switch (R.type(data)) {
-    case 'Array':
-    case 'String':
-    case 'Number':
-      put.message = data;
-      break;
-    case 'Object':
-      if (data.hasOwnProperty('message')) {
-        put.message = data.message;
-      }
-      if (data.hasOwnProperty('path')) {
-        switch (R.type(data.path)) {
-        case 'Number':
-        case 'String':
-          put.path = [data.path];
-          break;
-        case 'Array':
-          put.path = data.path;
+    von = (import$({}, cond));
+    switch (typeof F) {
+    case 'function':
+      nput = apply.normal.err(F, args, cond);
+      switch (R.type(nput)) {
+      case 'Array':
+      case 'String':
+      case 'Number':
+        von.message = nput;
+        break;
+      case 'Object':
+        if (nput.hasOwnProperty('message')) {
+          von.message = nput.message;
         }
+        if (nput.hasOwnProperty('path')) {
+          switch (R.type(nput.path)) {
+          case 'Number':
+          case 'String':
+            von.path = [nput.path];
+            break;
+          case 'Array':
+            von.path = nput.path;
+          }
+        }
+        break;
+      case 'Null':
+        von.message = void 8;
       }
       break;
-    case 'Null':
-      put.message = void 8;
+    default:
+      von.message = F;
     }
     break;
   case 'fix':
-    put = {
+    von = {
       'continue': true,
       error: false
     };
-    put.value = (function(){
+    von.value = (function(){
       switch (typeof F) {
       case 'function':
         return apply.normal.key(F, cond.value, args, cond.path);
@@ -133,8 +148,11 @@ red = function(fun, cond, args){
         return F;
       }
     }());
+    break;
+  default:
+    von = cond;
   }
-  return put;
+  return von;
 };
 apply.normal.key = function(F, val, args, path){
   var list;
@@ -368,7 +386,7 @@ lopy.main = function(to_add, fun, user_array, args){
   }
   return cond;
 };
-functor_EMsg = "[" + pkgname + "][runtimeError] most likely due to changing mappable object to non-mappable one.";
+functor_EMsg = "[" + pkgname + "][runtimeError] most likely due to changing mappable object to non-mappable.";
 map = function(dtype, fun, udata, args){
   var ref$, type, F, ob, cond, key, val;
   if (typeof udata !== 'object') {
@@ -640,7 +658,7 @@ self_amorty = function(self){
   return fin;
 };
 tightloop = function(x){
-  var self, von, data, dtype, I, olen, cond, cd, type, item, K, ilen, fun, ncond, old_msg, new_msg, msg, J, end, start_cond, klen, el, eachTry, jlen;
+  var self, von, data, dtype, I, olen, cond, cd, type, item, K, ilen, fun, ncond, J, end, start_cond, klen, el, eachTry, jlen;
   if (!this.data) {
     self = this.self;
     von = self_amorty(self);
@@ -688,23 +706,12 @@ tightloop = function(x){
       ncond = green(item, cond, dtype, arguments);
       if (ncond.error) {
         if (ncond.message !== void 8) {
-          old_msg = cond.message;
-          new_msg = ncond.message;
-          switch (R.type(old_msg)) {
-          case 'Array':
-            msg = old_msg;
-            break;
-          default:
-            msg = [old_msg];
+          if (cond.message === void 8) {
+            cond.message = ncond.message;
+          } else {
+            cond.message = [cond.message];
+            cond.message.push(ncond.message);
           }
-          switch (R.type(new_msg)) {
-          case 'Array':
-            msg.push(new_msg);
-            break;
-          default:
-            msg.push(new_msg);
-          }
-          cond.message = msg;
         }
       } else {
         cond = ncond;
@@ -720,12 +727,12 @@ tightloop = function(x){
       }
       J = 0;
       ilen = item.length;
-      cond.message = [cond.message];
       do {
         fun = item[J];
         ncond = green(fun, cond, dtype, arguments);
         if (ncond.error) {
           if (ncond.message !== void 8) {
+            cond.message = [cond.message];
             cond.message.push(ncond.message);
           }
           J += 1;

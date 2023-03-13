@@ -403,6 +403,8 @@ functor.err_static = function(val){
 };
 functor.err = function(err_type, args, state, type){
   var edata;
+  z('hello world');
+  z(err_type);
   edata = tupnest([new Error(), 'input.fault'], type, [err_type], [state.str, type]);
   return print.route(edata);
 };

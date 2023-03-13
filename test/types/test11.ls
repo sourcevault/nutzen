@@ -1,5 +1,6 @@
+pkg = require \../../dist/types/main
 
-{utils,types} = require \../../dist/main
+{utils,types} = pkg
 
 {z,l,R,j,print_fail} = utils
 
@@ -11,91 +12,93 @@ N = be.num.tap do
 
 V = {}
 
-fin_ret = (...,fin)-> fin
+# fin_ret = (...,fin)-> fin
 
 V.0 = be.arr.forEach [0,1,1],N
 
-V.1 = be.arr.forEach [2,1,1],N
+# V.1 = be.arr.forEach [2,1,1],N
 
-V.2 = be.arr.forEach [0,-1,1],N
+# V.2 = be.arr.forEach [0,-1,1],N
 
-V.3 = be.arr.forEach [-1,0,-1],N
+# V.3 = be.arr.forEach [-1,0,-1],N
 
-V.4 = be.arr.forEach [-1,0,1],N
+# V.4 = be.arr.forEach [-1,0,1],N
 
+# for name,val of V
 
-for name,val of V
+#   V[name] = val.cont(fin_ret).wrap
 
-  V[name] = val.cont(fin_ret).wrap
+# r1 = V.0 [0,1,2,3],[]
 
-
-r1 = V.0 [0,1,2,3],[]
-
-r2 = V.1 [0,1,2,3],[]
-
-r3 = V.2 [0,1,2,3],[]
-
-r4 = V.3 [0,1,2,3],[]
-
-r5 = V.4 [0,1,2,3],[]
+# z r1
 
 
-# []
-# [ 'a:0', 'a:1', 'a:2', 'a:3' ]
-# [ 'a:3', 'a:2', 'a:1', 'a:0' ]
-# []
 
-l R.equals r1,[ 'a:0', 'a:1' ]
+# r2 = V.1 [0,1,2,3],[]
 
+# r3 = V.2 [0,1,2,3],[]
 
-F = (data)->
+# r4 = V.3 [0,1,2,3],[]
 
-  if data is 2 then return true
-
-  false
-
-V = be.arr
-
-.onor [0,1],F
+# r5 = V.4 [0,1,2,3],[]
 
 
-V.auth [1,2,3]
+# # []
+# # [ 'a:0', 'a:1', 'a:2', 'a:3' ]
+# # [ 'a:3', 'a:2', 'a:1', 'a:0' ]
+# # []
+
+# l R.equals r1,[ 'a:0', 'a:1' ]
 
 
-V = be.arr
+# F = (data)->
 
-.try
+#   if data is 2 then return true
 
-.on 0,be.num
+#   false
 
-.err (arr) -> \num
-.err (arr) -> \num1
-.fix (x) -> x
+# V = be.arr
 
-.try
+# .onor [0,1],F
 
-.on 1,be.str
 
-.err (arr) -> \str
-.err (arr) -> \str1
+# V.auth [1,2,3]
 
-augh = V.auth []
 
-l "---- V.auth [] ----"
+# V = be.arr
 
-l augh
+# .try
 
-augh = V.auth [1]
+# .on 0,be.num
 
-l "---- V.auth [1] ----"
+# .err (arr) -> \num
+# .err (arr) -> \num1
+# .fix (x) -> x
 
-l augh
+# .try
 
-augh = V.auth ['s']
+# .on 1,be.str
 
-l "---- V.auth ['s'] ----"
+# .err (arr) -> \str
+# .err (arr) -> \str1
 
-l augh
+# augh = V.auth []
+
+# l "---- V.auth [] ----"
+
+# l augh
+
+# augh = V.auth [1]
+
+# l "---- V.auth [1] ----"
+
+# l augh
+
+# augh = V.auth ['s']
+
+# l "---- V.auth ['s'] ----"
+
+# l augh
 
 
 # V = be.obj

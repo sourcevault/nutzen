@@ -1,4 +1,6 @@
-{utils,types} = require \../../dist/main
+pkg = require \../../dist/types/main
+
+{utils,types} = pkg
 
 {z,l,R,j,print_fail} = utils
 
@@ -14,9 +16,17 @@ F = (x)  -> [false,\foobar]
 
 V = be.restricted [0,1]
 
-ret = V.auth [\a,\b,\c]
+von = V.auth [\a,\b,\c]
 
-if not (ret.message[0] is \:res)
+as = JSON.stringify von.message
+
+if not (as is '[":res",[0,1]]')
 
   p ".restricted message is not accurate."
+
+as = JSON.stringify von.path
+
+if not (as is '["2"]')
+
+  p ".restricted path is not accurate."
 

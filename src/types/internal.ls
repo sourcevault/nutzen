@@ -494,6 +494,10 @@ functor.err_static = (val) -> ->  functor.err ...[[val],...arguments]
 
 functor.err = (err_type,args,state,type) ->
 
+  z 'hello world'
+
+  z err_type
+
   edata = tupnest do
     [new Error!,\input.fault]
     type

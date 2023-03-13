@@ -46,17 +46,43 @@ sanatize = (x,UFO) ->
 
   | \Object =>
 
-    switch UFO.continue
-    | true  =>
-      UFO.error = false
-    | false =>
+    if UFO.hasOwnProperty \error
+
+      priority = \error
+
+    else
+
+      if UFO.hasOwnProperty \continue
+
+        priority = \continue
+
+      else
+
+        priority = \undecided
+
+    switch priority
+    | \error     =>
+
+      if UFO.error
+        UFO.continue = false
+      else
+        UFO.continue = true
+
+    | \continue  =>
+
+      if UFO.continue
+        UFO.error = false
+      else
+        UFO.error = true
+
+    | \undecided =>
+
       UFO.error = true
 
-    switch UFO.error
-    | true  =>
-      UFO.continue = false
-    | false =>
-      UFO.continue = true
+      msg = "[#{pkgname}][typeError][user-supplied-validator] return object missing field values (.continue or .error)."
+
+      UFO.message = msg
+
 
     return UFO
 
@@ -64,11 +90,13 @@ sanatize = (x,UFO) ->
 
     msg = "[#{pkgname}][typeError][user-supplied-validator] undefined return value."
 
-    return
+    von = 
       *continue : false
        error    : true
        value    : x
        message  : msg
+
+    return von
 
 apply = {}
   ..normal = {}
@@ -82,50 +110,59 @@ red = (fun,cond,args) ->
 
   [patt,F] = fun
 
-  put = {...cond}
-
   switch patt
   | \err =>
 
-    data = switch typeof F
-    | \function => apply.normal.err F,args,cond
-    | otherwise => F
+    von = {...cond}
+
+    switch typeof F
+    | \function =>
+
+      nput = apply.normal.err F,args,cond
+
+      switch R.type nput
+
+      | \Array,\String,\Number =>
+
+        von.message = nput
+
+      | \Object =>
+
+        if (nput.hasOwnProperty \message)
+
+          von.message = nput.message
+
+        if (nput.hasOwnProperty \path)
+
+          switch R.type nput.path
+          | \Number,\String =>
+            von.path = [nput.path]
+          | \Array =>
+            von.path = nput.path
+
+      | \Null =>
+
+        von.message = void
+
+    | otherwise =>
+
+      von.message = F
 
     # ----------------------------------
 
-    switch R.type data
-
-    | \Array,\String,\Number =>
-
-      put.message = data
-
-    | \Object =>
-
-      if (data.hasOwnProperty \message)
-
-        put.message = data.message
-
-      if (data.hasOwnProperty \path)
-
-        switch R.type data.path
-        | \Number,\String =>
-          put.path = [data.path]
-        | \Array =>
-          put.path = data.path
-
-    | \Null =>
-
-      put.message = void
-
   | \fix =>
 
-    put = {continue:true,error:false}
+    von = {continue:true,error:false}
 
-    put.value = switch typeof F
+    von.value = switch typeof F
     | \function => apply.normal.key F,cond.value,args,cond.path
     | otherwise => F
 
-  put
+  | otherwise =>
+
+    von = cond
+
+  von
 
 apply.normal.key = (F,val,args,path) ->
 
@@ -351,7 +388,7 @@ lopy.main = (to_add,fun,user_array,args) ->
 
   return cond
 
-functor_EMsg = "[#{pkgname}][runtimeError] most likely due to changing mappable object to non-mappable one."
+functor_EMsg = "[#{pkgname}][runtimeError] most likely due to changing mappable object to non-mappable."
 
 map = (dtype,fun,udata,args) ->
 
@@ -734,26 +771,15 @@ tightloop = (x) !->
 
         if (ncond.message isnt void)
 
-          old_msg = cond.message
+          if cond.message is void
 
-          new_msg = ncond.message
+            cond.message = ncond.message
 
-          switch R.type old_msg
-          | \Array =>
-            msg = old_msg
-          | otherwise =>
-            msg = [old_msg]
+          else
 
-          switch R.type new_msg
-          | \Array =>
-            msg.push new_msg
-          | otherwise =>
-            msg.push new_msg
+            cond.message = [cond.message]
 
-          cond.message = msg
-
-
-
+            cond.message.push ncond.message
 
       else
 
@@ -770,8 +796,6 @@ tightloop = (x) !->
 
       ilen = item.length
 
-      cond.message = [cond.message]
-
       do
 
         fun = item[J]
@@ -781,6 +805,8 @@ tightloop = (x) !->
         if ncond.error
 
           if (ncond.message isnt void)
+
+            cond.message = [cond.message]
 
             cond.message.push ncond.message
 
