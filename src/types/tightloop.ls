@@ -448,9 +448,9 @@ forEach = (dtype,fun,udata,args) ->
 
 upon = ([type,fun],value,args) ->
 
-  if (typeof (value)) isnt \object
+  # if (typeof (value)) isnt \object
 
-    return {continue:false,error:true,message:functor_EMsg}
+  #   return {continue:false,error:true,message:functor_EMsg}
 
   switch type
   | \string =>

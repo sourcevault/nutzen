@@ -448,13 +448,6 @@ forEach = function(dtype, fun, udata, args){
 upon = function(arg$, value, args){
   var type, fun, key, shape, G, put, arr, I, In, ref$;
   type = arg$[0], fun = arg$[1];
-  if (typeof value !== 'object') {
-    return {
-      'continue': false,
-      error: true,
-      message: functor_EMsg
-    };
-  }
   switch (type) {
   case 'string':
     key = fun[0], shape = fun[1], G = fun[2];

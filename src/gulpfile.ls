@@ -42,7 +42,7 @@ def = (done) ->
 
   .pipe gulp.dest "."
 
-  ## ------------------------------
+  # # ------------------------------
 
   # gulp.src "./src/main.ls"
 
@@ -95,7 +95,7 @@ def = (done) ->
   .pipe gulp.dest "./test"
 
 
-gulp.task \default, def
+gulp.task \default,def
 
 gulp.task \watch,->
 
@@ -105,9 +105,9 @@ gulp.task \watch,->
 
       # ta = cp.execSync "node ./test/types/test10.js || exit 1"
 
-      ta = cp.execSync "node ./test/types/test10.js || exit 1"
+      # ta = cp.execSync "node ./test/types/test10.js || exit 1"
 
-      process.stdout.write ta.toString!
+      # process.stdout.write ta.toString!
 
       done!
 
