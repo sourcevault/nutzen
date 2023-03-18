@@ -100,6 +100,3 @@ von = V.auth ['s']
 if not von.continue
 
   p "TEST NUMBER 7."
-
-
-

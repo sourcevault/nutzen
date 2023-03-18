@@ -35,7 +35,7 @@ gulpfile.ncc:
   local: &gulpfile
     - lsc -bco . src/gulpfile.ls
     # - gulp default --silent
-    - ncc build gulpfile.js -o dist
+    # - ncc build gulpfile.js -o dist
     - mv ./dist/index.js gulpfile.js
 
 build:
