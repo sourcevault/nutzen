@@ -1,7 +1,7 @@
 var proj, name, ref$, utils, types, guard, l, z, c, binapi, print_fail, create_stack, R, be, xop, pf, V1, retorn, V2, txt;
 proj = 'guard';
 name = 'test1';
-ref$ = require('../../dist/main'), utils = ref$.utils, types = ref$.types, guard = ref$.guard;
+ref$ = require('../../dist/types/main'), utils = ref$.utils, types = ref$.types, guard = ref$.guard;
 l = utils.l, z = utils.z, c = utils.c, binapi = utils.binapi, print_fail = utils.print_fail, create_stack = utils.create_stack, R = utils.R;
 be = types;
 xop = guard;

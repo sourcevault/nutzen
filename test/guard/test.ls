@@ -6,26 +6,24 @@ name  = \test
 
 # BOILER PLATE
 
-# pkg = require \../../dist/types/main
+pkg = require \../../dist/types/main
 
-# z pkg
+{utils,types,guard} = pkg
 
-# {utils,types,guard} = pkg
+{l,z,c,binapi,print_fail,create_stack} = utils
 
-# {l,z,c,binapi,print_fail,create_stack} = utils
+be = types
 
-# be = types
+fail = print_fail "test/#{proj}/#{name}.js"
 
-# fail = print_fail "test/#{proj}/#{name}.js"
-
-#-------------------------------------------------------------------------------
+# # -----------------------------------------------------------------------------
 
 
-# bothNum = (x,y) -> (((typeof x) is "number") and ((typeof y) is "number"))
+bothNum = (x,y) -> (((typeof x) is "number") and ((typeof y) is "number"))
 
-# argE    = -> z "only accepts 2 arugument"
+argE    = -> z "only accepts 2 arugument"
 
-# typeE   = -> z "argument type has to be number"
+typeE   = -> z "argument type has to be number"
 
-# add = (x,y) -> x + y
+add = (x,y) -> x + y
 

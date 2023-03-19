@@ -270,24 +270,28 @@ generic_log = function(state){
 };
 veri_err_str = c.er3("[hoplon.utils.binapi#" + version + "][argument.error]\n");
 veri = function(){
-  var arglen, str, fun, uget, state, uk, user_map, ulog, log;
+  var arglen, str, fun, uget, state, user_map, uu_map, ulog, log;
   arglen = arguments.length;
   str = veri_err_str;
-  if (!(arglen === 4 || arglen === 5)) {
+  if (!(arglen === 3 || arglen === 4 || arglen === 5)) {
     str += c.er1(" top level function did not recieve correct number of argument.");
     l(str);
     return null;
   }
   switch (arglen) {
+  case 3:
+    fun = arguments[0]; uget = arguments[1]; state = arguments[2];
+    user_map = {};
+    break;
   case 4:
-    fun = arguments[0]; uget = arguments[1]; state = arguments[2]; uk = arguments[3];
-    switch (R.type(uk)) {
+    fun = arguments[0]; uget = arguments[1]; state = arguments[2]; uu_map = arguments[3];
+    switch (R.type(uu_map)) {
     case 'Function':
       user_map = {};
-      ulog = uk;
+      ulog = uu_map;
       break;
     case 'Object':
-      user_map = uk;
+      user_map = uu_map;
     }
     break;
   case 5:
@@ -319,7 +323,7 @@ veri = function(){
     }
   }());
   if (!user_map[uic]) {
-    user_map[uic] = ulog;
+    user_map[uic] = log;
   }
   return user_map;
 };

@@ -318,7 +318,7 @@ veri = ->
 
   str = veri_err_str
 
-  if not (arglen in [4,5])
+  if not (arglen in [3,4,5])
 
     str += c.er1 " top level function did not recieve correct number of argument."
 
@@ -327,20 +327,30 @@ veri = ->
     return null
 
   switch arglen
+  | 3 =>
+
+    [fun,uget,state] = arguments
+
+    user_map = {}
+
+    # ulog ?
+
   | 4 =>
 
-    [fun,uget,state,uk] = arguments
+    [fun,uget,state,uu_map] = arguments
 
-    switch R.type uk
+    switch R.type uu_map
     | \Function =>
 
       user_map = {}
 
-      ulog = uk
+      ulog = uu_map
 
     | \Object =>
 
-      user_map = uk
+      user_map = uu_map
+
+      # ulog ?
 
   | 5 =>
 
@@ -359,12 +369,14 @@ veri = ->
     l str
     return null
 
+  # z typeof ulog
+
   log = switch typeof ulog
   | \function => ulog
   | otherwise => generic_log
 
   if not user_map[uic]
-    user_map[uic] = ulog
+    user_map[uic] = log
 
   user_map
 
@@ -417,7 +429,7 @@ get = (__,ukey,___) ->
   return P
 
 pub = (fun,uget,state,ulog,user_map) -> # u stands for user 
-
+  
   user_map = veri.apply null,arguments
 
   # arguments.length,fun,uget,state,ulog,user_map

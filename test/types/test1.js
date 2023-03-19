@@ -23,6 +23,6 @@ sample_2 = {
   age: 30
 };
 von = V.auth(sample_2);
-if (von.path[0] === 'address' && von.message[0] === ':req' && von.message[1][2] === 'address') {
+if (!(von.path[0] === 'address' && von.message[0] === ':req' && von.message[1][2] === 'address')) {
   p("TEST NUMBER 2 - fault in .required error message.");
 }

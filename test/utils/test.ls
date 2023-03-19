@@ -1,4 +1,6 @@
-{utils,types} = require \../../dist/main
+pkg = require \../../dist/types/main
+
+{utils,types} = pkg
 
 {l,z,c,binapi,print_fail,create_stack} = utils
 

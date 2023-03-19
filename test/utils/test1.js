@@ -1,5 +1,6 @@
-var ref$, utils, types, l, z, c, binapi, print_fail, create_stack, be, fail, get, lopo, F6, compute, out, E;
-ref$ = require('../../dist/main'), utils = ref$.utils, types = ref$.types;
+var pkg, utils, types, l, z, c, binapi, print_fail, create_stack, be, fail, get, lopo, F6, compute, out, E;
+pkg = require('../../dist/types/main');
+utils = pkg.utils, types = pkg.types;
 l = utils.l, z = utils.z, c = utils.c, binapi = utils.binapi, print_fail = utils.print_fail, create_stack = utils.create_stack;
 be = types;
 fail = print_fail("test/utils/test1.js");

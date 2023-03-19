@@ -1,4 +1,4 @@
-{utils,types} = require \../../dist/main
+{utils,types} = require \../../dist/types/main
 
 {l,z,c,binapi,print_fail,create_stack} = utils
 

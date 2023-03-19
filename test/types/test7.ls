@@ -1,4 +1,4 @@
-{utils,types} = require \../../dist/main
+{utils,types} = require \../../dist/types/main
 
 {z,l,R,j,print_fail} = utils
 

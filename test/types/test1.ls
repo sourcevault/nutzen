@@ -36,7 +36,8 @@ sample_2 =
 
 von = V.auth sample_2
 
-if (von.path[0] is \address) and (von.message[0] is \:req) and (von.message[1][2] is \address)
+
+if not ((von.path[0] is \address) and (von.message[0] is \:req) and (von.message[1][2] is \address))
 
   p "TEST NUMBER 2 - fault in .required error message."
 

@@ -6,7 +6,7 @@ name  = \test3
 
 # BOILER PLATE
 
-{utils,types,guard} = require \../../dist/main
+{utils,types,guard} = require \../../dist/types/main
 
 {l,z,c,binapi,print_fail,create_stack,R} = utils
 
