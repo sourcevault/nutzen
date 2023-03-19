@@ -30,14 +30,6 @@ gulpfile:
 gulp.watch:
   - gulp watch
 
-gulpfile.ncc:
-  watch: src/gulpfile.ls
-  local: &gulpfile
-    - lsc -bco . src/gulpfile.ls
-    # - gulp default --silent
-    # - ncc build gulpfile.js -o dist
-    - mv ./dist/index.js gulpfile.js
-
 build:
   - gulp default --silent
 
