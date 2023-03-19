@@ -1,25 +1,22 @@
-com = require \../utils/main
-
-oxo = require \../guard/main
+pkg = require \../guard/main
 
 print      = {}
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
 
-{l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack,version} = com
+com = pkg.com
 
+{l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack,version,loopError} = com
 
-pkgversion = "v#{version}"
+{wait} = com
 
-pkgname    = "hoplon.types"
+pkgversion = version
+
+pkgname    = \hoplon.types
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
 
-export
-  com             = com
-  print           = print
-  pkgname         = pkgname
-  sig             = com.common_symbols.htypes
+export {...pkg,print,pkgname}
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -----------------
 
@@ -33,7 +30,7 @@ show_stack = create_stack 2,['internal/modules/cjs','node:internal'],help
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - -
 
-type_color = c.pink
+type_color = c.ok
 
 print.resreq = ([cat,type]) ->
 
@@ -52,35 +49,81 @@ print.resreq = ([cat,type]) ->
     | \res   => "  first argmuent is not a Array of String / Number."
     | \req   => "  second argmuent is not a Array of String / Number."
 
-  | \res,\req    => "  one of the (inner) argument is not of type of String / Number."
+  | \res,\req  => "  one of the (inner) argument is not of type of String / Number."
 
 
   l lit ['\n',txt,'\n'],[0,c.warn,0]
 
-
 print.input_fault = ([method_name,data]) ->
 
-  fi = @input_fault
+  input_fault = @input_fault
 
   switch method_name
-  | \on       => fi.on data
-  | \map      => fi.map data
-  | \custom   => fi.custom data
-  | \and,\or  => fi.andor data
+  | \on           => input_fault.on data
+  | \map,\forEach => input_fault.map data
+  | \custom       => input_fault.custom data
+  | \and,\or      => input_fault.andor data,method_name
+  | \rest         => input_fault.rest data
 
-show_chain = ([init,last]) ->
+
+show_chain = (data) ->
+
+  [chain_data,last] = data
+
+  flattened_chain = (chain_data.flat Infinity).reverse!
+
+  middle = R.tail flattened_chain
+
+  if middle.length
+
+    start_chain = middle
+    |> R.map (each) -> ".#{each}(..)"
+    |> R.splitEvery 2
+    |> (bulk) -> (bulk[0].unshift flattened_chain[0]);bulk
+    |> R.map (line) -> (line.unshift ' '); line
+    |> R.tap (x) ->
+    |> R.map R.join ""
+    |> R.join "\n"
+
+  else
+
+    start_chain = ' ' + flattened_chain[0]
+
 
   l lit do
-    ["  ",((init).join "."),("."  + last),"(xx)"," <-- error here"]
-    [0,c.ok,c.er2,c.er3,c.er2]
+    [start_chain,("."  + last),"(xx)"," <-- error here"]
+    [c.grey,c.er1,c.er3,c.er2]
 
 show_name = (extra,type = "[inputError] ") ->
 
   l lit do
-    ["[#{pkgversion}][#{pkgname}]", type,extra]
-    [                        c.er1,c.er1,c.er1]
+    ["[#{pkgname}:v#{pkgversion}]", type,extra]
+    [                       c.er2, c.er2,c.er2]
 
-print.input_fault.andor = ([type,info])->
+print.input_fault.rest = (data)->
+
+  [fname,info] = data
+
+  [etype,loc] = info
+
+  show_name ".#{fname}"
+
+  l ""
+
+  show_chain loc
+
+  l ""
+
+  txt = switch etype
+  | \arg_count       => " incorrect number of argument provided."
+  | \type_error      => " one of the argument is not a function or hoplon.type object."
+  | \undefined_error => " illegal error, please report to original author."
+
+  l c.er3 txt
+
+  l ""
+
+print.input_fault.andor = ([type,info],method_name)->
 
   show_name ".#{info[1]}"
 
@@ -90,31 +133,25 @@ print.input_fault.andor = ([type,info])->
 
   l ""
 
-  switch type
-  | \arg_count =>
+  txt = switch type
+  | \arg_count    => " minimum of 1 argument of function type is needed."
 
-    l c.grey do
-      "  no value passed."
-      "\n\n"
-      " minimum of 1 argument of function type is needed."
+  | \not_function => " one of the argument is not a function."
 
-
-  | \not_function =>
-
-    l c.er1 "  one of the argument is not a function."
+  l c.er3 txt
 
   l ""
 
-  l c.ok " accepted type signature :"
+  l c.grey " expected type signature :"
 
   l ""
 
-  l type_color " - :: fun|[fun,..],..,.."
+  l type_color " #{method_name} :: (fun,..)"
 
   l ""
 
 
-print.input_fault.custom = ([patt,loc]) ->
+print.input_fault.custom = (patt) ->
 
   show_name "custom validator"
 
@@ -123,22 +160,29 @@ print.input_fault.custom = ([patt,loc]) ->
   switch patt
   | \arg_count =>
 
-    l c.grey do
-      "  no value passed."
-      "\n\n"
-      " minimum of 1 argument of function type is needed."
+    l c.er1 do
+      " accepts only 1 argument of type function."
 
   | \not_function =>
 
-    l c.er1 "  first argument has to be a function / hoplon.types object ."
+    l c.er1 " first argument has to be a function / hoplon.types object."
 
   l ""
 
+map_str_gen = (fname) ->
 
+  return c.ok """
+  obj/#{fname}/1   :: fun
+  arr/#{fname}/1   :: fun
+  arr/#{fname}/2/2 :: [num,num],fun
+  arr/#{fname}/2/3 :: [num,num,num],fun
+  """
 
-print.input_fault.map = ([patt,loc]) ->
+print.input_fault.map = ([[patt,extra],loc]) ->
 
-  show_name ".map"
+  fname = loc[1]
+
+  show_name ".#{fname}"
 
   l ""
 
@@ -147,31 +191,83 @@ print.input_fault.map = ([patt,loc]) ->
   l ""
 
   switch patt
-  | \arg_count    =>
+  | \range.obj =>
 
-    l c.grey "  only accepts 1 argument required of function type."
+    l c.er3 " .obj cannot have a range parameter, only accepts: \n"
 
-  | \not_function =>
+    l c.ok " obj/#{fname}/1   :: fun"
 
-    l c.grey "  first argument has to be a function."
+  | \undefined_error =>
 
+    l c.er3 " unexpected error (please report to author) expected types:\n"
+
+    l map_str_gen fname
+
+  | \inf_step =>
+
+    l c.er3 " step cannot be value 0.\n"
+
+    l lit [" arr/#{fname}/2/3 :: ([num,num,","num","],fun)"],[c.ok,c.er3,c.ok]
+
+  | \num_count =>
+
+    l c.er3 " range values has to be either 1, 2 or 3.\n"
+
+    init_str = " arr/#{fname} :: ("
+
+    l lit [init_str,"[num,..]",",fun)"],[c.ok,c.er2,c.ok]
+
+  | \range =>
+
+    l c.er2 " first argument (range) has to be an array.\n"
+
+    init_str = " arr/#{fname} :: ("
+
+    l lit [init_str,"[num,..]",",fun)"],[c.ok,c.er3,c.ok]
+
+  | \arg_count =>
+
+    l c.er3 " only accepts 1 or 2 argument: \n"
+
+    l map_str_gen fname
+
+  | \num =>
+
+    num = (c.er3(extra) + c.er2(":num"))
+
+    l c.er3 " range values have be all numbers.\n"
+
+    init_str = " arr/#{fname} :: ("
+
+    l lit [init_str,num,",fun)"],[c.ok,null,c.ok]
+
+  | \fun =>
+
+    l c.er3 " The #{extra} argument has to a function.\n"
+
+    switch extra
+    | \first =>
+
+      l lit [" map/1 :: ","fun"],[c.ok,c.er2]
+
+    | \second =>
+
+      l lit [" arr/#{fname}/2 :: [num,...],","fun"],[c.ok,c.er2]
 
   l ""
 
 on_dtype = {}
-  ..string       = "(string|number,function)"
-  ..array        = "(string|[number....],function)"
-  ..object       = "(object{*:function})"
-  ..single_array = "(['and'|'alt',string|[string,...],INC{hoplon.type}],...])"
+  ..string       = "(string|number),function"
+  ..array        = "[(string|number),..],function"
+  ..object       = "object{*:function}"
 
+print.input_fault.on = (data)->
 
-print.input_fault.on = ([patt,loc])->
+  [patt,loc] = data
 
-  eType = switch patt
-  | \typeError => \typeError
-  | otherwise  => \inputError
+  [__,fname] = loc
 
-  show_name ".on","[#{eType}] "
+  show_name ".#{fname}"
 
   l ""
 
@@ -180,16 +276,14 @@ print.input_fault.on = ([patt,loc])->
   l ""
 
   switch patt
-  | \typeError,\arg_count =>
+
+  | \typeError,void,\arg_count =>
 
     switch patt
-    | \typeError =>
-
-      l c.er3 "  unable to pattern match on user input."
-
     | \arg_count =>
-
-      l c.er3 "  minimum of 2 arguments required."
+      l c.er3 " only accepts 1 or 2 arguments."
+    | \typeError,void =>
+      l c.er3 " unable to pattern match on user input."
 
     l ""
 
@@ -197,19 +291,19 @@ print.input_fault.on = ([patt,loc])->
 
     l ""
 
-
-    lines = [type_color (" - .on :: #{val}") for key,val of on_dtype].join "\n\n"
+    lines = [type_color (" - " + loc[1] + " :: #{val}") for key,val of on_dtype].join "\n\n"
 
     l lines
 
+  | \string,\array,\object  =>
 
-  | otherwise  =>
+    l c.er3 " user input is incorrect.\n"
+
+    l c.grey " expected signature:\n"
 
     dtype = on_dtype[patt]
 
-    l lit do
-      [" .on"," :: ",dtype," <-- #{patt} signature."]
-      [c.warn,c.white,c.ok,c.grey]
+    l lit [" #{loc[1]}", " :: ",dtype],[c.ok,c.ok,c.ok]
 
   l ""
 
@@ -221,6 +315,8 @@ print.route = ([E,ECLASS,info]) ->
   | \input.fault  => print.input_fault info
 
   show_stack E
+
+  loopError!
 
 # ------------------------------------------------------------------------
 
@@ -235,39 +331,50 @@ getprop = (item) ->
 
 includes = R.flip R.includes
 
-sort = (x) -> x.sort(alpha_sort.ascending)
+sort = (x) -> x.sort alpha_sort.ascending
 
-print.log = ->
+print.log = (name) -> ->
 
-  prop = sort (getprop @)
+  switch name
+  | \functor      =>
+    str = ':m'
+  | \normal       =>
+    str = ''
+  | \try.functor =>
+    str = ':m:try'
+  | \try.normal  =>
+    str = ':try'
 
-  lit ["{.*} ",prop.join " "],[c.warn,c.grey]
+  # prop = sort (getprop @)
 
+  # lit ["{.*} ",prop.join " "],[c.warn,c.grey]
+
+  lit [pkgname,str],[c.ok,c.ok]
 
 same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit','tap','forEach','wrap']
 
-myflat = oxo
-.wh do
-  (ob) ->
-    switch (R.type ob)
-    | \Function,\Object => true
-    | otherwise         => false
+# myflat = xop
+# .wh do
+#   (ob) ->
+#     switch (R.type ob)
+#     | \Function,\Object => true
+#     | otherwise         => false
 
-  (ob,fin = {}) ->
+#   (ob,fin = {}) ->
 
-    keys = Object.keys ob
+#     keys = Object.keys ob
 
-    for I in keys
+#     for I in keys
 
-      if not (same I)
+#       if not (same I)
 
-        prop = myflat ob[I]
+#         prop = myflat ob[I]
 
-        fin[I] = prop
+#         fin[I] = prop
 
-    fin
+#     fin
 
-.def -> {}
+# .def -> {}
 
 split = R.groupBy (name) -> (/\./).test name
 
@@ -281,7 +388,7 @@ find_len = R.reduce (accum,x) ->
 
 print.inner = ->
 
-  props =  sort [ I for I of flat myflat @]
+  # props =  sort [ I for I of flat myflat @]
 
   props.push \tap
 

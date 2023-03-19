@@ -6,16 +6,61 @@ name  = \test7
 
 # BOILER PLATE
 
-path = (name) -> "../../dist/#{name}/main"
+{utils,types,guard} = require \../../dist/types/main
 
-oxo   = require path \guard
+{l,z,c,binapi,print_fail,create_stack,R} = utils
 
-be    = require path \types
+be = types
 
-com   = require path \utils
-
-{l,zj,z,c,binapi,print_fail,create_stack,R} = com
+xop = guard
 
 pf = print_fail "test/#{proj}/#{name}.js"
 
 #-------------------------------------------------------------------------------
+
+# xop = guard.unary.debug.immutable
+
+#   -> z 'hello world'
+#   -> z 'done'
+
+F = -> false
+T = -> true
+
+binto = {}
+
+binto.1  = -> z 'binto_1'
+binto.2  = -> z 'binto_2'
+
+
+ob =
+  1:
+   *F
+    binto.1
+   *T
+    binto.2
+
+# G = xop.arcap do
+#   1
+#   -> true
+#   null
+#   -> z 'binto'
+# .def!
+
+
+# V = xop.arcap ob
+
+# .def!
+
+# rfalse  =-> true
+
+# longview = -> z 'longview'
+
+
+# V 1
+
+# G 1
+
+
+
+
+

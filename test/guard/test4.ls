@@ -6,13 +6,13 @@ name  = \test4
 
 # BOILER PLATE
 
-path = (name) -> "../../dist/#{name}/main"
+{utils,types,guard} = require \../../dist/types/main
 
-oxo   = require path \guard
+{l,z,c,binapi,print_fail,create_stack,R} = utils
 
-com   = require path \utils
+be = types
 
-{l,zj,z,c,binapi,print_fail,create_stack,R} = com
+xop = guard
 
 pf = print_fail "test/#{proj}/#{name}.js"
 
@@ -31,8 +31,8 @@ type_str = (x) ->
   |  otherwise => false
 
 
-V = oxo.ar 1,
-  oxo.ma do
+V = xop.ar 1,
+  xop.cap do
     type_num
     (x) -> x
   .def ["FROM UDEF"]
@@ -41,12 +41,12 @@ V = oxo.ar 1,
 out = V \integer
 
 if not (out is \int)
-  p!
+  pf!
 
 out = V null
 
-if not ((R.type out) is \Array)
-  p!
+if ((R.type out) isnt \Array)
+  pf ".ar not working"
 
-if not (out[0] is "FROM UDEF")
-  p!
+if (out[0] isnt "FROM UDEF")
+  pf!

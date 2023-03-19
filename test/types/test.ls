@@ -1,30 +1,9 @@
-com = require \../../dist/utils/main
+pkg = require \../../dist/types/main
 
-{z,l,R,j,zj,print_fail} = com
+{utils,types} = pkg
 
-be = require \../../dist/types/main
+{z,l,R,j,print_fail} = utils
 
-# V = be.num
-# .or be.str
-# .err (msg) ->
+xop = pkg.guard
 
-#   z be.flatro msg
-
-# V.auth void
-
-# z be.arr 1
-
-
-V = be.known.obj
-.on do
-  *[
-    [\and,\remote,be.num]
-    [\alt,[\remotefold,\remotehost],(be.undefnull.cont 45)]
-    [\and,\foobar,be.num]
-   ]
-
-
-sample_data =
-  *remote: 1
-   remotfold: 3
-   foobar: 4
+be = pkg.types

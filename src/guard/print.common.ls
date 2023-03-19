@@ -1,36 +1,36 @@
-com = require "../../dist/utils/main.js"
+ext = require \../utils/main
 
 print = {}
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
-export
-  com             = com
-  print           = print
-  modflag         = Symbol "self"
-  defacto         = Symbol "default"
+export {...ext,print:print}
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
-{z,l,R,c,esp,create_stack,lit,version} = com
+com = ext.com
+
+{z,j,l,R,c,esp,create_stack,lit,version} = com
 
 print.log  = {}
 
-help       = c.grey "[  docs] #{com.homepage}\n"
+help         = c.grey "[  docs] #{com.homepage}"
 
-show_stack = create_stack 3,[],help
+show_stack   = create_stack 2,['internal/modules/cjs','node:internal'],(help + '\n')
 
-pkgname     = "v#{version}|hoplon.guard"
+object_name  = \hoplon.guard
+
+pkgname      = "#{object_name}\#v#{version}"
 
 print.log.def_fault = -> c.er2 "[error.#{pkgname}]"
 
 print.log.proto = ->
 
-  state = @[modflag]
+  state = @self
 
   if state is undefined
 
-    return (c.er1 "[#{pkgname}]") + (c.er2 "[state undefined]")
+    return (c.pink "[#{pkgname}]") + (c.er2 "[state is undefined]")
 
   print.log.main state
 
@@ -38,23 +38,29 @@ print.log.wrap = (state) -> -> print.log.main state
 
 print.log.prox = (state) ->
 
+  # [hoplon.guard#v2.0.0|debug|unary] []
+  # [hoplon.guard#v2.0.0|debug] []
+  # [hoplon.guard#v2.0.0] []
+
   if state is null
-    return null
+    return c.er2 "[error.#{pkgname}]"
 
   if state.lock
     return c.ok "[Function]"
 
-  if (state.vr.length is 0)
+  if (state.sorted_path.length is 0)
 
     inner = ""
 
   else
 
-    inner = "|" + state.vr.join "|"
+    inner = "/" + state.sorted_path.join "."
 
   str = R.join "",["[#{pkgname}",inner,"]"]
 
-  (c.warn str) + " []"
+  (c.pink str) + " []"
+
+# [hoplon.guard] [ ar(2) ]
 
 arrange = R.pipe do
   R.groupWith R.equals
@@ -70,25 +76,28 @@ arrange = R.pipe do
 print.log.main = (state) ->
 
   if state.fault
-      return c.er2 "[#{pkgname}|error]"
+      return c.pink "[#{object_name}|error]"
 
   str = ""
 
-  if state.immutable
-    str += "|immutable"
-    clr = c.ok
+  put = c.pink ("[#{object_name}" + str + "]")
+
+  if state.debug
+    if state.str.length
+
+      arr = arrange state.str
+      arr_str = " [ " + arr + " ]"
+
+    else
+
+      arr_str = " []"
+
   else
-    str += "|mutable"
-    clr = c.warn
 
-  if state.apply
-    str += "| apply"
+    arr_str = ""
 
-  put = clr ("[#{pkgname}" + str + "]")
 
-  arr = arrange state.str
-
-  str = put + " " + "[ " + arr + " ]"
+  str = put + arr_str
 
   str
 
@@ -108,158 +117,366 @@ show_chain = (input-str,path = [],show-args = true)->
 
     str += [ c.warn ".#{I}" for I in path].join ""
 
-    str += lit ["(xx)"," <-- error within argument"],[c.er3,c.er1]
+    str += lit ["(xx)"," <--"," type error in argument"],[c.er3,c.er3,c.er3]
 
   else
 
     str += c.er2 ([".#{I}" for I in path].join "")
 
-    str += c.er1 " <-- error here."
+    str += c.er3 " <-- error here."
 
   str
-
 
 map_fname_to_ctypes = (fname)->
 
   switch fname
-  | \ma                        => \ma
-  | \ar,\arn                   => \ar
-  | \wh,\whn                   => \wh
-  | \arwh,\arwhn,\arnwhn,\arma => \arwh
-  | \arpar                     => \arpar
+  | \ar,\arn                          => \ar
+  | \wh,\whn                          => \wh
+  | \arwh,\arnwh,\arwhn,\arnwhn       => \arwh
+  | otherwise                         => fname
 
+txt = {}
 
-StrArgLen = (fname,ctype,eType)->
+arcap_txt = 
+  *c.er2 ".arcap only accepts 1,2,3 or 4 arguments :\n"
+   c.ok " arcap/1 :: object"
+   c.ok " arcap/2 :: PI,F"
+   c.ok " arcap/3 :: PI,FT,F"
+   c.ok " arcap/4 :: PI,FT,F,FA"
+
+txt.arcap = arcap_txt.join "\n"
+
+cap_txt = 
+  *c.er2 ".cap only accepts 2 or 3 arguments :\n"
+   c.ok " cap/2 :: FT,FA"
+   c.ok " cap/3 :: FT,F,FA"
+
+txt.cap = cap_txt.join "\n"
+
+StrArgLen = (fname,ctype,eType,extra)->
+
+  switch ctype + "." + eType
+  | \cap.few_args    =>
+    return
+     *c.er3 " too few arguments"
+      txt.cap
+  | \cap.many_args   =>
+    return
+     *c.er3 " too many arguments"
+      txt.cap
+  | \arcap.many_args =>
+    return
+     *c.er3 " too many arguments"
+      txt.arcap
+  | \arcap.few_args  =>
+    return
+     *c.er3 " too few arguments"
+      txt.arcap
 
   data = switch ctype
-  | \ma    => [1,'(function|[fun....])']
-  | \wh    => [2,'(function,function|any)']
-  | \ar    => [2,'(number|[num...],function|any)']
-  | \arwh  => [3,'(number|[num...],function,function|any)']
-  | \arpar => [4,'(number|[num...],function,function|any,function)']
+  | \wh    => [2,'FT,FA']
+  | \ar    => [2,'(pos_int|[pos_int,...]),FA']
+  | \arwh  => [3,'(pos_int|[pos_int,...]),FT,FA']
 
   switch eType
   | \many_args =>
     [
-      c.pink "too many arguments"
+      c.er3 "too many arguments"
       lit do
-        ["only #{data[0]} arguments ","\n\n #{fname}"," :: #{data[1]} "]
-        [c.blue,c.ok,c.ok]
+        ["expects #{data[0]} arguments ","\n\n #{fname}"," :: #{data[1]} "]
+        [c.er2,c.ok,c.ok]
     ]
   | \few_args  =>
     [
-      c.pink "too few arguments"
+      c.er3 "too few arguments"
       lit do
-        ["requires #{data[0]} arguments ","\n\n #{fname}"," :: #{data[1]} "]
-        [c.blue,c.ok,c.ok]
+        ["expects #{data[0]} arguments ","\n\n #{fname}"," :: #{data[1]} "]
+        [c.er2,c.ok,c.ok]
     ]
 
-StrEType = (fname,eType) ->
+defc = c.er1 'one of the argument is of the wrong type.'
+
+StrEType = (fname,data) ->
+
+  [eType,extra] = data
 
   ctype = map_fname_to_ctypes fname
 
   switch eType
-  | \many_args,\few_args => return StrArgLen fname,ctype,eType
+  | \many_args,\few_args => return StrArgLen fname,ctype,eType,extra
 
-  init = switch ctype
-  | \ma => lit ["function|[fun....],function|any"],[c.er2,c.ok]
-
-  | \arma =>
-
-    switch eType
-
-    | \first =>
-
-      lit ["number" "|[num...],[fun....]"],[c.er2,c.ok]
-
-    | \array =>
-
-      lit ["number" "|[num..]" ",[fun....]"],[c.ok,c.er2,c.ok]
-
-    | \not_function =>
-
-      lit ["number|[num..]",",[fun....]"],[c.ok,c.er2]
+  switch ctype
 
   | \ar =>
 
-    switch eType
+    init = switch eType
     | \first =>
 
-      lit ["number" "|[num...],function|any"],[c.er2,c.ok]
+      lit ["(","pos_int","|[pos_int,...]),FA"],[c.ok,c.er3,c.ok]
 
     | \array =>
 
-      lit ["number" "|[num..]" ",function|any"],[c.ok,c.er2,c.ok]
+      lit ["(pos_int|","[pos_int,..]","),FA"],[c.ok,c.er3,c.ok]
+
+    | \ob_not_object =>
+
+      lit ["(","object",")|(PI,FA)"],[c.ok,c.er3,c.ok]
 
   | \wh =>
-    switch eType
+
+    init = switch eType
     | \first =>
 
-      lit ["function",",function|any"],[c.er2,c.ok]
-
-    | \second =>
-
-      lit ["function","function|any"],[c.ok,c.er2]
+      lit ["FT",",FA"],[c.er3,c.ok]
 
   | \arwh =>
 
-    switch eType
-    | \num =>
+    init = switch eType
+    | \first =>
 
-      lit ["number","|[num..],function,function|any"],[c.er2,c.ok]
+      lit ["PI",",FT,FA"],[c.er3,c.ok]
 
-    | \array =>
+    | \pos_int =>
 
-      lit ["number|","[num..]" ",function,function|any"],[c.ok,c.er2,c.ok]
-
-    | \second =>
-
-      lit ["number[num..],","function",",function|any"],[c.ok,c.er2,c.ok]
-
-  | \arpar =>
-
-    switch eType
-    | \num =>
-
-      lit ["number" "|[num..],function,function|any,function"],[c.er2,c.ok]
+      lit ["(","pos_int","|[pos_int,..]),FT,FA"],[c.ok,c.er3,c.ok]
 
     | \array =>
 
-      lit do
-        ["number|","[num..]",",function,function|any,function"]
-        [c.ok,c.er2,c.ok]
+      lit ["(pos_int|","[pos_int,..]","),FT,FA"],[c.ok,c.er3,c.ok]
 
     | \second =>
 
+      lit ["(pos_int|[pos_int,..]),","FT",",FA"],[c.ok,c.er3,c.ok]
+
+    | \ob_not_object =>
+
+      lit ["(","object",")|((pos_int|[pos_int,..]),FT,FA)"],[c.ok,c.er3,c.ok]
+
+    | \ob.inner_not_array =>
+
       lit do
-        ["number[num..],","function",",function|any,function"]
-        [c.ok,c.er2,c.ok]
+        [  "object(","#{extra.join ":"}:[..xx..]",")"]
+        [      c.er1,          c.er3,c.er1]
 
-    | \fourth =>
+    | \ob.key_value_not_array =>
+
+      lit ["object(","#{extra}:xx",")"],[c.er1,c.er3,c.er1]
+
+    | \ob.inner_array_validator =>
 
       lit do
-        ["number[num..],function,function|any,","function"]
-        [c.ok,c.er2]
+        ["object(","#{extra.join ":"}:", "",  "(FT",",FA",  ")",  ")"]
+        [    c.er1,              c.er3,c.er1, c.er3, c.ok,c.er3,c.er1]
+
+    | \ob.few_args =>
+
+      str = ["object" "(",(extra.join ":"),")"]
+
+      col = [c.er2,c.er2,c.er3,c.er2]
+
+      inner = lit str,col
+
+      lit do
+        ["arwh/1 :: ",inner]
+        [c.ok,null]
+
+    | \ob.many_args =>
+
+      str = ["object" "(",(extra.join ":"),")"]
+      col = [c.er2,c.er2,c.er3,c.er2]
+
+      inner = lit str,col
+
+      lit do
+        ["arwh/1 :: ",inner]
+        [c.ok,null]
+
+    comment = switch eType
+    | \ob.few_args  => c.er1 "minimum of 1 value needed."
+    | \ob.many_args => c.er1 "only accepts 1 or 2 value(s)."
+    | otherwise   => defc
+
+  | \arcap =>
+
+    init = switch eType
+    | \num =>
+
+      switch extra
+      | 4 =>
+        lit do
+          ["arcap/4 :: (","pos_int","|[pos_int,..]),FT,F,FA"]
+          [c.ok,c.er3,c.ok]
+      | 3 =>
+        lit do
+          ["arcap/3 :: (","pos_int","|[pos_int,..]),FT,FA"]
+          [c.ok,c.er3,c.ok]
+
+    | \num_array =>
+
+      switch extra
+      | 4 =>
+        lit do
+          ["arcap/4 :: ","(pos_int|","[pos_int,..]","),FT,F,FA"]
+          [c.ok,c.ok,c.er3,c.ok]
+      | 3 =>
+        lit do
+          ["arcap/3 :: ","(pos_int|","[pos_int,..]","),FT,FA"]
+          [c.ok,c.ok,c.er3,c.ok]
+
+    | \validator =>
+
+      switch extra
+      | 4 =>
+        lit do
+          ["arcap/4 :: PI,","FT",",F,FA"]
+          [c.ok,c.er3,c.ok]
+
+      | 3 =>
+        lit do
+          ["arcap/3 :: PI,","FT",",FA"]
+          [c.ok,c.er3,c.ok]
+
+    | \lastview =>
+
+      lit do
+        ["arcap/4 :: PI,FT,","F",",FA"]
+        [c.ok,c.er3,c.ok]
+
+    | \ob_not_object =>
+
+      lit do
+        ["arcap/1 :: (","object",")"]
+        [c.ok,c.er3,c.ok]
+
+    | \ob.few_args =>
 
 
-  init = lit ["(",init,")"],[c.ok,0,c.ok]
+      str = ["object" "(",extra[0] + ":" + extra[1],")"]
+      col = [c.er2,c.er2,c.er3,c.er2]
 
-  [init,(c.pink 'One of the argument is of the wrong type.')]
+      inner = lit str,col
+
+      lit do
+        ["arcap/1 :: ",inner]
+        [c.ok,null]
+
+    | \ob.many_args =>
+
+      str = ["object" "(",extra[0] + ":" + extra[1],")"]
+      col = [c.er2,c.er2,c.er3,c.er2]
+
+      inner = lit str,col
+
+      lit do
+        ["arcap/1 :: ",inner]
+        [c.ok,null]
+
+    | \ob.key_value_not_array =>
+
+      lit do
+        ["arcap/1 :: (",  "object(", "#{extra}:xx",  ")",")"]
+        [         c.ok,      c.er1,      c.er3,c.er1,c.ok]
+
+    | \ob.inner_not_array =>
+
+      lit do
+        ["arcap/1 :: ","object(","#{extra.join ":"}:[..xx..]",  ")"]
+        [        c.ok,   c.er1,           c.er3,c.er1]
+
+    | \ob.inner_array_validator =>
+
+      [cat,index] = extra
+
+      switch cat
+      | 2 =>
+
+        str = [(c.er3 "FT"),(c.ok ",FA")].join ""
+
+        lit do
+          ["object(","#{index.join ":"}:","[",str,"])"]
+          [ c.er1,c.er3,c.er1,null,c.er1]
+
+      | 3 => 
+
+        str = [(c.er3 "FT"),(c.ok ",F,FA")].join ""
+
+        lit do
+          ["object(","#{index.join ":"}:","[",str,"])"]
+          [ c.er1,c.er3,c.er1,null,c.er1]
+
+    | \ob.inner_lastview =>
+
+      lit do
+        ["object(","#{extra.join ":"}:",   "[",    "FT,",   "F",",FA",    "]",")"]
+        [    c.er1,               c.er3, c.er2,     c.ok, c.er3,c.ok,    c.er2,c.er1]
 
 
-print.typeError = (data) ->
+    comment = switch eType
+    | \ob.few_args  => c.er1 "minimum 1 argument needed."
+    | \ob.many_args => c.er1 "only accepts 1, 2 and 3 arguments."
+    | otherwise     => defc
+      
 
-  [E,fname,attribute,data] = data
+  | \cap =>
+
+    init = switch eType
+
+    | \validator =>
+
+      si = switch extra
+      | 2 => ",FA"
+      | 3 => ",F,FA"
+
+      str = "cap/#{extra} :: "
+
+      lit do
+        [str,  "FT",si]
+        [c.ok,c.er3,c.ok]
+
+    | \lastview =>
+
+      lit do
+        ["cap/3 :: FT,","F",",FA"]
+        [c.ok,c.er3,c.ok]
+
+    comment = defc
+
+
+  switch fname
+  | \arcap,\cap,\arwh =>
+
+    [init,comment]
+
+  | otherwise =>
+
+    init = lit [fname + " :: ",init],[c.ok,0]
+
+    [init,defc]
+
+
+print.typeError = (ta) ->
+
+  [E,fname,attribute,data] = ta
 
   [type_signature,comment] = StrEType fname,attribute
 
+  legend = 
+      *" F = function"
+       " PI =  pos_int|[pos_int,...]"
+       " FA = function|any"
+       " FT = function|hoplon.types"
+
+  legend = [c.grey I for I in legend].join "\n"
+
   l lit do
-    ["[#{packageJ.name}]","[typeError]"," .#{fname}(","...",")"]
-    [c.er1,c.er2,c.grey,c.er3,c.grey]
+    ["[#{pkgname}]","[typeError]"," .#{fname}(...)"]
+    [c.pink,c.er2,c.er2]
 
   l do
     '\n'
     (show_chain data.str,[fname])
+    '\n\n'
+    legend
     '\n\n'
     type_signature
     '\n\n'
@@ -271,9 +488,8 @@ print.typeError = (data) ->
 print.unary_not_array = ([E,data]) ->
 
   l lit do
-    ["[#{packageJ.name}]","[typeError]"]
-    [c.er1,c.er2]
-
+    ["[#{pkgname}]","[typeError]"]
+    [c.pink,c.er2]
 
   l do
     '\n'
@@ -293,13 +509,15 @@ print.setting = ([E,type,vr,key]) ->
   msg = switch type
   | \path_locked     => "all settings enabled."
   | \already_in_path => "setting already enabled."
-  | \not_in_opts     => "undefined option."
+  | \not_in_opts     => "option not defined."
 
-  l lit ["[#{pkgname}][configError]"," #{msg}"],[c.er2,c.warn]
+  l lit do
+    ["[#{pkgname}]","[configError]"," #{msg}"]
+    [c.pink,c.er2,c.er1]
 
   l do
     '\n'
-    lit [(vr.join "."),".",key],[c.ok,c.ok,c.er]
+    lit [(vr.join "."),"."+key],[c.ok,c.er3]
     '\n'
 
   show_stack E
@@ -307,8 +525,8 @@ print.setting = ([E,type,vr,key]) ->
 print.state_undef = ([E,fname]) ->
 
   l lit do
-    ["[#{pkgname}][Error]"]
-    [c.er2]
+    ["[#{pkgname}]","[Error]"]
+    [c.pink,c.er1]
 
   l lit do
     [("\n  ." + fname)]
@@ -320,37 +538,46 @@ print.state_undef = ([E,fname]) ->
 
   show_stack E
 
-print.arpar_not_array = ([E,data]) ->
+print.validator_return_not_array = (ta) ->
 
-  [type_signature] = StrEType 'arpar',"second"
+  [E,[type,loc],data] = ta
+
+  [type_signature] = StrEType type,loc
 
   l lit do
-    ["[#{packageJ.name}]","[typeError]"," .arpar(","...",")"]
-    [c.er1,c.er2,c.grey,c.er3,c.grey]
+    ["[#{pkgname}]","[typeError]"," .#{type}(","...",")"]
+    [c.pink,c.er2,c.er2,c.er3,c.er2]
 
   l do
     '\n'
-    show_chain data.str,[\arpar]
+    c.er1 ([ ".#{I}(~)" for I in data.str].join "")
     '\n\n'
     type_signature
     '\n\n'
-    c.pink ".arpar validator function requires return value to be array like."
+    c.pink "validator function requires return value to be array like."
     '\n'
 
   show_stack E
 
-print.route = ([ECLASS,data]) !->
+print.route = (ta) !->
 
+  [ECLASS,data] = ta
 
   switch ECLASS
-  | \input             => print.typeError data
+  | \input                      => print.typeError data
 
-  | \unary_not_array   => print.unary_not_array data
+  | \unary_not_array            => print.unary_not_array data
 
-  | \setting           => print.setting data
+  | \setting                    => print.setting data
 
-  | \arpar_not_array   => print.arpar_not_array data
+  | \validator_return_not_array => print.validator_return_not_array data
 
-  | \state_undef       => print.state_undef data
+  | \state_undef                => print.state_undef data
 
-  | otherwise          => l "print.route\n\n",Er,data
+  | otherwise                   => l "print.route\n\n",Er,data
+
+
+print.docstring = """
+  #{c.pink pkgname}
+  #{c.grey help}
+  """

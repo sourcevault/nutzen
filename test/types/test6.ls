@@ -1,8 +1,10 @@
-com = require \../../dist/utils/main
+pkg = require \../../dist/types/main
 
-{z,l,R,j,zj,print_fail} = com
+{utils,types} = pkg
 
-be = require \../../dist/types/main
+{z,l,R,j,print_fail} = utils
+
+be = types
 
 p = print_fail "test/types/test6.js"
 
@@ -14,9 +16,17 @@ F = (x)  -> [false,\foobar]
 
 V = be.restricted [0,1]
 
-ret = V.auth [\a,\b,\c]
+von = V.auth [\a,\b,\c]
 
-if not (ret.message[0] is \:res)
+as = JSON.stringify von.message
+
+if not (as is '[":res",[0,1]]')
 
   p ".restricted message is not accurate."
+
+as = JSON.stringify von.path
+
+if not (as is '["2"]')
+
+  p ".restricted path is not accurate."
 

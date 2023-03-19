@@ -6,9 +6,6 @@ watch: &watch
   - src
   - test/*/*.ls
 
-ignore: &ignore
-  - dist
-
 rm.dist:
   description:
     - delete all .js files in dist folder.
@@ -21,12 +18,17 @@ rm.src:
     rm src/*/*.js
 
 gulpfile:
-  watch: true
+  watch:
+    - ./src/gulpfile.ls
   description:
     - watch gulpfile.ls and run gulp default (only).
   local: &gulpfile
     - lsc -bco . src/gulpfile.ls
     - gulp default --silent
+    # - gulp watch
+
+gulp.watch:
+  - gulp watch
 
 build:
   - gulp default --silent
@@ -62,7 +64,17 @@ test.file:
   description:
     - run a specific test file for proj=X which=Y.
   local:
-    - gulp default --silent
+    # - time gulp default
+    - |
+     gulp default
+     node ./test/${proj}/${which}.js || exit 1
+    # - gulp default --silent
+
+gulp.test.file:
+  watch: 
+    - dist
+    - test/*.ls
+  local:
     - node ./test/${proj}/${which}.js || exit 1
 
 
@@ -77,7 +89,10 @@ dev.install:
     - pnpm install gulp-yaml
     - pnpm install gulp-replace
     - pnpm install gulp-util
+    - pnpm install gulp-changed
 
 version.update:
   watch: false
   local: update-version src/package.yaml hoplon version
+
+

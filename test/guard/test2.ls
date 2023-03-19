@@ -6,13 +6,13 @@ name  = \test2
 
 # BOILER PLATE
 
-path = (name) -> "../../dist/#{name}/main"
+{utils,types,guard} = require \../../dist/types/main
 
-guard = require path \guard
+{l,z,c,binapi,print_fail,create_stack,R} = utils
 
-com   = require path \utils
+be = types
 
-{l,zj,z,c,binapi,print_fail,create_stack,R} = com
+xop = guard
 
 pf = print_fail "test/#{proj}/#{name}.js"
 
@@ -30,12 +30,13 @@ dum2 = (str) ->
   | \obj => \object
   | \map => \map
 
-V = guard
-.ma do
+V = xop
+.cap do
   dum2,\obj_or_map
 .def null
 
 out = V \obj
 
-if not (out is \obj_or_map)
-  p!
+
+if (out isnt \obj_or_map)
+  pf!

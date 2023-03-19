@@ -1,16 +1,14 @@
-var ref$, com, print, z, l, R, j, deep_freeze, uic, loopError, oxo, int, custom, define, cache, be, props, nonmap, base, not_base, undefnull, F, pop, i$, len$, name, type, A, B, C, notArrayofStrOrNum, reqError, resError, reqresError, objarr, restricted, integer, boolnum, maybe_boolnum, maybe, list, handleE, is_special_str, rmNotArrays, betrue, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-ref$ = require('./print.common'), com = ref$.com, print = ref$.print;
-z = com.z, l = com.l, R = com.R, j = com.j, deep_freeze = com.deep_freeze, uic = com.uic, loopError = com.loopError;
-oxo = require('../guard/main');
-int = require('./internal');
-custom = int.custom, define = int.define, cache = int.cache;
+var pkg, internal, com, print, z, l, R, j, deep_freeze, uic, loopError, noop, xop, custom, define, defset, be, non_map_props, props, base, not_base, undefnull, F, i$, len$, ref$, name, type, A, B, C, resreq, objarr, reqError, resError, resreqError, restricted, integer, boolnum, maybe_boolnum, maybe, list, flatro, is_special_str, rm_not_arrays, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+pkg = require('./print.common');
+internal = require('./internal');
+com = pkg.com, print = pkg.print;
+z = com.z, l = com.l, R = com.R, j = com.j, deep_freeze = com.deep_freeze, uic = com.uic, loopError = com.loopError, noop = com.noop;
+xop = pkg.guard;
+custom = internal.custom, define = internal.define, defset = internal.defset;
 be = custom;
-props = [['obj', 'Object'], ['arr', 'Array'], ['undef', 'Undefined'], ['null', 'Null'], ['num', 'Number'], ['str', 'String'], ['fun', 'Function'], ['bool', 'Boolean'], ['objerr', 'Error']];
-nonmap = R.map(function(arg$){
-  var name;
-  name = arg$[0];
-  return name;
-}, R.drop(2, props));
+be.known = {};
+non_map_props = [['undef', 'Undefined'], ['null', 'Null'], ['num', 'Number'], ['str', 'String'], ['fun', 'Function'], ['bool', 'Boolean'], ['objerr', 'Error']];
+props = [['obj', 'Object'], ['arr', 'Array']].concat(arrayFrom$(non_map_props));
 base = function(type){
   return function(UFO){
     var str;
@@ -68,33 +66,44 @@ undefnull = function(UFO){
     };
   }
 };
-cache.def.add(undefnull);
-F = base("Arguments");
-define.basis('arg', F);
+defset.add(undefnull);
+F = base('Arguments');
+define.basis('arg', F, 'arr');
+define.basis.empty('arg', 'arr');
 be.arg = F;
-pop = function(msg){
-  msg.pop();
-  return msg;
-};
-be.not = function(F){
+be.not = function(F, msg){
   var V;
+  msg == null && (msg = void 8);
   V = be(F);
   return be(function(x){
-    return !V.auth(x)['continue'];
+    var von;
+    von = V.auth(x);
+    if (von['continue']) {
+      return {
+        'continue': false,
+        error: true,
+        message: msg
+      };
+    } else {
+      return {
+        'continue': true,
+        error: false,
+        value: von.value
+      };
+    }
   });
 };
 be.undefnull = be(undefnull);
-be.not.undefnull = be.not(undefnull);
+be.not.undefnull = be.not(undefnull, "is undefined or null");
 be.maybe = function(F){
-  return be(F).or(be.undef).err(pop);
+  return be(F).or(be.undef).err(function(msg){
+    msg.pop();
+    return msg;
+  });
 };
 be.list = function(F){
   return be.arr.map(F);
 };
-be.not[uic] = print.inner;
-be.list[uic] = print.inner;
-be.maybe[uic] = print.inner;
-be.known = {};
 for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
   ref$ = props[i$], name = ref$[0], type = ref$[1];
   A = base(type);
@@ -104,60 +113,63 @@ for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
   B = not_base(type);
   define.basis(name, B);
   be.not[name] = B;
-  C = {};
-  define.basis(name, C);
+  C = define.basis.empty(name);
   be.known[name] = C;
 }
-for (i$ = 0, len$ = nonmap.length; i$ < len$; ++i$) {
-  name = nonmap[i$];
+for (i$ = 0, len$ = non_map_props.length; i$ < len$; ++i$) {
+  name = non_map_props[i$][0];
   be.maybe[name] = be.maybe(be[name]);
 }
 be.maybe.obj = be.obj.or(be.undef);
 be.maybe.arr = be.arr.or(be.undef);
-notArrayofStrOrNum = function(type){
+resreq = {};
+resreq.gen_error = function(data){
+  return print.route([new Error(), 'resreq', data]);
+};
+resreq.not_array_of_str_or_num = function(type){
   return function(){
     var args, i$, len$, key, ref$;
     args = R.flatten(arrayFrom$(arguments));
     for (i$ = 0, len$ = args.length; i$ < len$; ++i$) {
       key = args[i$];
       if (!((ref$ = R.type(key)) === 'String' || ref$ === 'Number')) {
-        print.route([new Error(), 'resreq', [type]]);
-        return true;
+        return [type];
       }
     }
     return false;
   };
 };
-reqError = oxo.wh(notArrayofStrOrNum('req'), loopError);
-resError = oxo.wh(notArrayofStrOrNum('res'), loopError);
-reqresError = oxo.wh(function(req, res){
+resreq.both = function(req, res){
   var i$, len$, I, ref$;
-  if (!(R.type(req) === "Array" && R.type(res) === "Array")) {
-    print.route([new Error(), 'resreq', ['resreq', 'prime']]);
-    return true;
+  if (!(R.type(req) === 'Array' && R.type(res) === 'Array')) {
+    return ['resreq', 'prime'];
   }
   for (i$ = 0, len$ = req.length; i$ < len$; ++i$) {
     I = req[i$];
     if (!((ref$ = R.type(I)) === 'String' || ref$ === 'Number')) {
-      print.route([new Error(), 'resreq', ['resreq', 'res']]);
-      return true;
+      return ['resreq', 'res'];
     }
   }
   for (i$ = 0, len$ = res.length; i$ < len$; ++i$) {
     I = res[i$];
     if (!((ref$ = R.type(I)) === 'String' || ref$ === 'Number')) {
-      print.route([new Error(), 'resreq', ['resreq', 'req']]);
-      return true;
+      return ['resreq', 'req'];
     }
   }
-}, loopError);
+  return false;
+};
 objarr = be.obj.alt(be.arr).err("not object or array");
-be.required = reqError.def(function(){
-  var props, ret;
+resreq.req = function(){
+  var props, F, von;
   props = R.flatten(arrayFrom$(arguments));
-  ret = objarr.on(props, be.not.undef.err([':req', props]));
-  return ret;
-});
+  F = be.not.undef.err([':req', props]);
+  von = objarr.on(props, F);
+  return von;
+};
+reqError = xop.wh(resreq.not_array_of_str_or_num('req'), resreq.gen_error);
+resError = xop.wh(resreq.not_array_of_str_or_num('res'), resreq.gen_error);
+resreqError = xop.cap(resreq.both, resreq.gen_error);
+be.required = reqError.def(resreq.req);
 restricted = function(props, po){
   return function(obj){
     var keys, i$, len$, I;
@@ -181,7 +193,7 @@ be.restricted = resError.def(function(){
   }
   return objarr.and(restricted(props, po));
 });
-be.reqres = reqresError.def(function(req, res){
+be.resreq = resreqError.def(function(req, res){
   var po, i$, len$, I;
   po = {};
   for (i$ = 0, len$ = res.length; i$ < len$; ++i$) {
@@ -216,7 +228,7 @@ integer = function(UFO){
     };
   }
 };
-cache.def.add(integer);
+defset.add(integer);
 boolnum = function(UFO){
   var ref$;
   if ((ref$ = R.type(UFO)) === 'Boolean' || ref$ === 'Number') {
@@ -234,7 +246,7 @@ boolnum = function(UFO){
     };
   }
 };
-cache.def.add(boolnum);
+defset.add(boolnum);
 maybe_boolnum = function(UFO){
   var ref$;
   if ((ref$ = R.type(UFO)) === 'Undefined' || ref$ === 'Boolean' || ref$ === 'Number') {
@@ -252,7 +264,7 @@ maybe_boolnum = function(UFO){
     };
   }
 };
-cache.def.add(maybe_boolnum);
+defset.add(maybe_boolnum);
 be.int = be(integer);
 be.boolnum = be(boolnum);
 be.int.neg = be.int.and(function(x){
@@ -303,18 +315,8 @@ maybe.list = {};
 maybe.list.ofstr = maybe(list.ofstr);
 maybe.list.ofnum = maybe(list.ofnum);
 maybe.list.ofint = maybe(list.ofint);
-handleE = {};
-handleE.rm_num = function(arg$){
-  var txt, msg, name;
-  txt = arg$[0], msg = arg$[1];
-  name = txt.split(":")[1];
-  if (msg === void 8) {
-    return [name];
-  } else {
-    return [name, msg];
-  }
-};
-handleE.sort = function(arg$, arg1$){
+flatro = {};
+flatro.sort = function(arg$, arg1$){
   var txt1, txt2, ref$, __, name1, number1, name2, number2;
   txt1 = arg$[0];
   txt2 = arg1$[0];
@@ -346,7 +348,7 @@ is_special_str = function(str){
     return false;
   }
 };
-handleE.array = function(msg, fin){
+flatro.array = function(msg, fin){
   var i$, len$, I, uno, results$ = [];
   for (i$ = 0, len$ = msg.length; i$ < len$; ++i$) {
     I = msg[i$];
@@ -360,16 +362,16 @@ handleE.array = function(msg, fin){
       if (is_special_str(uno)) {
         results$.push(fin.push(I));
       } else {
-        results$.push(handleE.array(I, fin));
+        results$.push(flatro.array(I, fin));
       }
     }
   }
   return results$;
 };
-rmNotArrays = R.filter(function(x){
+rm_not_arrays = R.filter(function(x){
   return R.type(x) === 'Array';
 });
-handleE.entry = function(msg){
+flatro.main = function(msg){
   var out, fin, clean, sorted;
   out = (function(){
     switch (R.type(msg)) {
@@ -380,27 +382,30 @@ handleE.entry = function(msg){
       if (is_special_str(msg[0])) {
         msg = [msg];
       }
-      handleE.array(msg, fin);
+      flatro.array(msg, fin);
       return fin;
     default:
       return [];
     }
   }());
-  clean = rmNotArrays(out);
+  clean = rm_not_arrays(out);
   if (clean.length === 0) {
     return [[void 8, out]];
   } else {
-    sorted = clean.sort(handleE.sort);
+    sorted = clean.sort(flatro.sort);
     return sorted;
   }
 };
-betrue = be(function(){
+be.any = be(function(){
   return true;
 });
-be.any = betrue;
 be.tap = function(f){
-  return betrue.tap(f);
+  return be.any.tap(f);
 };
-be.flatro = handleE.entry;
-be = deep_freeze(be);
-module.exports = be;
+be.flatro = flatro.main;
+pkg = {};
+pkg.types = be;
+pkg.guard = xop;
+pkg.utils = com;
+pkg = Object.freeze(pkg);
+module.exports = pkg;

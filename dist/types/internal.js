@@ -1,19 +1,30 @@
-var ref$, com, print, sig, tightloop, z, l, R, j, uic, deep_freeze, loopError, zj, oxo, x$, cache, assort, cato, y$, wrap, z$, guard, z1$, define, z2$, validate, props, initState, z3$, proto, key, val, F, handleError, custom, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-ref$ = require('./print.common'), com = ref$.com, print = ref$.print, sig = ref$.sig;
+var pkg, com, symbols, print, tightloop, z, l, R, j, uic, deep_freeze, loopError, tupnest, noop, link, xop, defset, def_or_normal, assort, cato, assign_self, x$, wrap, y$, guard, z$, define, z1$, validate, z2$, proto, z3$, user_wrap, p_core, main, i$, ref$, len$, val, create_new_try, get, ge, link_from_main, custom, ha, functor, core, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+pkg = require('./print.common');
+com = pkg.com, symbols = pkg.symbols, print = pkg.print;
 tightloop = require('./tightloop');
-z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError, zj = com.zj;
-oxo = require('../guard/main');
-x$ = cache = {};
-x$.def = new Set();
-x$.ins = new Set();
+z = com.z, l = com.l, R = com.R, j = com.j, uic = com.uic, deep_freeze = com.deep_freeze, loopError = com.loopError, tupnest = com.tupnest, noop = com.noop, link = com.link;
+xop = pkg.guard;
+defset = new Set();
+def_or_normal = function(F){
+  switch (R.type(F)) {
+  case 'Function':
+    return true;
+  case 'Object':
+    if (F[symbols.htypes] || defset.has(F)) {
+      return true;
+    }
+    return false;
+  }
+  return false;
+};
 'd';
 'i';
 'f';
 assort = function(F){
-  if (cache.def.has(F)) {
-    return ['d', F];
-  } else if (cache.ins.has(F)) {
+  if (F[symbols.htypes]) {
     return ['i', F];
+  } else if (defset.has(F)) {
+    return ['d', F];
   } else {
     return ['f', F];
   }
@@ -35,362 +46,533 @@ cato = function(arg){
     return fun;
   }
 };
-y$ = wrap = {};
-y$.on = null;
-y$.rest = null;
-z$ = guard = {};
-z$.on = null;
-z$.rest = null;
-z1$ = define = {};
-z1$.and = null;
-z1$.or = null;
-z1$.proto = null;
-z1$.on = null;
-z1$.basis = null;
-z2$ = validate = {};
-z2$.on = null;
-z2$.rest = null;
-props = ['and', 'or', 'alt', 'cont', 'tap', 'edit', 'err', 'jam', 'fix'];
-initState = {
-  all: [],
-  type: null,
-  str: []
-};
-wrap.rest = function(type){
-  return function(){
-    return guard.rest(arguments, this[sig], type);
+assign_self = function(){
+  return function(self){
+    this.self = self;
+    return this;
   };
 };
-wrap.on = function(){
-  return guard.on(arguments, this[sig]);
-};
-z3$ = proto = {};
-z3$.normal = {};
-z3$.functor = null;
-proto.normal.wrap = function(){
+x$ = wrap = {};
+x$.on = null;
+x$.functor = null;
+x$.core = null;
+y$ = guard = {};
+y$.on = null;
+y$.rest = null;
+z$ = define = {};
+z$.and = null;
+z$.or = null;
+z$.proto = null;
+z$.on = null;
+z$.basis = null;
+z$.block = null;
+z$.functor = null;
+z$.rest = null;
+z1$ = validate = {};
+z1$.on = null;
+z1$.rest = null;
+z2$ = proto = {};
+z2$.normal = assign_self();
+z2$.functor = assign_self();
+z2$.core = assign_self();
+z3$ = z2$['try'] = {};
+z3$.functor = assign_self();
+z3$.normal = assign_self();
+link.proto(proto.core, proto['try'].functor, proto['try'].normal, proto.normal, proto.functor);
+user_wrap = function(){
   var F;
   F = this;
   return function(){
     return F.auth.apply(F, arguments).value;
   };
 };
-for (key in props) {
-  val = props[key];
-  F = wrap.rest(val);
-  proto.normal[val] = F;
-}
-proto.normal.auth = tightloop;
-proto.normal[uic] = print.log;
-proto.functor = (import$({}, proto.normal));
-proto.functor.map = wrap.rest('map');
-proto.functor.forEach = wrap.rest('forEach');
-proto.functor.on = wrap.on;
-proto.functor[uic] = print.log;
-handleError = function(info){
-  print.route(info);
-  return loopError();
+p_core = proto.core.prototype;
+p_core[symbols.htypes] = true;
+p_core.auth = tightloop;
+Object.defineProperty(p_core, 'wrap', {
+  get: user_wrap,
+  enumerable: true
+});
+wrap.core = function(type){
+  return function(){
+    return guard.core(arguments, this.self, type);
+  };
 };
-custom = oxo.arn(1, function(){
-  return handleError([new Error(), 'input.fault', ['custom', ['arg_count']]]);
-}).whn(function(f){
-  return R.type(f) === 'Function' || f[sig];
-}, function(){
-  return handleError([new Error(), 'input.fault', ['custom', ['not_function']]]);
-}).def(function(F){
+wrap.functor = function(type){
+  return function(){
+    return define.functor(arguments, this.self, type);
+  };
+};
+wrap.misc = function(type){
+  return function(){
+    return define.rest(arguments, this.self, type);
+  };
+};
+main = {};
+for (i$ = 0, len$ = (ref$ = ['and', 'tap', 'or', 'alt']).length; i$ < len$; ++i$) {
+  val = ref$[i$];
+  main[val] = wrap.core(val);
+}
+main.on = function(){
+  return guard.on(arguments, this.self);
+};
+for (i$ = 0, len$ = (ref$ = ['map', 'forEach']).length; i$ < len$; ++i$) {
+  val = ref$[i$];
+  main[val] = wrap.functor(val);
+}
+for (i$ = 0, len$ = (ref$ = ['cont', 'edit', 'err', 'jam', 'fix']).length; i$ < len$; ++i$) {
+  val = ref$[i$];
+  main[val] = wrap.misc(val);
+}
+create_new_try = function(data, type){
+  type == null && (type = data.type);
+  switch (type) {
+  case 'obj':
+  case 'arr':
+    return new proto['try'].functor(data);
+  default:
+    return new proto['try'].normal(data);
+  }
+};
+get = {};
+get['try'] = function(){
+  var state, type, data;
+  state = this.self;
+  type = state.type;
+  data = {
+    type: type,
+    all: {
+      node: ['try'],
+      back: state.all
+    },
+    index: state.index + 1,
+    mode: 'try',
+    str: ['try', state.str]
+  };
+  return create_new_try(data);
+};
+get.end = function(){
+  var state, type, data;
+  state = this.self;
+  type = state.type;
+  data = {
+    type: type,
+    all: {
+      node: ['end'],
+      back: state.all
+    },
+    index: state.index + 1,
+    mode: 'normal',
+    str: ['end', state.str]
+  };
+  switch (data.type) {
+  case 'obj':
+  case 'arr':
+    return new proto.functor(data);
+  default:
+    return new proto.normal(data);
+  }
+};
+Object.defineProperty(p_core, 'try', {
+  get: get['try']
+});
+ge = {
+  get: get.end,
+  enumerable: true
+};
+Object.defineProperty(proto['try'].functor.prototype, 'end', ge);
+Object.defineProperty(proto['try'].normal.prototype, 'end', ge);
+link_from_main = link.proto_fn(main);
+link_from_main(['and', 'cont', 'tap', 'edit', 'err', 'jam', 'fix'], proto.core);
+link_from_main(['or', 'alt'], proto.normal, proto.functor);
+link_from_main(['map', 'forEach', 'on'], proto.functor);
+link_from_main(['map', 'forEach', 'on'], proto['try'].functor);
+p_core[uic] = print.log('core.normal');
+proto['try'].functor.prototype[uic] = print.log('try.functor');
+proto['try'].normal.prototype[uic] = print.log('try.normal');
+proto.normal.prototype[uic] = print.log('normal');
+proto.functor.prototype[uic] = print.log('functor');
+custom = {};
+custom.main = function(F){
   var G, data;
   G = cato(F);
   data = {
     type: 'custom',
-    all: [[G]],
-    str: ["{..}"]
+    all: {
+      node: G
+    },
+    index: 0,
+    str: ["{..}"],
+    mode: 'normal'
   };
-  return define.proto(data);
-});
-custom[uic] = print.inner;
-define.on = function(type, args, state){
-  var props, F, put, key, ob, fun, res$, val, array, block, data, ref$;
-  switch (type[0]) {
-  case 'array':
-    props = args[0], F = args[1];
-    put = ['on', ['array', [R.uniq(props)].concat(arrayFrom$(cato(F)))]];
-    break;
-  case 'string':
-    key = args[0], F = args[1];
-    put = ['on', ['string', [key].concat(arrayFrom$(cato(F)))]];
-    put;
-    break;
-  case 'object':
-    ob = args[0];
-    res$ = [];
-    for (key in ob) {
-      val = ob[key];
-      res$.push([key].concat(arrayFrom$(cato(val))));
-    }
-    fun = res$;
-    put = ['on', ['object', fun]];
-    break;
-  case 'single_array':
-    array = type[1];
-    put = ['on', ['single_array', array]];
-  }
-  block = define.and(state, [put]);
-  data = (ref$ = {}, import$(ref$, state), (ref$.phase = 'chain', ref$.all = block, ref$.str = state.str.concat('on'), ref$));
-  return define.proto(data);
+  return new proto.normal(data);
 };
-guard.on = oxo.unary.arn([1, 2], function(args, state){
-  return handleError([new Error(), 'input.fault', ['on', ['arg_count', [state.str, 'on']]]]);
-}).arpar(1, function(args, state){
-  var maybe_object, type, I, val, ok, clean, error_msg, i$, len$, each, fields, F, field_type, j$, len1$, ref$, wF, inner_error;
+custom.err = function(type){
+  return function(){
+    var edata;
+    edata = tupnest([new Error(), 'input.fault'], 'custom', type);
+    return print.route(edata);
+  };
+};
+custom.exp = xop.arn(1, custom.err('arg_count')).whn(def_or_normal, custom.err('not_function')).def(custom.main);
+custom.exp.is_instance = function(x){
+  switch (x[symbols.htypes]) {
+  case true:
+    return true;
+  default:
+    return false;
+  }
+};
+define.on = function(cat, args, state){
+  var put, props, F, key, ob, fun, val, data;
+  put = (function(){
+    var res$, ref$;
+    switch (cat) {
+    case 'array':
+      props = args[0], F = args[1];
+      return ['array', [R.uniq(props)].concat(arrayFrom$(cato(F)))];
+    case 'string':
+      key = args[0], F = args[1];
+      return ['string', [key].concat(arrayFrom$(cato(F)))];
+    case 'object':
+      ob = args[0];
+      res$ = [];
+      for (key in ref$ = ob) {
+        val = ref$[key];
+        res$.push([key].concat(arrayFrom$(cato(val))));
+      }
+      fun = res$;
+      return ['object', fun];
+    }
+  }());
+  data = {
+    type: state.type,
+    all: {
+      node: ['on', put],
+      back: state.all
+    },
+    index: state.index + 1,
+    str: ['on', state.str],
+    mode: state.mode
+  };
+  switch (data.mode) {
+  case 'try':
+    return new proto['try'].functor(data);
+  case 'normal':
+    return new proto.functor(data);
+  }
+};
+ha = {};
+ha.err = function(err_type, args, state){
+  var edata;
+  edata = tupnest([new Error(), 'input.fault'], 'on', [err_type], [state.str, 'on']);
+  return print.route(edata);
+};
+ha.err_static = function(type){
+  return function(){
+    return ha.err.apply(ha, [type].concat(arrayFrom$(arguments)));
+  };
+};
+ha.validate_obj = function(args, state){
+  var maybe_object, type, I, val;
   maybe_object = args[0];
   type = R.type(maybe_object);
   if (type === 'Object') {
     for (I in maybe_object) {
       val = maybe_object[I];
-      if (!(R.type(val) === 'Function' || cache.ins.has(val))) {
-        return [false, [new Error(), 'input.fault', ['on', ['object', [state.str, 'on']]]]];
+      if (R.type(val) !== 'Function') {
+        return [false, 'object'];
       }
     }
-    return [true, ['object']];
-  } else if (type === 'Array') {
-    ok = true;
-    clean = [];
-    error_msg = null;
-    for (i$ = 0, len$ = maybe_object.length; i$ < len$; ++i$) {
-      each = maybe_object[i$];
-      if (!(each.length === 3)) {
-        ok = false;
-        error_msg = 'length_less_then_3';
-        break;
-      }
-      type = each[0], fields = each[1], F = each[2];
-      field_type = R.type(fields);
-      if (type === 'and') {
-        if (field_type === 'String') {
-          field_type = 'S';
-        } else if (field_type === 'Array') {
-          field_type = 'A';
-        } else {
-          error_msg = 'alt_wrong_field_type';
-          ok = false;
-          break;
-        }
-      } else if (type === 'alt') {
-        if (field_type === 'Array') {
-          for (j$ = 0, len1$ = fields.length; j$ < len1$; ++j$) {
-            I = fields[j$];
-            if (!((ref$ = R.type(I)) === 'String' || ref$ === 'Number')) {
-              ok = false;
-              break;
-            }
-          }
-          if (!ok) {
-            error_msg = 'alt_wrong_field_type';
-            break;
-          }
-          field_type = 'A';
-        } else if (field_type === 'String') {
-          field_type = 'S';
-        } else {
-          ok = false;
-          break;
-        }
-      } else {
-        ok = false;
-        error_msg = 'not_and_alt';
-        break;
-      }
-      wF = assort(F);
-      if (wF[0] === 'f') {
-        ok = false;
-        break;
-      }
-      clean.push([type, [field_type, fields], wF[0], wF[1]]);
-    }
-    if (ok) {
-      return [true, ['single_array', clean]];
-    } else {
-      inner_error = ['on', ['single_array', [state.str, 'on'], error_msg]];
-      return [false, [new Error(), 'input.fault', inner_error]];
-    }
+    return [true, 'object'];
   } else {
-    return [false];
+    return [false, 'typeError'];
   }
-}, define.on, function(data){
-  if (data[1] === 'input.fault') {
-    return handleError(data);
-  }
-  return false;
-}).arma(2, function(arg$, state){
-  var first, second, i$, len$, I;
+};
+ha.validate_rest = function(arg$, state){
+  var first, second, type, i$, len$, index, I, ref$;
   first = arg$[0], second = arg$[1];
-  switch (R.type(first)) {
+  type = R.type(first);
+  switch (type) {
   case 'Array':
     for (i$ = 0, len$ = first.length; i$ < len$; ++i$) {
+      index = i$;
       I = first[i$];
-      if (!(R.type(I) === 'String')) {
-        return [new Error(), 'input.fault', ['on', ['array', [state.str, 'on']]]];
+      if (!((ref$ = R.type(I)) === 'String' || ref$ === 'Number')) {
+        return [false, 'array'];
       }
     }
-    if (!(R.type(second) === 'Function' || cache.ins.has(second))) {
-      return [new Error(), 'input.fault', ['on', ['array', [state.str, 'on']]]];
+    if (!def_or_normal(second)) {
+      return [false, 'array'];
+    } else {
+      return [true, 'array'];
     }
-    return ['array'];
   case 'String':
   case 'Number':
-    if (!(R.type(second) === 'Function' || cache.ins.has(second))) {
-      return [new Error(), 'input.fault', ['on', ['string', [state.str, 'on']]]];
+    if (!def_or_normal(second)) {
+      return [false, 'string'];
     }
-    return ['string'];
+    return [true, 'string'];
   default:
-    return false;
+    return [false];
   }
-}, define.on).def(function(args, state){
-  return handleError([new Error(), 'input.fault', ['on', ['typeError', [state.str, 'on']]]]);
-});
-validate.rest = function(funs, state, type){
-  var i$, len$, F, f;
+};
+ha[1] = [ha.validate_obj, ha.err, define.on];
+ha[2] = [ha.validate_rest, ha.err, define.on];
+guard.on = xop.unary.arn([1, 2], ha.err_static('arg_count')).arcap(ha).def(ha.err_static('typeError'));
+functor = {};
+functor.main = function(args, state, ftype){
+  var range, mod_range, data;
+  if (state.type === 'arr') {
+    range = args[0];
+    mod_range = (function(){
+      switch (range.length) {
+      case 1:
+        return [range[0], Infinity, 1];
+      case 2:
+        return [range[0], range[1], 1];
+      default:
+        return range;
+      }
+    }());
+    args[0] = mod_range;
+    args[1] = cato(args[1]);
+  } else {
+    args[0] = cato(args[0]);
+  }
+  data = {
+    type: state.type,
+    all: {
+      node: [ftype, args],
+      back: state.all
+    },
+    index: state.index + 1,
+    str: [ftype, state.str],
+    mode: state.mode
+  };
+  switch (data.mode) {
+  case 'try':
+    return new proto['try'].functor(data);
+  case 'normal':
+    return new proto.functor(data);
+  }
+};
+functor.validate_range = function(arg$, state, type){
+  var range, F, i$, len$, index, item, step;
+  range = arg$[0], F = arg$[1];
+  if (state.type === 'obj') {
+    return [false, ['range.obj']];
+  }
+  if (R.type(range) !== 'Array') {
+    return [false, ['range']];
+  }
+  for (i$ = 0, len$ = range.length; i$ < len$; ++i$) {
+    index = i$;
+    item = range[i$];
+    if (R.type(item) !== 'Number') {
+      return [false, ['num', index]];
+    }
+  }
+  switch (range.length) {
+  case 1:
+  case 2:
+    break;
+  case 3:
+    step = range[2];
+    if (step === 0) {
+      return [false, ['inf_step']];
+    }
+    break;
+  default:
+    return [false, ['num_count']];
+  }
+  if (!def_or_normal(F)) {
+    return [false, ['fun', 'second']];
+  }
+  return true;
+};
+functor.validate = function(arg$, state){
+  var F;
+  F = arg$[0];
+  if (!def_or_normal(F)) {
+    return [false, ['fun', 'first']];
+  }
+  return true;
+};
+functor.err_static = function(val){
+  return function(){
+    return functor.err.apply(functor, [[val]].concat(arrayFrom$(arguments)));
+  };
+};
+functor.err = function(err_type, args, state, type){
+  var edata;
+  edata = tupnest([new Error(), 'input.fault'], type, [err_type], [state.str, type]);
+  return print.route(edata);
+};
+functor[1] = [
+  functor.validate, functor.err, function(arg$, state, fname){
+    var F, arg;
+    F = arg$[0];
+    if (state.type === 'arr') {
+      arg = [[0, Infinity, 1], F];
+    } else {
+      arg = [F];
+    }
+    return functor.main(arg, state, fname);
+  }
+];
+functor[2] = [functor.validate_range, functor.err, functor.main];
+functor.def = functor.err_static('undefined_error');
+define.functor = xop.unary.arcap(functor).arn([1, 2], functor.err_static('arg_count')).def(functor.def);
+define.rest = function(args, state, type){
+  var fname, list, res$, i$, len$, I, len, F, node, data;
+  fname = type;
   switch (type) {
   case 'and':
   case 'or':
   case 'alt':
-    if (funs.length === 0) {
-      print.route([new Error(), 'input.fault', [type, ['arg_count', [state.str, type]]]]);
-      return false;
+    res$ = [];
+    for (i$ = 0, len$ = args.length; i$ < len$; ++i$) {
+      I = args[i$];
+      res$.push(cato(I));
     }
-    for (i$ = 0, len$ = funs.length; i$ < len$; ++i$) {
-      F = funs[i$];
-      if (!(R.type(F) === 'Function' || cache.ins.has(F))) {
-        print.route([new Error(), 'input.fault', [type, ['not_function', [state.str, type]]]]);
-        return false;
-      }
+    list = res$;
+    len = list.length;
+    if (len !== 1) {
+      fname = type + "." + 'multi';
+      F = list;
+    } else {
+      F = list[0];
     }
-    return true;
-  case 'map':
-  case 'tap':
-  case 'forEach':
-    if (!(funs.length === 1)) {
-      print.route([new Error(), 'input.fault', [type, ['arg_count', [state.str, type]]]]);
-      return false;
-    }
-    return true;
-    f = funs[0];
-    if (!(R.type(f) === 'Function' || cache.ins.has(F))) {
-      print.route([new Error(), 'input.fault', [type, ['not_function', [state.str, type]]]]);
-      return false;
-    }
-    return true;
+    break;
+  case 'edit':
+    fname = 'cont';
+    // fallthrough
   case 'err':
   case 'fix':
   case 'cont':
   case 'jam':
   case 'edit':
+  case 'tap':
+    F = args[0];
+  }
+  switch (type) {
+  case 'and':
+    node = F;
+    break;
+  case 'try':
+    node = [fname];
+    break;
+  default:
+    node = [fname, F];
+  }
+  data = {
+    type: state.type,
+    all: {
+      node: node,
+      back: state.all
+    },
+    index: state.index + 1,
+    mode: state.mode,
+    str: [type, state.str]
+  };
+  if (type === 'try' || state.mode === 'try') {
+    return create_new_try(data);
+  } else {
+    switch (data.type) {
+    case 'obj':
+    case 'arr':
+      return new proto.functor(data);
+    default:
+      return new proto.normal(data);
+    }
+  }
+};
+core = {};
+core.err_static = function(type){
+  return function(){
+    return core.err.apply(core, [type].concat(arrayFrom$(arguments)));
+  };
+};
+core.err = function(err_type, args, state, type){
+  var edata;
+  edata = tupnest([new Error(), 'input.fault'], 'rest', type, [err_type], [state.str, type]);
+  return print.route(edata);
+};
+core.validate = function(funs, state, type){
+  var i$, len$, F;
+  switch (type) {
+  case 'and':
+  case 'or':
+  case 'alt':
+    if (funs.length === 0) {
+      return [false, 'arg_count'];
+    }
+    for (i$ = 0, len$ = funs.length; i$ < len$; ++i$) {
+      F = funs[i$];
+      if (!def_or_normal(F)) {
+        return [false, 'type_error'];
+      }
+    }
+    return true;
+  case 'tap':
+    if (!(funs.length === 1)) {
+      return [false, 'arg_count'];
+    }
+    F = funs[0];
+    if (!def_or_normal(F)) {
+      return [false, 'type_error'];
+    }
     return true;
   default:
     return false;
   }
 };
-guard.rest = oxo.wh(validate.rest, function(args, state, type){
-  var funs, block, data, ref$;
-  funs = cato(args);
-  block = (function(){
+guard.core = xop.cap(core.validate, core.err, define.rest).def(core.err_static('undefined_error'));
+define.basis = function(name, F, type){
+  var data;
+  type == null && (type = name);
+  data = {
+    type: type,
+    str: [name],
+    all: {
+      node: ['d', F]
+    },
+    index: 0,
+    mode: 'normal'
+  };
+  F.self = data;
+  switch (type) {
+  case 'obj':
+  case 'arr':
+    Object.setPrototypeOf(F, proto.functor.prototype);
+    break;
+  default:
+    Object.setPrototypeOf(F, proto.normal.prototype);
+  }
+};
+define.basis.empty = function(name, type){
+  var data, inherited;
+  type == null && (type = name);
+  data = {
+    type: type,
+    str: [name],
+    index: -1,
+    mode: 'normal'
+  };
+  inherited = (function(){
     switch (type) {
-    case 'and':
-      return define.and(state, funs);
-    case 'or':
-      return define.or(state, funs);
-    case 'alt':
-      return define.or(state, [['alt', funs]]);
-    case 'map':
-    case 'forEach':
-      return define.and(state, [[type, funs[0]]]);
-    case 'err':
-    case 'fix':
-    case 'cont':
-    case 'jam':
-    case 'edit':
-    case 'tap':
-      return define.and(state, [[type, args[0]]]);
+    case 'obj':
+    case 'arr':
+      return new proto.functor(data);
+    default:
+      return new proto.normal(data);
     }
   }());
-  data = (ref$ = {}, import$(ref$, state), (ref$.all = block, ref$.str = state.str.concat(type), ref$));
-  return define.proto(data);
-}).def(loopError);
-define.copy = function(F, data, type){
-  type == null && (type = data.type);
-  switch (type) {
-  case 'obj':
-  case 'arr':
-  case 'arg':
-    Object.assign(F, proto.functor);
-    break;
-  default:
-    Object.assign(F, proto.normal);
-  }
-  F[sig] = data;
-  return cache.ins.add(F);
-};
-define.proto = function(data, type){
-  var put;
-  type == null && (type = data.type);
-  switch (type) {
-  case 'obj':
-  case 'arr':
-  case 'arg':
-    put = Object.create(proto.functor);
-    break;
-  default:
-    put = Object.create(proto.normal);
-  }
-  put[sig] = data;
-  cache.ins.add(put);
-  return put;
-};
-define.basis = function(name, F){
-  var inner, data, ref$;
-  if (typeof F === 'object') {
-    inner = [];
-  } else {
-    inner = [[['d', F]]];
-  }
-  cache.def.add(F);
-  data = (ref$ = {}, import$(ref$, initState), (ref$.type = name, ref$.str = [name], ref$.all = inner, ref$));
-  define.copy(F, data);
-};
-define.and = function(state, funs){
-  var all, last, init, nlast, block;
-  all = state.all;
-  switch (all.length % 2) {
-  case 0:
-    return all.concat([funs]);
-  case 1:
-    last = R.last(all);
-    init = R.init(all);
-    nlast = arrayFrom$(last).concat(arrayFrom$(funs));
-    block = arrayFrom$(init).concat([nlast]);
-    return block;
-  }
-};
-define.or = function(state, funs){
-  var all, last, init, nlast, block;
-  all = state.all;
-  switch (all.length % 2) {
-  case 0:
-    last = R.last(all);
-    init = R.init(all);
-    nlast = arrayFrom$(last).concat(arrayFrom$(funs));
-    block = arrayFrom$(init).concat([nlast]);
-    return block;
-  case 1:
-    return all.concat([funs]);
-  }
+  return inherited;
 };
 module.exports = {
-  custom: custom,
+  custom: custom.exp,
   define: define,
-  cache: cache
+  defset: defset
 };
-function import$(obj, src){
-  var own = {}.hasOwnProperty;
-  for (var key in src) if (own.call(src, key)) obj[key] = src[key];
-  return obj;
-}

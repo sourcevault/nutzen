@@ -1,12 +1,10 @@
-var proj, name, path, oxo, com, l, zj, z, c, binapi, print_fail, create_stack, R, pf, type_num, type_str, V, out;
+var proj, name, ref$, utils, types, guard, l, z, c, binapi, print_fail, create_stack, R, be, xop, pf, type_num, type_str, V, out;
 proj = 'guard';
 name = 'test4';
-path = function(name){
-  return "../../dist/" + name + "/main";
-};
-oxo = require(path('guard'));
-com = require(path('utils'));
-l = com.l, zj = com.zj, z = com.z, c = com.c, binapi = com.binapi, print_fail = com.print_fail, create_stack = com.create_stack, R = com.R;
+ref$ = require('../../dist/types/main'), utils = ref$.utils, types = ref$.types, guard = ref$.guard;
+l = utils.l, z = utils.z, c = utils.c, binapi = utils.binapi, print_fail = utils.print_fail, create_stack = utils.create_stack, R = utils.R;
+be = types;
+xop = guard;
 pf = print_fail("test/" + proj + "/" + name + ".js");
 type_num = function(x){
   switch (x) {
@@ -26,17 +24,17 @@ type_str = function(x){
     return false;
   }
 };
-V = oxo.ar(1, oxo.ma(type_num, function(x){
+V = xop.ar(1, xop.cap(type_num, function(x){
   return x;
 }).def(["FROM UDEF"])).def(null);
 out = V('integer');
 if (!(out === 'int')) {
-  p();
+  pf();
 }
 out = V(null);
-if (!(R.type(out) === 'Array')) {
-  p();
+if (R.type(out) !== 'Array') {
+  pf(".ar not working");
 }
-if (!(out[0] === "FROM UDEF")) {
-  p();
+if (out[0] !== "FROM UDEF") {
+  pf();
 }

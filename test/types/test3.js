@@ -1,9 +1,11 @@
-var com, z, l, R, j, zj, print_fail, be, p, SA, main, ret, e;
-com = require('../../dist/utils/main');
-z = com.z, l = com.l, R = com.R, j = com.j, zj = com.zj, print_fail = com.print_fail;
-be = require('../../dist/types/main');
+var pkg, utils, types, z, l, R, j, print_fail, be, p, inner, SA, main, ret, e;
+pkg = require('../../dist/types/main');
+utils = pkg.utils, types = pkg.types;
+z = utils.z, l = utils.l, R = utils.R, j = utils.j, print_fail = utils.print_fail;
+be = types;
 p = print_fail("test/types/test3.js");
-SA = be.str.or(be.arr.or(be.num));
+inner = be.arr.or(be.num);
+SA = be.str.or(inner);
 main = be.obj.on("chokidar", be.obj.on("path", SA));
 ret = main.auth({
   chokidar: {}

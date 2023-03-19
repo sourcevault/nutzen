@@ -1,8 +1,10 @@
-com = require \../../dist/utils/main
+pkg = require \../../dist/types/main
 
-{z,l,R,j,zj,print_fail} = com
+{utils,types} = pkg
 
-be = require \../../dist/types/main
+{z,l,R,j,print_fail} = utils
+
+be = types
 
 p = print_fail "test/types/test1.js"
 
@@ -15,20 +17,31 @@ V = be.required \name,\age,\address
 .on \name,be.str
 .on \age,be.num
 
-sample =
+sample1 =
   *name:"Fred"
    age:30
    address:
      *city:"foocity"
       country:null
 
+von = V.auth sample1
 
-sortir = V.auth sample
-
-
-if not (sortir.value.address.country is \France)
+if not (von.value.address.country is \France)
 
   p!
+
+sample_2 =
+  *name:"Fred"
+   age:30
+
+von = V.auth sample_2
+
+
+if not ((von.path[0] is \address) and (von.message[0] is \:req) and (von.message[1][2] is \address))
+
+  p "TEST NUMBER 2 - fault in .required error message."
+
+
 
 
 

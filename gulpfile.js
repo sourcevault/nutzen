@@ -1,18 +1,18 @@
-var gulp, tap, livescript, gulpLivescript, gulpRename, gulpYaml, replace, gutil, fs, wait, z;
+var gulp, tap, gulpLivescript, gulpRename, gulpYaml, replace, gutil, fs, cp, z, wait, def;
 gulp = require('gulp');
 tap = require('gulp-tap');
-livescript = require('livescript');
 gulpLivescript = require('gulp-livescript');
 gulpRename = require('gulp-rename');
 gulpYaml = require('gulp-yaml');
 replace = require('gulp-replace');
 gutil = require('gulp-util');
 fs = require('fs');
+cp = require('child_process');
+z = console.log;
 wait = function(t, f){
   return setTimeout(f, t);
 };
-z = console.log;
-gulp.task('default', function(done){
+def = function(done){
   var ls;
   gulp.src("./src/package.yaml").pipe(gulpYaml({
     schema: 'DEFAULT_FULL_SCHEMA',
@@ -25,26 +25,26 @@ gulp.task('default', function(done){
   })).on('error', gutil.log).on('error', function(it){
     throw it;
   }).pipe(gulp.dest("."));
-  gulp.src("./src/main.ls").pipe(gulpLivescript({
-    bare: true
-  })).on('error', gutil.log).on('error', function(it){
-    throw it;
-  }).pipe(gulp.dest("./dist"));
   ls = gulp.src("./src/*/*.ls").pipe(gulpLivescript({
     bare: true
   })).on('error', gutil.log).on('error', function(it){
     throw it;
   }).pipe(gulp.dest("./dist"));
   ls.on('end', function(){
-    var rawJson, version_number;
+    var rawJson, version_number, T;
     rawJson = JSON.parse(fs.readFileSync('./package.json').toString());
     version_number = rawJson.version;
-    return gulp.src("./dist/utils/main.js").pipe(replace('__VERSION__', version_number)).pipe(gulp.dest("./dist/utils/"));
+    return T = gulp.src("./dist/utils/main.js").pipe(replace('__VERSION__', version_number)).pipe(gulp.dest("./dist/utils/")).on('done', function(){});
   });
-  gulp.src("./test/*/*.ls").pipe(gulpLivescript({
+  return gulp.src("./test/*/*.ls").pipe(gulpLivescript({
     bare: true
   })).on('error', gutil.log).on('error', function(it){
     throw it;
   }).pipe(gulp.dest("./test"));
-  return done();
+};
+gulp.task('default', def);
+gulp.task('watch', function(){
+  return gulp.watch(["./src", "./test/*/*.ls"], gulp.series('default', function(done){
+    return done();
+  }));
 });

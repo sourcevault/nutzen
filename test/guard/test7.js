@@ -1,11 +1,24 @@
-var proj, name, path, oxo, be, com, l, zj, z, c, binapi, print_fail, create_stack, R, pf;
+var proj, name, ref$, utils, types, guard, l, z, c, binapi, print_fail, create_stack, R, be, xop, pf, F, T, binto, ob;
 proj = 'guard';
 name = 'test7';
-path = function(name){
-  return "../../dist/" + name + "/main";
-};
-oxo = require(path('guard'));
-be = require(path('types'));
-com = require(path('utils'));
-l = com.l, zj = com.zj, z = com.z, c = com.c, binapi = com.binapi, print_fail = com.print_fail, create_stack = com.create_stack, R = com.R;
+ref$ = require('../../dist/types/main'), utils = ref$.utils, types = ref$.types, guard = ref$.guard;
+l = utils.l, z = utils.z, c = utils.c, binapi = utils.binapi, print_fail = utils.print_fail, create_stack = utils.create_stack, R = utils.R;
+be = types;
+xop = guard;
 pf = print_fail("test/" + proj + "/" + name + ".js");
+F = function(){
+  return false;
+};
+T = function(){
+  return true;
+};
+binto = {};
+binto[1] = function(){
+  return z('binto_1');
+};
+binto[2] = function(){
+  return z('binto_2');
+};
+ob = {
+  1: [[F, binto[1]], [T, binto[2]]]
+};

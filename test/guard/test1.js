@@ -1,30 +1,35 @@
-var proj, name, path, guard, com, l, zj, z, c, binapi, print_fail, create_stack, R, pf, V1, retorn, V2, empty_array;
+var proj, name, ref$, utils, types, guard, l, z, c, binapi, print_fail, create_stack, R, be, xop, pf, V1, retorn, V2, txt;
 proj = 'guard';
 name = 'test1';
-path = function(name){
-  return "../../dist/" + name + "/main";
-};
-guard = require(path('guard'));
-com = require(path('utils'));
-l = com.l, zj = com.zj, z = com.z, c = com.c, binapi = com.binapi, print_fail = com.print_fail, create_stack = com.create_stack, R = com.R;
+ref$ = require('../../dist/types/main'), utils = ref$.utils, types = ref$.types, guard = ref$.guard;
+l = utils.l, z = utils.z, c = utils.c, binapi = utils.binapi, print_fail = utils.print_fail, create_stack = utils.create_stack, R = utils.R;
+be = types;
+xop = guard;
 pf = print_fail("test/" + proj + "/" + name + ".js");
-V1 = guard.arpar(1, function(){
+V1 = xop.arcap(1, function(){
   return [false, "hello"];
 }, function(){
   return "world";
-}, function(){
-  return false;
-}).def("foobar");
+}, function(){}).def("foobar");
 retorn = V1(1);
-if (!(retorn === "foobar")) {
-  pf(".arpar / normal validator function");
+if (!(retorn === "world")) {
+  pf(".arcap / normal validator function");
 }
-V2 = guard.arpar(1, function(){
+V2 = xop.arcap(1, function(){
   return [false];
 }, function(){}, function(){
-  return arguments[0];
-}).def();
-empty_array = V2(1);
-if (!(R.type(empty_array) === 'Array')) {
-  pf(".arpar error handling not being done correctly");
+  return [];
+}).def('from_def');
+txt = V2(1);
+if (!(txt === 'from_def')) {
+  pf(".arcap error handling not being done correctly");
+}
+V2 = xop.cap(function(){
+  return [true, 5];
+}, function(){}, function(){
+  return arguments;
+}).def(39);
+retorn = V2(6);
+if (retorn[0] !== 5 || retorn[1] !== 6) {
+  pf(".cap error");
 }

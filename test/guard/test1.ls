@@ -6,44 +6,69 @@ name  = \test1
 
 # BOILER PLATE
 
-path = (name) -> "../../dist/#{name}/main"
+{utils,types,guard} = require \../../dist/types/main
 
-guard = require path \guard
+{l,z,c,binapi,print_fail,create_stack,R} = utils
 
-com   = require path \utils
+be = types
 
-{l,zj,z,c,binapi,print_fail,create_stack,R} = com
+xop = guard
 
 pf = print_fail "test/#{proj}/#{name}.js"
 
 #-------------------------------------------------------------------------------
 
-V1 = guard
-.arpar 1,
+
+V1 = xop
+.arcap 1,
   -> [false,"hello"]
   -> "world"
-  -> false
+  -> void
 
 .def "foobar"
 
 retorn = V1 1
 
-if not (retorn is "foobar")
+if not (retorn is "world")
 
-  pf ".arpar / normal validator function"
+  pf ".arcap / normal validator function"
 
 # check if default empty array is provided.
 
-V2 = guard
-.arpar 1,
+V2 = xop
+.arcap 1,
   -> [false]
   ->
-  -> arguments[0]
-.def!
+  -> []
+.def \from_def
 
-empty_array = V2 1
+txt = V2 1
 
-if not ((R.type empty_array) is \Array)
+if not (txt is \from_def)
 
-  pf ".arpar error handling not being done correctly"
+  pf ".arcap error handling not being done correctly"
+
+
+V2 = xop
+.cap do
+  -> [true,5]
+  ->
+  -> arguments
+.def 39
+
+retorn = V2 6
+
+if (retorn[0] isnt 5) or (retorn[1] isnt 6)
+
+  pf ".cap error"
+
+
+
+
+
+
+
+
+
+
 

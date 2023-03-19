@@ -1,12 +1,10 @@
-var proj, name, path, guard, com, l, zj, z, c, binapi, print_fail, create_stack, fail, bothNum, argE, typeE, add;
+var proj, name, pkg, utils, types, guard, l, z, c, binapi, print_fail, create_stack, be, fail, bothNum, argE, typeE, add;
 proj = 'guard';
 name = 'test';
-path = function(name){
-  return "../../dist/" + name + "/main";
-};
-guard = require(path('guard'));
-com = require(path('utils'));
-l = com.l, zj = com.zj, z = com.z, c = com.c, binapi = com.binapi, print_fail = com.print_fail, create_stack = com.create_stack;
+pkg = require('../../dist/types/main');
+utils = pkg.utils, types = pkg.types, guard = pkg.guard;
+l = utils.l, z = utils.z, c = utils.c, binapi = utils.binapi, print_fail = utils.print_fail, create_stack = utils.create_stack;
+be = types;
 fail = print_fail("test/" + proj + "/" + name + ".js");
 bothNum = function(x, y){
   return typeof x === "number" && typeof y === "number";
@@ -20,4 +18,3 @@ typeE = function(){
 add = function(x, y){
   return x + y;
 };
-z('hello world');

@@ -1,16 +1,30 @@
-{com,print,sig} = require \./print.common
+
+pkg = require \./print.common
+
+
+{com,symbols,print} = pkg
 
 tightloop = require \./tightloop
 
 # ------------------------------------------------------------------
 
-{z,l,R,j,uic,deep_freeze,loopError,zj} = com
+{z,l,R,j,uic,deep_freeze,loopError,tupnest,noop,link} = com
 
-oxo = require \../guard/main
+xop = pkg.guard
 
-cache = {}
-  ..def = new Set!
-  ..ins = new Set!
+defset = new Set!
+
+def_or_normal = (F) ->
+
+  switch R.type(F)
+  | \Function => return true
+  | \Object =>
+
+    if ((F[symbols.htypes]) or (defset.has F)) then return true
+
+    return false
+
+  return false
 
 # ------------------------------------------------------------------
 
@@ -20,18 +34,17 @@ cache = {}
 
 assort = (F) ->
 
-  if (cache.def.has F)
-
-    [\d,F]
-
-  else if (cache.ins.has F)
+  if F[symbols.htypes]
 
     [\i,F]
+
+  else if (defset.has F)
+
+    [\d,F]
 
   else
 
     [\f,F]
-
 
 cato = (arg) ->
 
@@ -55,300 +68,542 @@ cato = (arg) ->
 
 # -------------------------------------------------------
 
+assign_self = -> (self) ->
+  @self = self
+  @
+
 wrap      = {}
-  ..on    = null
-  ..rest  = null
+  ..on      = null
+  ..functor = null
+  ..core    = null
 
 guard     = {}
-  ..on    = null
-  ..rest  = null
+  ..on      = null
+  ..rest    = null
 
 define = {}
-  ..and    = null
-  ..or     = null
-  ..proto  = null
-  ..on     = null
-  ..basis  = null
+  ..and     = null
+  ..or      = null
+  ..proto   = null
+  ..on      = null
+  ..basis   = null
+  ..block   = null
+  ..functor = null
+  ..rest    = null
 
 validate   = {}
   ..on     = null
   ..rest   = null
 
+proto       = {}
+
+  ..normal  = assign_self!
+  ..functor = assign_self!
+
+  ..core =  assign_self!
+  ..try = {}
+    ..functor = assign_self!
+    ..normal = assign_self!
+
 #---------------------------------------------------------
 
-props = [\and \or \alt \cont \tap \edit \err \jam \fix ]
+link.proto do
+  proto.core
+  proto.try.functor
+  proto.try.normal
+  proto.normal
+  proto.functor
 
-init-state =
-  all  :[]
-  type :null
-  str  :[]
-
-wrap.rest  = (type) -> -> guard.rest arguments,@[sig],type
-
-wrap.on    = -> guard.on arguments,@[sig]
-
-proto       = {}
-  ..normal  = {}
-  ..functor = null
-
-proto.normal.wrap = ->
+user_wrap = ->
 
   F = @
 
   -> (F.auth.apply F,arguments).value
 
-for key,val of props
+p_core = proto.core.prototype
 
-  F = wrap.rest val
+p_core[symbols.htypes] = true
 
-  proto.normal[val]  = F
+p_core.auth = tightloop
 
-proto.normal.auth      = tightloop
+Object.defineProperty p_core,\wrap,(get:user_wrap,enumerable:true)
 
-proto.normal[uic]      = print.log
+# TODO
 
-proto.functor          = {...proto.normal}
+# for I in [\core,\on,\functor,\misc]
 
-proto.functor.map      = wrap.rest \map
+#   wrap[I] = (type) -> ->
 
-proto.functor.forEach  = wrap.rest \forEach
+wrap.core = (type) -> -> guard.core arguments,@self,type
 
-proto.functor.on       = wrap.on
+wrap.functor = (type) -> -> define.functor arguments,@self,type
 
-proto.functor[uic]     = print.log
+wrap.misc = (type) -> -> define.rest arguments,@self,type 
+
+main = {}
+
+for val in [\and \tap \or \alt]
+
+  main[val] = wrap.core val
+
+main.on = -> guard.on arguments,@self
+
+for val in [\map \forEach]
+
+  main[val] = wrap.functor val
+
+for val in [\cont \edit \err \jam \fix]
+
+  main[val] = wrap.misc val
+
+create_new_try = (data,type = data.type)->
+
+  switch type
+  | \obj,\arr      => new proto.try.functor data
+  | otherwise      => new proto.try.normal data
+
+get = {}
+
+get.try = ->
+
+  state = @self
+
+  type = state.type
+
+  data =
+    type:type
+    all:
+      *node:[\try]
+       back:state.all
+    index:state.index + 1
+    mode:\try
+    str:[\try,state.str]
+
+  create_new_try data
+
+get.end = ->
+
+  state = @self
+
+  type = state.type
+
+  data =
+    type:type
+    all:
+      *node:[\end]
+       back:state.all
+    index:state.index + 1
+    mode:\normal
+    str:[\end,state.str]
+
+  switch data.type
+  | \obj,\arr =>
+    new proto.functor data
+  | otherwise =>
+    new proto.normal data
+
+Object.defineProperty p_core,\try,get:get.try
+
+ge = (get:get.end,enumerable:true)
+
+Object.defineProperty proto.try.functor.prototype,\end,ge
+
+Object.defineProperty proto.try.normal.prototype,\end,ge
 
 #---------------------------------------------------------
 
-handleError = (info) ->
+link_from_main = link.proto_fn main
 
-  print.route info
+link_from_main do
+  [\and \cont \tap \edit \err \jam \fix]
+  proto.core
 
-  loopError!
+#---------------------------------------------------------
 
-custom = oxo
+link_from_main do
+  [\or \alt]
+  proto.normal
+  proto.functor
 
-.arn 1, -> handleError [(new Error!),\input.fault,[\custom [\arg_count]]]
+#---------------------------------------------------------
 
-.whn do
+link_from_main do
+  [\map \forEach \on]
+  proto.functor
 
-  (f) ->
+#---------------------------------------------------------
 
-    ((R.type f) is \Function) or (f[sig])
+link_from_main do
+  [\map \forEach \on]
+  proto.try.functor
 
-  -> handleError [(new Error!),\input.fault,[\custom [\not_function]]]
+#---------------------------------------------------------
 
-.def (F) ->
+p_core[uic]                      = print.log \core.normal
+proto.try.functor.prototype[uic] = print.log \try.functor
+proto.try.normal.prototype[uic]  = print.log \try.normal
+proto.normal.prototype[uic]      = print.log \normal
+proto.functor.prototype[uic]     = print.log \functor
+
+#---------------------------------------------------------
+
+custom = {}
+
+custom.main = (F) ->
 
   G = cato F
 
-  data = {
-      type  : \custom
-      all   : [[G]]
-      str   : ["{..}"]
-  }
+  data =
+     *type    : \custom
+      all     : node:G
+      index   : 0
+      str     : ["{..}"]
+      mode    : \normal
 
-  define.proto data
+  new proto.normal data
 
-custom[uic] = print.inner
+custom.err = (type) -> ->
+
+  edata = tupnest do
+    [new Error!,\input.fault]
+    \custom
+    type
+
+  print.route edata
+
+custom.exp = xop
+
+.arn 1,custom.err(\arg_count)
+
+.whn do
+  def_or_normal
+  custom.err(\not_function)
+
+.def(custom.main)
+
+custom.exp.is_instance = (x) ->
+
+  switch x[symbols.htypes]
+  | true => true
+  | otherwise => false
 
 #--------------------------------------------------------------------------
 
-define.on = (type,args,state) ->
+define.on = (cat,args,state) ->
 
-  switch type[0]
+  put = switch cat
   | \array =>
 
     [props,F] = args
 
-    put = [\on,[\array,[(R.uniq props),...(cato F)]]]
+    [\array,[(R.uniq props),...(cato F)]]
 
   | \string =>
 
     [key,F] = args
 
-    put = [\on,[\string,[key,...(cato F)]]]
-
-    put
+    [\string,[key,...(cato F)]]
 
   | \object =>
 
     [ob] = args
 
-    fun   = [[key,...(cato val)] for key,val of ob]
+    fun = [[key,...(cato val)] for key,val of ob]
 
-    put = [\on,[\object,fun]]
+    [\object,fun]
 
-  | \single_array =>
+  data =
+    *type     : state.type
+     all      :
+      *node:[\on,put]
+       back:state.all
+     index    : state.index + 1
+     str      : [\on,state.str]
+     mode     : state.mode
 
-    array = type[1]
-
-    put = [\on,[\single_array,array]]
-
-  block = define.and state,[put]
-
-  data = {
-    ...state
-    ...{
-      phase :\chain
-      all   :block
-      str   :state.str.concat \on
-    }
-  }
-
-  define.proto data
+  switch data.mode
+  | \try =>
+    new proto.try.functor data
+  | \normal =>
+    new proto.functor data
 
 #-----------------------------------------------------------------------
 
+ha =  {}
 
-guard.on = oxo.unary
+ha.err = (err_type,args,state)->
 
-.arn [1,2],
+  edata = tupnest do
+    [new Error!,\input.fault]
+    \on
+    [err_type]
+    [state.str,\on]
 
-  (args,state) -> handleError [(new Error!),\input.fault,[\on [\arg_count,[state.str,\on]]]]
+  print.route edata
 
-.arpar 1,
+ha.err_static = (type) -> -> ha.err ...[type,...arguments]
 
-  (args,state) ->
+ha.validate_obj = (args,state) ->
 
-    [maybe_object] = args
+  [maybe_object] = args
 
-    type = R.type maybe_object
+  type = R.type maybe_object
 
-    if (type is \Object)
+  if (type is \Object)
 
-      for I,val of maybe_object
+    for I,val of maybe_object
 
-        if not (((R.type val) is \Function) or (cache.ins.has val))
+      if R.type(val) isnt \Function
 
-          return [false,[(new Error!),\input.fault,[\on [\object,[state.str,\on]]]]]
+        return [false,\object]
 
-      return [true,[\object]]
+    return [true,\object]
 
-    else if (type is \Array)
+  else
 
-      ok = true
+    return [false,\typeError]
 
-      clean = []
+ha.validate_rest = ([first,second],state)->
 
-      error_msg = null
+  type = R.type first
 
-      for each in maybe_object
+  switch type
 
-        if not (each.length is 3)
-          ok = false
-          error_msg = \length_less_then_3
-          break
+  | \Array =>
 
-        [type,fields,F] = each
+    for I,index in first
 
-        field_type = R.type fields
+      if not ((R.type I) in [\String,\Number])
+        return [false,\array]
 
-        if type is \and
-          if field_type is \String
-            field_type = \S
-          else if field_type is \Array
-            field_type = \A
-          else
-            error_msg = \alt_wrong_field_type
-            ok = false
-            break
-        else if type is \alt
-          if field_type is \Array
-            for I in fields
-              if not ((R.type I) in [\String,\Number])
-                ok = false
-                break
-            if not ok
-              error_msg = \alt_wrong_field_type
-              break
-            field_type = \A
+    if not def_or_normal(second)
 
-          else if (field_type is \String)
-
-            field_type = \S
-
-          else
-            ok = false
-            break
-          
-        else
-          ok = false
-          error_msg = \not_and_alt
-          break
-
-        wF = assort F
-
-        if wF[0] is \f
-          ok = false
-          break
-
-        clean.push [type,[field_type,fields],wF[0],wF[1]]
-
-      if ok
-        return [true,[\single_array,clean]]
-      else
-
-        inner_error = [
-          \on
-          [\single_array
-           [state.str,\on]
-           error_msg
-          ]
-
-        ]
-
-        return [false,[(new Error!),\input.fault,inner_error]]
+      return [false,\array]
 
     else
 
-      return [false]
+      return [true,\array]
 
-  define.on
-  (data)->
+  | \String,\Number =>
 
-    if (data[1] is \input.fault) then return handleError data
+    if not def_or_normal(second)
 
-    false
+      return [false,\string]
 
-.arma 2,
+    return [true,\string]
 
-  ([first,second],state)->
+  | otherwise => return [false]
 
-    switch R.type first
+ha[1] =
+  *ha.validate_obj
+   ha.err
+   define.on
 
-    | \Array =>
+ha[2] =
+  *ha.validate_rest
+   ha.err
+   define.on
 
-      for I in first
+guard.on = xop.unary
 
-        if not ((R.type I) is \String)
+.arn [1,2],ha.err_static \arg_count
 
-          return [(new Error!),\input.fault,[\on [\array,[state.str,\on]]]]
+.arcap(ha)
 
-      if not (((R.type second) is \Function) or (cache.ins.has second))
-
-        return [(new Error!),\input.fault,[\on [\array,[state.str,\on]]]]
-
-      return [\array]
-
-    | \String,\Number =>
-
-      if not (((R.type second) is \Function) or (cache.ins.has second))
-
-        return [(new Error!),\input.fault,[\on [\string,[state.str,\on]]]]
-
-      return [\string]
-
-    | otherwise => return false
-
-  define.on
-
-.def (args,state) ->
-
-  handleError [(new Error!),\input.fault,[\on [\typeError,[state.str,\on]]]]
+.def ha.err_static \typeError
 
 #-----------------------------------------------------------------------
 
-validate.rest = (funs,state,type) ->
+functor = {}
+
+functor.main = (args,state,ftype)->
+
+  if state.type is \arr
+
+    range = args[0]
+
+    mod_range = switch range.length
+    | 1 => [range[0],Infinity,1]
+    | 2 => [range[0],range[1],1]
+    | otherwise => range
+
+    args[0] = mod_range
+
+    args[1] = cato args[1]
+
+  else
+
+    args[0] = cato args[0]
+
+  data =
+    *type     : state.type
+     all      :
+      *node:[ftype,args]
+       back:state.all
+     index    : state.index + 1
+     str      : [ftype,state.str]
+     mode     : state.mode
+
+  switch data.mode
+  | \try =>
+    new proto.try.functor data
+  | \normal =>
+    new proto.functor data
+
+functor.validate_range = ([range,F],state,type) ->
+
+  if state.type is \obj
+
+    return [false,[\range.obj]]
+
+  if R.type(range) isnt \Array
+    return [false,[\range]]
+
+  for item,index in range
+
+    if R.type(item) isnt \Number
+      return [false,[\num,index]]
+
+  switch range.length
+
+  | 1,2 => void
+
+  | 3 =>
+
+    step = range[2]
+
+    if step is 0
+      return [false,[\inf_step]]
+
+  | otherwise =>
+
+    return [false,[\num_count]]
+
+  if not def_or_normal(F)
+
+    return [false,[\fun,\second]]
+
+  true
+
+functor.validate = ([F],state) ->
+
+  if not def_or_normal(F) then return [false,[\fun,\first]]
+
+  true
+
+functor.err_static = (val) -> ->  functor.err ...[[val],...arguments]
+
+functor.err = (err_type,args,state,type) ->
+
+  edata = tupnest do
+    [new Error!,\input.fault]
+    type
+    [err_type]
+    [state.str,type]
+
+  print.route edata
+
+functor[1] =
+  *functor.validate
+   functor.err
+   ([F],state,fname)-> 
+
+    if state.type is \arr
+      arg = [[0,Infinity,1],F]
+    else
+      arg = [F]
+
+    functor.main arg,state,fname
+
+functor[2] =
+  *functor.validate_range
+   functor.err
+   functor.main
+
+functor.def = functor.err_static \undefined_error
+
+define.functor = xop.unary
+
+.arcap(functor)
+
+.arn [1,2],functor.err_static \arg_count
+
+.def(functor.def)
+
+#------------------------------
+
+define.rest = (args,state,type) ->
+
+  #----------------------------------
+
+  fname = type
+
+  switch type
+
+  |\and,\or,\alt =>
+
+    list = [cato I for I in args]
+
+    len = list.length
+
+    if len isnt 1
+      fname = type + "." + \multi
+      F = list
+    else
+      F = list[0]
+
+  | \edit =>
+    fname = \cont
+    fallthrough
+  | \err,\fix,\cont,\jam,\edit,\tap =>
+
+    F = args[0]
+
+  switch type
+  | \and =>
+    node = F
+  | \try =>
+    node = [fname]
+  | otherwise =>
+    node = [fname,F]
+
+  data =
+    *type:state.type
+     all:
+       *node:node
+        back:state.all
+     index:state.index + 1
+     mode:state.mode
+     str:[type,state.str]
+
+  if (type is \try) or (state.mode is \try)
+
+    create_new_try data
+
+  else
+
+    switch data.type
+    | \obj,\arr =>
+      new proto.functor data
+    | otherwise =>
+      new proto.normal data
+
+core = {}
+
+core.err_static = (type) -> -> core.err ...[type,...arguments]
+
+core.err = (err_type,args,state,type) ->
+
+  edata = tupnest do
+    [new Error!,\input.fault]
+    \rest
+    type
+    [err_type]
+    [state.str,type]
+
+  print.route edata
+
+core.validate = (funs,state,type) ->
 
   switch type
 
@@ -356,181 +611,88 @@ validate.rest = (funs,state,type) ->
 
     if (funs.length is 0)
 
-      print.route [(new Error!),\input.fault,[type,[\arg_count,[state.str,type]]]]
-
-      return false
+      return [false,\arg_count]
 
     for F in funs
 
-      if not (((R.type F) is \Function) or (cache.ins.has F))
+      if not def_or_normal(F)
 
-        print.route [(new Error!),\input.fault,[type,[\not_function,[state.str,type]]]]
-
-        return false
+        return [false,\type_error]
 
     return true
 
-  | \map,\tap,\forEach =>
+  | \tap =>
 
     if not (funs.length is 1)
 
-      print.route [(new Error!),\input.fault,[type,[\arg_count,[state.str,type]]]]
+      return [false,\arg_count]
 
-      return false
+    [F] = funs
 
-    return true
+    if not def_or_normal(F)
 
-    [f] = funs
-
-    if not (((R.type f) is \Function) or (cache.ins.has F))
-
-      print.route [(new Error!),\input.fault,[type,[\not_function,[state.str,type]]]]
-
-      return false
+      return [false,\type_error]
 
     return true
 
-  | \err,\fix,\cont,\jam,\edit  =>
-
-    return true
-
-  | otherwise => return false
+  | otherwise => false
 
 #-----------------------------------------------------------------------
 
-guard.rest = oxo
-.wh do
-  validate.rest
-  (args,state,type) ->
-
-    #----------------------------------
-
-    funs = cato args
-
-    block = switch type
-    | \and                             => define.and state,funs
-    | \or                              => define.or state,funs
-    | \alt                             => define.or state,[[\alt,funs]]
-    | \map,\forEach                    => define.and state,[[type,funs[0]]]
-    | \err,\fix,\cont,\jam,\edit,\tap  => define.and state,[[type,args[0]]]
-
-    data = {
-      ...state
-      ...{
-        all   :block
-        str   :state.str.concat type
-      }
-    }
-
-    define.proto data
-
-.def loopError
+guard.core = xop
+.cap do
+  core.validate
+  core.err
+  define.rest
+.def core.err_static \undefined_error
 
 #-----------------------------------------------------------------------
 
-define.copy = (F,data,type = data.type) ->
+define.basis = (name,F,type = name) !->
+
+  data =
+    *type     : type
+     str      : [name]
+     all      : node:[\d,F]
+     index    : 0
+     mode     : \normal
+
+  F.self = data
 
   switch type
-  | \obj,\arr,\arg =>
+  | \obj,\arr =>
 
-    Object.assign F,proto.functor
+    Object.setPrototypeOf F,proto.functor.prototype
 
   | otherwise =>
 
-    Object.assign F,proto.normal
-
-  F[sig] = data
-
-  cache.ins.add F
-
-
-define.proto = (data,type = data.type) ->
-
-  switch type
-  | \obj,\arr,\arg =>
-    put = Object.create proto.functor
-  | otherwise =>
-    put = Object.create proto.normal
-
-  put[sig] = data
-
-  cache.ins.add put
-
-  put
-
-define.basis = (name,F) ->
-
-  if ((typeof F) is \object)
-
-    inner = []
-
-  else
-
-    inner = [[[\d,F]]]
-
-  cache.def.add F
-
-  data = {
-    ...init-state
-    ...{
-      type  :name
-      str   :[name]
-      all   :inner
-    }
-  }
-
-  define.copy F,data
+    Object.setPrototypeOf F,proto.normal.prototype
 
   void
 
+define.basis.empty = (name,type = name) ->
 
-# ------------------------------------------------------------------
+  data =
+    *type     : type
+     str      : [name]
+     index    : -1
+     mode     : \normal
 
-define.and = (state,funs) ->
+  inherited = switch type
 
-  all = state.all
+  | \obj,\arr =>
 
-  switch (all.length%2)
-  | 0 =>
+    new proto.functor data
 
-    all.concat [funs]
+  | otherwise =>
 
-  | 1 =>
+    new proto.normal data
 
-    last = R.last all
+  inherited
 
-    init = R.init all
-
-    nlast = [...last,...funs]
-
-    block = [...init,nlast]
-
-    block
-
-define.or = (state,funs) ->
-
-  all = state.all
-
-  switch (all.length%2)
-  | 0 =>
-
-    last = R.last all
-
-    init = R.init all
-
-    nlast = [...last,...funs]
-
-    block = [...init,nlast]
-
-    block
-
-  | 1 =>
-
-    all.concat [funs]
-
-#-----------------------------------------------------------------------
+#-------------------------------------------------------------------
 
 module.exports =
-  *custom : custom
-   define : define
-   cache  : cache
+  *custom        : custom.exp
+   define        : define
+   defset        : defset

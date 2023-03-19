@@ -1,28 +1,28 @@
-com = require \../../dist/utils/main
+{utils,types} = require \../../dist/types/main
 
-{z,l,R,j,zj,print_fail,zn} = com
+{z,l,R,j,print_fail} = utils
 
-be = require \../../dist/types/main
+be = types
 
 p = print_fail "test/types/test7.js"
 
-V = be.arr
+# V = be.arr
 
-.err ["first error"]
+# .err ["first error"]
 
-.or do
+# .or do
 
-  be -> [false,\initial]
+#   be -> [false,\initial]
 
-  .err (stuff) ->
+#   .err (stuff) ->
 
-    ["second error"]
+#     ["second error"]
 
-.err (msg,path)->
+# .err (msg,path)->
 
-  z msg,path
+#   z msg,path
 
-  message:\ac_input,path:[]
+#   message:\ac_input,path:[]
 
 
 # .or be.num.err(["this is an array"]).or be.obj

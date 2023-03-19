@@ -6,17 +6,17 @@ name  = \test
 
 # BOILER PLATE
 
-path = (name) -> "../../dist/#{name}/main"
+pkg = require \../../dist/types/main
 
-guard = require path \guard
+{utils,types,guard} = pkg
 
-com   = require path \utils
+{l,z,c,binapi,print_fail,create_stack} = utils
 
-{l,zj,z,c,binapi,print_fail,create_stack} = com
+be = types
 
 fail = print_fail "test/#{proj}/#{name}.js"
 
-#-------------------------------------------------------------------------------
+# # -----------------------------------------------------------------------------
 
 
 bothNum = (x,y) -> (((typeof x) is "number") and ((typeof y) is "number"))
@@ -27,4 +27,3 @@ typeE   = -> z "argument type has to be number"
 
 add = (x,y) -> x + y
 
-z 'hello world'

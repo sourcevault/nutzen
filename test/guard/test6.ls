@@ -6,13 +6,13 @@ name  = \test6
 
 # BOILER PLATE
 
-path = (name) -> "../../dist/#{name}/main"
+{utils,types,guard} = require \../../dist/types/main
 
-oxo   = require path \guard
+{l,z,c,binapi,print_fail,create_stack,R} = utils
 
-com   = require path \utils
+be = types
 
-{l,zj,z,c,binapi,print_fail,create_stack,R} = com
+xop = guard
 
 pf = print_fail "test/#{proj}/#{name}.js"
 
@@ -26,18 +26,18 @@ typeE   = -> z "argument type has to be number"
 
 add2 = (x,y) -> x + y
 
-add = oxo
+add = xop
 .arwh do
-	2
-	-> true
-	add2
+  2
+  -> true
+  add2
 .def!
 
 ret = add 1,2
 
 if not (ret is 3)
 
-	p!
+  pf!
 
 
 

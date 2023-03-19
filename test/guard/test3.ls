@@ -6,25 +6,25 @@ name  = \test3
 
 # BOILER PLATE
 
-path = (name) -> "../../dist/#{name}/main"
+{utils,types,guard} = require \../../dist/types/main
 
-guard = require path \guard
+{l,z,c,binapi,print_fail,create_stack,R} = utils
 
-com   = require path \utils
+be = types
 
-{l,zj,z,c,binapi,print_fail,create_stack,R} = com
+xop = guard
 
 pf = print_fail "test/#{proj}/#{name}.js"
 
 #-------------------------------------------------------------------------------
 
-oxo = guard.debug
+xop = guard.debug
 
-V_inner = oxo
+V_inner = xop
 .wh -> true,->true
 .def!
 
-V_outer = oxo
+V_outer = xop
 .wh do
   -> true
   V_inner
@@ -34,6 +34,6 @@ V_outer = oxo
 ret = V_outer [1,2,4],[1,2,4]
 
 if not ret
-  p!
+  pf ".wh not working"
 
 

@@ -1,5 +1,20 @@
-com = require \../../dist/utils/main
+pkg = require \../../dist/types/main
 
-{z,l,R,j,zj,print_fail} = com
+{utils,types} = pkg
 
-be = require \../../dist/types/main
+{z,l,R,j,print_fail} = utils
+
+xop = pkg.guard
+
+be = pkg.types
+
+V = be.arr
+
+# V.map -> true
+
+
+
+
+
+
+

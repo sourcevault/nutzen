@@ -1,14 +1,19 @@
-com = require \../../dist/utils/main
+pkg = require \../../dist/types/main
 
-{z,l,R,j,zj,print_fail} = com
+{utils,types} = pkg
 
-be = require \../../dist/types/main
+{z,l,R,j,print_fail} = utils
+
+be = types
 
 p = print_fail "test/types/test3.js"
 
 # ----------------------------------
 
-SA = be.str.or be.arr.or be.num
+
+inner = be.arr.or be.num
+
+SA = be.str.or inner
 
 main = be.obj.on do
   "chokidar"

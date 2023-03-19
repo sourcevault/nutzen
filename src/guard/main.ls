@@ -1,34 +1,21 @@
 ext = require "./verify.print.common"
 
-{com,verify,modflag,defacto,print} = ext
+{com,verify,print} = ext
 
-{l,z,R,uic,binapi} = com
-
-#---------------------------------------------------
-
-init =
-  str      :[]
-  fns      :[]
-  def      :null
-  fault    :false
-  unary    :false
-  immutable:false
+{l,z,R,uic,binapi,loopError} = com
 
 #---------------------------------------------------
-#---------------------------------------------------
-#---------------------------------------------------
-#---------------------------------------------------
 
-settle = (F,A) ->
+resolve = (F,A) ->
 
   [ftype,f] = F
 
   switch ftype
-  | \f => f ...A
-  | \v => f.auth ...A
+  | \f => f.apply void,A
+  | \v => f.auth.apply void,A
   | \s => f
 
-mod-settle = (F,init,A) ->
+unshift_resolve = (F,init,A) -> # when arguments require manipulation
 
   [ftype,f] = F
 
@@ -38,8 +25,8 @@ mod-settle = (F,init,A) ->
     switch A.length
     | 1 => f init,A[0]
     | 2 => f init,A[0],A[1]
-    | 0 => f init
     | 3 => f init,A[0],A[1],A[2]
+    | 0 => f init
     | 4 => f init,A[0],A[1],A[2],A[3]
     | 5 => f init,A[0],A[1],A[2],A[3],A[4]
     | otherwise =>
@@ -53,8 +40,8 @@ mod-settle = (F,init,A) ->
     switch A.length
     | 1 => f.auth init,A[0]
     | 2 => f.auth init,A[0],A[1]
-    | 0 => f.auth init
     | 3 => f.auth init,A[0],A[1],A[2]
+    | 0 => f.auth init
     | 4 => f.auth init,A[0],A[1],A[2],A[3]
     | 5 => f.auth init,A[0],A[1],A[2],A[3],A[4]
     | otherwise =>
@@ -65,6 +52,364 @@ mod-settle = (F,init,A) ->
 
   | \s => f
 
+UNDEC = Symbol \undecided
+
+ob = (fn) -> (da,ta)->
+
+  pick = ta[da.arglen]
+
+  if not pick then return UNDEC
+
+  len = pick.length
+
+  I = 0
+
+  do
+
+    ka = pick[I]
+
+    val = fn da,ka
+
+    if val isnt UNDEC then return val
+
+    I++
+
+  while I < len
+
+  return UNDEC
+
+n = (fn) -> (da,ta) ->
+
+  [num,ka] = ta
+
+  if num is da.arglen
+
+    return fn da,ka
+
+  return UNDEC
+
+a = (fn) -> (da,ta) ->
+
+  [spans,ka] = ta
+
+  if spans[da.arglen]
+
+    return fn da,ka
+
+  return UNDEC
+
+core = {}
+
+core.wh = (da,ta) ->
+
+  if ta.length is 1
+
+    [exec] = ta
+
+    return resolve exec,da.arg
+
+  [[vtype,vF],exec] = ta
+
+  switch vtype
+
+  | \f =>
+
+    cont = vF.apply void,da.arg
+
+    if cont
+
+      return resolve exec,da.arg
+
+  | \v =>
+
+    vd = vF.auth da.arg
+
+    if vd.continue
+
+      return resolve exec,vd.value
+
+  UNDEC
+
+core.whn = (da,ta) ->
+
+  if ta.length is 1
+
+    [exec] = ta
+
+    return resolve exec,da.arg
+
+  [[vtype,vF],exec] = ta
+
+  switch vtype
+
+  | \f =>
+
+    cont = vF ...da.arg
+
+    if not cont
+
+      return resolve exec,da.arg
+
+  | \v =>
+
+    vd = vF.auth da.arg
+
+    if vd.error
+
+      return resolve exec,vd.value
+
+  | \b =>
+
+    if not vF
+
+      return resolve exec,da.arg
+
+  UNDEC
+
+# ---aux----
+
+n_n = (fn) -> (da,ta) -> # not num
+
+  [num,ka] = ta
+
+  if num is da.arglen then return UNDEC
+
+  return fn da,ka
+
+n_a = (fn) -> (da,ta) -> # not array
+
+  [spans,ka] = ta
+
+  if spans[da.arglen] then return UNDEC
+
+  return fn da,ka
+
+arn = {}
+
+arn.a = (da,ta) ->
+
+  [spans,exec] = ta
+
+  if spans[da.arglen] then return UNDEC
+
+  return resolve exec,da.arg
+
+arn.n = (da,ta)  ->
+
+  [num,exec] = ta
+
+  if (da.arglen is num) then return UNDEC
+
+  return resolve exec,da.arg
+
+core.arn = (da,ta) -> arn[ta[0]] da,ta[1]
+
+arwhn = {}
+
+arwhn.ob = ob core.whn
+
+arwhn.n = n core.whn
+
+arwhn.a = a core.whn
+
+core.arwhn = (da,ta) -> arwhn[ta[0]] da,ta[1]
+
+arnwh = {}
+
+arnwh.n = n_n core.wh
+
+arnwh.a = n_a core.wh
+
+core.arnwh = (da,ta) ->
+
+  arnwh[ta[0]] da,ta[1]
+
+arnwhn = {}
+
+arnwhn.n = n_n core.whn
+
+arnwhn.a = n_a core.whn
+
+core.arnwhn = (da,ta) -> arnwhn[ta[0]] da,ta[1]
+
+# -----
+
+core.cap = (da,ta) ->
+
+  switch ta.length
+  | 3 => core.cap.3 da,ta
+  | 2 => core.cap.2 da,ta
+  | 1 => resolve ta[0],da.arg
+
+core.cap.2 = (da,ta) ->
+
+  [exec,[vtype,vF]] = ta
+
+  switch vtype
+
+  | \f =>
+
+    ret = vF.apply void,da.arg
+
+    if ret isnt false
+
+      return unshift_resolve exec,ret,da.arg
+
+  | \v => # hoplon validator
+
+    vd = vF.auth da.arg
+
+    if vd.continue
+
+      return unshift_resolve exec,vd.value,da.arg
+
+    else
+
+      as_obj = (message:vd.message,path:vd.path)
+
+      narg = [as_obj,...da.arg]
+
+      ret = lastview.apply void,narg
+
+      if (ret isnt void) then return ret
+
+  | \b =>
+
+    if vF
+
+      return resolve exec,da.arg
+
+  UNDEC
+
+core.cap.3 = (da,ta) ->
+
+  [exec,[vtype,vF],lastview] = ta
+
+  switch vtype
+  | \f =>
+
+    ret = vF.apply void,da.arg
+
+    if isArray ret
+
+      [cont,msg] = ret
+
+      if cont
+
+        return unshift_resolve exec,msg,da.arg
+
+      else
+
+        narg = [msg,...da.arg]
+
+        lvret = lastview.apply void,narg
+
+    else
+
+      if ret
+
+        return resolve exec,da.arg
+
+      else
+
+        lvret = lastview.apply void,da.arg
+
+    if (lvret isnt void) then return lvret
+
+  | \v => # hoplon validator
+
+    vd = vF.auth da.arg
+
+    if vd.continue
+
+      return unshift_resolve exec,vd.value,da.arg
+
+    else
+
+      as_obj = (message:vd.message,path:vd.path)
+
+      narg = [as_obj,...da.arg]
+
+      ret = lastview.apply void,narg
+
+      if (ret isnt void) then return ret
+
+  | \b =>
+
+    if vF
+
+      return resolve exec,da.arg
+
+    else
+
+      ret = lastview.apply void,da.arg
+
+      if (ret isnt void) then return ret
+
+  UNDEC
+
+
+arcap = {}
+
+arcap.ob = ob core.cap
+
+arcap.n = n core.cap
+
+arcap.a = a core.cap
+
+core.arcap = (da,ta) -> arcap[ta[0]] da,ta[1]
+
+isArray = Array.isArray
+
+# .arwh  ------------
+
+arwh = {}
+
+arwh.ob = ob core.wh
+
+arwh.n = n core.wh
+
+arwh.a = a core.wh
+
+core.arwh = (da,ta) ->
+
+  arwh[ta[0]] da,ta[1]
+
+# .ar  ------------
+
+ar = {}
+
+ar.ob = (da,ta) ->
+
+  pick = ta[da.arglen]
+
+  if not pick then return UNDEC
+
+  resolve pick,da.arg
+
+ar.n = (da,ta) ->
+
+  [num,exec] = ta
+
+  if num is da.arglen
+
+    return resolve exec,da.arg
+
+  return UNDEC
+
+ar.a = (da,ta) ->
+
+  [spans,exec] = ta
+
+  if spans[da.arglen]
+
+    return resolve exec,da.arg
+
+  return UNDEC
+
+core.ar = (da,ta) ->
+
+  ar[ta[0]] da,ta[1]
 
 tightloop = (state) -> ->
 
@@ -94,284 +439,15 @@ tightloop = (state) -> ->
 
   terminate = fns.length
 
+  da = {arglen:arglen,arg:arguments,state:state}
+
   while I < terminate
 
-    {fname,data} = fns[I]
+    elemento = fns[I]
 
-    switch fname
+    devolver = core[elemento[0]] da,elemento[1]
 
-    # --------------------------------------------
-
-    | \wh =>
-
-      [[vtype,validatorF],exec] = data
-
-      switch vtype
-
-      | \f =>
-
-        cont = validatorF ...arguments
-
-        if cont
-
-          return settle exec,arguments
-
-      | \v =>
-
-        vd = validatorF.auth arguments
-
-        if vd.continue
-
-          return (settle exec,vd.value)
-
-    # --------------------------------------------
-
-    | \whn =>
-
-      [[vtype,validatorF],exec] = data
-
-      switch vtype
-
-      | \f =>
-
-        cont = validatorF ...arguments
-
-        if not cont
-
-          return settle exec,arguments
-
-      | \v =>
-
-        vd = validatorF.auth arguments
-
-        if vd.error
-
-          return (settle exec,vd.value)
-
-    # --------------------------------------------
-
-    | \ar =>
-
-      [spans,exec] = data
-
-      if spans[arglen]
-
-        return settle exec,arguments
-
-    # --------------------------------------------
-
-    | \arn =>
-
-      [spans,exec] = data
-
-      if not spans[arglen]
-
-        return settle exec,arguments
-
-    # --------------------------------------------
-
-    | \arwh     =>
-
-      [spans,[vtype,validatorF],exec] = data
-
-      if spans[arglen]
-
-        switch vtype
-
-        | \f =>
-
-          cont = validatorF ...arguments
-
-          if cont
-
-            return settle exec,arguments
-
-        | \v =>
-
-          vd = validatorF.auth arguments
-
-          if vd.continue
-
-            return (settle exec,vd.value)
-
-    # --------------------------------------------
-
-    | \ma =>
-
-      [[vtype,validatorF],exec] = data
-
-      switch vtype
-
-      | \f =>
-
-        msg = validatorF ...arguments
-
-        if msg
-
-          return mod-settle exec,msg,arguments
-
-      | \v =>
-
-        vd = validatorF.auth arguments
-
-        if vd.continue
-
-          return mod-settle exec,vd.value,arguments
-
-    | \arma     =>
-
-      [spans,[vtype,validatorF],exec] = data
-
-      if spans[arglen]
-
-        switch vtype
-
-        | \f =>
-
-          msg = validatorF ...arguments
-
-          if msg
-
-            return mod-settle exec,msg,arguments
-
-        | \v =>
-
-          vd = validatorF.auth arguments
-
-          if vd.continue
-
-            return mod-settle exec,vd.value,arguments
-
-    # --------------------------------------------
-
-    | \arpar    =>
-
-      [spans,[vtype,validatorF],exec,lastview] = data
-
-      if not spans[arglen]
-        break
-
-      switch vtype
-
-      | \f =>
-
-        ret = validatorF ...arguments
-
-        if not (Array.isArray ret)
-
-          print.route [\arpar_not_array,[(new Error!),state]]
-
-          return void
-
-        [cont,msg] = ret
-
-        if cont
-
-          return mod-settle exec,msg,arguments
-
-        else
-
-          msg = switch R.type msg
-          | \Array    => msg
-          | \Undefined,\Null => []
-          | otherwise => msg
-
-          ret = lastview msg
-
-          if not (ret in [void,false,null]) then return ret
-
-      | \v => # hoplon validator
-
-        vd = validatorF.auth arguments
-
-        if vd.continue
-
-          return mod-settle exec,vd.value,arguments
-
-        else
-
-          ret = lastview vd.message,vd.path
-
-          if not (ret in [void,false,null]) then return ret
-
-
-    # --------------------------------------------
-
-    | \arwhn    =>
-
-      [spans,[vtype,validatorF],exec] = data
-
-      if spans[arglen]
-
-        switch vtype
-
-        | \f =>
-
-          cont = validatorF ...arguments
-
-          if not cont
-
-            return settle exec,arguments
-
-        | \v =>
-
-          vd = validatorF.auth arguments
-
-          if vd.error
-
-            return (settle exec,vd.value)
-
-    # --------------------------------------------
-
-    | \arnwh    =>
-
-      [spans,[vtype,validatorF],exec] = data
-
-      if not spans[arglen]
-
-        switch vtype
-
-        | \f =>
-
-          cont = validatorF ...arguments
-
-          if cont
-
-            return settle exec,arguments
-
-        | \v =>
-
-          vd = validatorF.auth arguments
-
-          if vd.continue
-
-            return (settle exec,vd.value)
-
-    # --------------------------------------------
-
-    | \arnwhn    =>
-
-      [spans,[vtype,validatorF],exec] = data
-
-      if not spans[arglen]
-
-        switch vtype
-
-        | \f =>
-
-          cont = validatorF ...arguments
-
-          if not cont
-
-            return settle exec,arguments
-
-        | \v =>
-
-          vd = validatorF.auth arguments
-
-          if vd.error
-
-            return (settle exec,vd.value)
+    if (devolver != UNDEC) then return devolver
 
     I += 1
 
@@ -379,73 +455,84 @@ tightloop = (state) -> ->
 
   def = state.def
 
-  if def then return settle def,arguments
-
+  if def then return resolve def,arguments
 
 #---------------------------------------------------
-#---------------------------------------------------
-#---------------------------------------------------
-#---------------------------------------------------
 
-main = {}
+main = (self) -> @self = self; @
 
-looper = (state) ->
+main.prototype.clone = ->
 
-  instance = Object.create main
+  state = @self
 
-  instance[modflag] = state
+  neo = R.mergeRight state,{fns:[...state.fns],str:[...state.str]}
 
-  frozen = Object.freeze instance
+  new main neo
 
-  frozen
+main.prototype[uic] = print.log.proto
 
-handle = {}
+handle =
+  def:
+    fault:void
+    ok:void
+  fault: void
+  ok: void
 
-handle.fault = (self,data,fname) ->
-
-  state = self[modflag]
+handle.fault = (state,data,fname) ->
 
   print.route [\input,[(new Error!),fname,data,state]]
 
   neo = Object.assign {},state,{fault:[\input,fname,data]}
 
-  looper neo
+  new main neo
 
+genfun = (vfun,fname) -> ->
 
-handle.ok = (self,data,fname)->
+  state = @self
 
-  state = self[modflag]
+  if state is void
 
-  if (state.immutable) or (state.str.length is 0)
+    print.route [\state_undef,[(new Error!),fname]]
 
-    fns = state.fns.concat {fname:fname,data:data}
+    return void
 
-    neo = Object.assign {},state,{fns:fns,str:(state.str.concat fname)}
+  if state.fault then return @
 
-    looper neo
+  out = vfun fname,arguments
+
+  [status,data] = out
+
+  handle[status] state,data,fname
+
+#---------------------------------------------------
+
+handle.ok = (state,data,fname)->
+
+  neo_data = [fname,data]
+
+  if state.str.length is 0
+
+    fns = state.fns.concat [neo_data]
+
+    neo = R.mergeRight state,{fns:fns,str:(state.str.concat fname)}
+
+    new main neo
 
   else
 
-    state.fns.push {fname:fname,data:data}
+    state.fns.push neo_data
 
     state.str.push fname
 
-    neo = state
-
-    self
-
-handle.def = {}
+    new main state
 
 handle.def.fault = -> null
 
 handle.def.fault[uic] = print.log.def_fault
 
-handle.def.ok = (self,data) ->
+handle.def.ok = (state,data) ->
 
-  state = self[modflag]
-
-  neo = Object.assign do
-    {}
+  neo = R.mergeRight do
     state
     {
       def:data
@@ -454,39 +541,15 @@ handle.def.ok = (self,data) ->
 
   F  = tightloop neo
 
-  F[defacto] = data[1]
-
   if state.debug
+
     F[uic] = print.log.wrap neo
 
   F
 
-genfun = (vfun,fname) -> ->
+main.prototype.def =  ->
 
-  state = @[modflag]
-
-  if state is undefined
-
-    print.route [\state_undef,[(new Error!),fname]]
-
-    return undefined
-
-  if state.fault then return @
-
-  [zone,data] = vfun arguments
-
-  handle[zone] @,data,fname
-
-#---------------------------------------------------
-#---------------------------------------------------
-#---------------------------------------------------
-#---------------------------------------------------
-
-main[uic] = print.log.proto
-
-main.def =  ->
-
-  state = @[modflag]
+  state = @self
 
   if state is undefined
 
@@ -496,11 +559,21 @@ main.def =  ->
 
   if state.fault then return handle.def.fault
 
-  [zone,data] = verify.def arguments
+  [___,data] = verify.def arguments
 
-  handle.def.ok @,data
+  handle.def.ok state,data
 
-props = [\ma \arma \wh \ar \whn \arn \arwh \arnwh \arwhn \arnwhn \arpar]
+props =
+  *\ar
+   \wh
+   \whn
+   \arn
+   \cap
+   \arwh
+   \arcap
+   \arwhn
+   \arnwh
+   \arnwhn
 
 #---------------------------------------------------
 
@@ -508,7 +581,9 @@ R.reduce do
 
   (ob,prop) ->
 
-    ob[prop] = genfun (verify.getvfun prop),prop
+    F = verify.getvfun prop
+
+    ob.prototype[prop] = genfun F,prop
 
     ob
 
@@ -519,17 +594,21 @@ R.reduce do
 
 cat = {}
 
-cat.opt = new Set [\unary,\immutable,\debug]
+cat.opt = new Set [\unary,\debug]
 
-cat.methods = new Set (props.concat ["def"])
+cat.methods = new Set props.concat [\def]
 
-# Set(12) {'ma', 'arma', 'wh', 'ar', 'whn', 'arn', 'arwh', 'arnwh', 'arwhn', 'arnwhn', 'arpar', 'def'}
+# Set(12) {'cap', 'arcap', 'wh', 'ar', 'whn', 'arn', 'arwh', 'arnwh', 'arwhn', 'arnwhn', 'def'}
 
-getter = ({path,lock,str,vr},key) ->
+getter = (data,key) ->
+
+  # vr -->  [ 'debug' ],[ 'debug', 'unary' ]
+
+  {path,lock,str,sorted_path} = data
 
   if lock
 
-    print.route [\setting,[(new Error!),\path_locked,vr,key]]
+    print.route [\setting,[(new Error!),\path_locked,sorted_path,key]]
 
     return null
 
@@ -537,7 +616,7 @@ getter = ({path,lock,str,vr},key) ->
 
     if (R.includes key,path)
 
-      print.route [\setting,[(new Error!),\already_in_path,vr,key]]
+      print.route [\setting,[(new Error!),\already_in_path,sorted_path,key]]
 
       null
 
@@ -545,27 +624,53 @@ getter = ({path,lock,str,vr},key) ->
 
       npath = path.concat key
 
-      sorted = (R.clone npath).sort!
+      copypath = npath.concat!
 
-      [true,{path:sorted,lock:false,str:(sorted.join "."),vr:npath}]
+      sorted = copypath.sort!
+
+      ndata =
+       *path:sorted
+        lock:false
+        str:(sorted.join ".")
+        sorted_path:npath
+
+      [true,ndata]
 
   else if cat.methods.has key
 
-    [true,{path:path,lock:true,str:str,vr:vr,key:key}]
+    ndata =
+      *path:path
+       lock:true
+       str:str
+       sorted_path:sorted_path
+       key:key
 
-  else if key is \getdef
+    [true,ndata]
 
-    return [false,defacto]
+  else if (key is \doc)
+
+    print.docstring
 
   else
 
-    print.route [\setting,[(new Error!),\not_in_opts,vr,key]]
+    print.route [\setting,[(new Error!),\not_in_opts,sorted_path,key]]
 
-    null
+    return null
 
 topcache = {}
 
+init =
+  str      :[]
+  fns      :[]
+  def      :null
+  fault    :false
+  unary    :false
+  debug    :false
+
+
 entry = (data,args) ->
+
+  if data is null then return loopError!
 
   str = data.str
 
@@ -574,29 +679,100 @@ entry = (data,args) ->
   if has
     return has[data.key] ...args
 
-  {path,lock,vr,key} = data
+  {path,lock,key} = data
 
-  ob = {}
-
+  ob = {} # {unary:true},{unary:true,immutable:true}
+# 
   for ke in path
     ob[ke] = true
 
-  put = looper Object.assign do
-    {}
-    init
-    ob
+  data = Object.assign {},init,ob
+
+  put = new main data
 
   topcache[str] = put
 
   put[key] ...args
 
-pkg = binapi do
-  entry,getter,{path:[],lock:false,vr:[],str:[],key:null}
-  print.log.prox
 
+proto_log = (state)->
+
+  diff = R.difference [\unary,\debug,\def],state.path
+
+  keys = [...props,...diff]
+
+  keys
+
+guard = binapi do
+  entry,getter,{path:[],lock:false,sorted_path:[],str:"",key:null}
+  print.log.prox
+  __proto__:proto_log
+
+link = {}
+
+proto =
+  1:(origin) -> -> proto.def ...[origin,...arguments]
+
+  def:!->
+
+    args = arguments
+
+    targets = [args[I] for I from 1 til args.length]
+
+    [origin] = args
+
+    for prop in targets
+
+      prop.prototype = Object.create origin.prototype
+
+link.proto = guard.ar(proto).def(proto.def)
+
+proto_fn =
+
+ 1:(origin) -> ->
+
+  args = arguments
+
+  targets = [args[I] for I from 1 til args.length]
+
+  proto_fn.main origin,[args[0],targets]
+
+ 2:(origin,fnames) -> ->
+
+  targets = arguments
+
+  proto_fn.main origin,[fnames,targets]
+
+ def:->
+
+  args = arguments
+
+  [origin,fnames] = args
+
+  targets = [args[I] for I from 2 til args.length]
+
+  proto_fn.main origin,[fnames,targets]
+
+ main: (origin,[fnames,targets]) !->
+
+  for N in fnames
+
+    for T in targets
+
+      T.prototype[N] = origin[N]
+
+link.proto_fn = guard.ar(proto_fn).def(proto_fn.def)
+
+pkg = {}
+
+ext.com.link = Object.freeze link
+
+ext.com = Object.freeze ext.com
+
+pkg.guard = guard
+
+pkg.com = ext.com
+
+pkg.symbols = ext.symbols
 
 module.exports = pkg
-
-
-
-

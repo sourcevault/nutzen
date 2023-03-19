@@ -2,8 +2,6 @@ gulp            = require \gulp
 
 tap             = require \gulp-tap
 
-livescript      = require \livescript
-
 gulp-livescript = require \gulp-livescript
 
 gulp-rename     = require \gulp-rename
@@ -16,11 +14,13 @@ gutil           = require \gulp-util
 
 fs              = require \fs
 
+cp              = require \child_process
+
+z               = console.log
+
 wait = (t,f)-> setTimeout f,t
 
-z = console.log
-
-gulp.task \default,(done) ->
+def = (done) ->
 
   gulp.src "./src/package.yaml"
 
@@ -30,7 +30,7 @@ gulp.task \default,(done) ->
 
   .pipe gulp.dest "."
 
-  # ------------------------------
+  ## ------------------------------
 
   gulp.src "./src/gulpfile.ls"
 
@@ -42,19 +42,19 @@ gulp.task \default,(done) ->
 
   .pipe gulp.dest "."
 
-  # ------------------------------
+  # # ------------------------------
 
-  gulp.src "./src/main.ls"
+  # gulp.src "./src/main.ls"
 
-  .pipe gulp-livescript bare:true
+  # .pipe gulp-livescript bare:true
 
-  .on \error,gutil.log
+  # .on \error,gutil.log
 
-  .on \error -> throw it
+  # .on \error -> throw it
 
-  .pipe gulp.dest "./dist"
+  # .pipe gulp.dest "./dist"
 
-  # ------------------------------
+  # # ------------------------------
 
   ls = gulp.src "./src/*/*.ls"
 
@@ -74,13 +74,15 @@ gulp.task \default,(done) ->
 
     version_number = raw-json.version
 
-    gulp.src "./dist/utils/main.js"
+    T = gulp.src "./dist/utils/main.js"
 
     .pipe replace \__VERSION__,version_number
 
     .pipe gulp.dest "./dist/utils/"
 
-  # ------------------------------
+    .on \done, ->
+
+  ## ------------------------------
 
   gulp.src "./test/*/*.ls"
 
@@ -92,4 +94,28 @@ gulp.task \default,(done) ->
 
   .pipe gulp.dest "./test"
 
-  done!
+gulp.task \default,def
+
+gulp.task \watch,->
+
+  gulp.watch do
+    ["./src","./test/*/*.ls"]
+    gulp.series \default,(done)->
+
+      # ta = cp.execSync "node ./test/types/test10.js || exit 1"
+
+      # ta = cp.execSync "node ./test/types/test10.js || exit 1"
+
+      # process.stdout.write ta.toString!
+
+      done!
+
+
+
+
+
+
+
+
+
+
