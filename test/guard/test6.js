@@ -1,8 +1,8 @@
-var proj, name, ref$, utils, types, guard, l, z, c, binapi, print_fail, create_stack, R, be, xop, pf, bothNum, argE, typeE, add2, add, ret;
+var proj, name, ref$, internal, types, guard, l, z, c, binapi, print_fail, create_stack, R, be, xop, pf, bothNum, argE, typeE, add2, add, ret;
 proj = 'guard';
 name = 'test6';
-ref$ = require('../../dist/types/main'), utils = ref$.utils, types = ref$.types, guard = ref$.guard;
-l = utils.l, z = utils.z, c = utils.c, binapi = utils.binapi, print_fail = utils.print_fail, create_stack = utils.create_stack, R = utils.R;
+ref$ = require('../../dist/types/main'), internal = ref$.internal, types = ref$.types, guard = ref$.guard;
+l = internal.l, z = internal.z, c = internal.c, binapi = internal.binapi, print_fail = internal.print_fail, create_stack = internal.create_stack, R = internal.R;
 be = types;
 xop = guard;
 pf = print_fail("test/" + proj + "/" + name + ".js");

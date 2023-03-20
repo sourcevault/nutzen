@@ -9,7 +9,7 @@ z = com.z, j = com.j, l = com.l, R = com.R, c = com.c, esp = com.esp, create_sta
 print.log = {};
 help = c.grey("[  docs] " + com.homepage);
 show_stack = create_stack(2, ['internal/modules/cjs', 'node:internal'], help + '\n');
-object_name = 'hoplon.guard';
+object_name = 'utilitat.guard';
 pkgname = object_name + "#v" + version;
 print.log.def_fault = function(){
   return c.er2("[error." + pkgname + "]");
@@ -337,7 +337,7 @@ print.typeError = function(ta){
   var E, fname, attribute, data, ref$, type_signature, comment, legend, I;
   E = ta[0], fname = ta[1], attribute = ta[2], data = ta[3];
   ref$ = StrEType(fname, attribute), type_signature = ref$[0], comment = ref$[1];
-  legend = [" F = function", " PI =  pos_int|[pos_int,...]", " FA = function|any", " FT = function|hoplon.types"];
+  legend = [" F = function", " PI =  pos_int|[pos_int,...]", " FA = function|any", " FT = function|utilitat.types"];
   legend = (function(){
     var i$, ref$, len$, results$ = [];
     for (i$ = 0, len$ = (ref$ = legend).length; i$ < len$; ++i$) {

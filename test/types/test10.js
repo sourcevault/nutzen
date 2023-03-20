@@ -1,7 +1,7 @@
-var pkg, utils, types, z, l, R, j, print_fail, xop, be, V;
+var pkg, internal, types, z, l, R, j, print_fail, xop, be, V;
 pkg = require('../../dist/types/main');
-utils = pkg.utils, types = pkg.types;
-z = utils.z, l = utils.l, R = utils.R, j = utils.j, print_fail = utils.print_fail;
+internal = pkg.internal, types = pkg.types;
+z = internal.z, l = internal.l, R = internal.R, j = internal.j, print_fail = internal.print_fail;
 xop = pkg.guard;
 be = pkg.types;
 V = be.arr;

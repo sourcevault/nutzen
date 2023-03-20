@@ -1,12 +1,12 @@
 var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, version, util, util_inspect_custom, uic, noop, jspc_def, jspc, z, get_all_protos, loopfault, ansi_wrap, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, tupnest_recurse, tupnest, generic_log, veri_err_str, veri, ap, isA, get, pub, com, y$, symbols, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
-vendor = require("./vendor");
+vendor = require('./vendor');
 l = console.log;
 flat = vendor.flat;
 advanced_pad = vendor.pad;
 deep_freeze = vendor.deepFreeze;
 alpha_sort = vendor.alpha_sort;
-R = require("ramda");
-esp = require("error-stack-parser");
+R = require('ramda');
+esp = require('error-stack-parser');
 _jspc = vendor.stringify;
 version = '2.0.0';
 if (typeof window === "undefined" && typeof module === "object") {
@@ -268,7 +268,7 @@ tupnest.concat = function(da, ta){
 generic_log = function(state){
   return state;
 };
-veri_err_str = c.er3("[hoplon.utils.binapi#" + version + "][argument.error]\n");
+veri_err_str = c.er3("[utilitat.utils.binapi#" + version + "][argument.error]\n");
 veri = function(){
   var arglen, str, fun, uget, state, user_map, uu_map, ulog, log;
   arglen = arguments.length;
@@ -404,10 +404,10 @@ com = {
   create_stack: create_stack
 };
 com.version = version;
-com.homepage = 'https://github.com/sourcevault/hoplon#readme.md';
+com.homepage = 'https://github.com/sourcevault/utilitat#readme.md';
 y$ = symbols = {};
-y$.htypes = Symbol('hoplon.types');
-y$.guard = Symbol('hoplon.guard');
+y$.htypes = Symbol('utilitat.types');
+y$.guard = Symbol('utilitat.guard');
 symbols = Object.freeze(symbols);
 module.exports = {
   com: com,

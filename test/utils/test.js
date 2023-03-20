@@ -1,7 +1,7 @@
-var pkg, utils, types, l, z, c, binapi, print_fail, create_stack, be, fail, lopo, get, fun, P, K, subtract, sub;
+var pkg, internal, types, l, z, c, binapi, print_fail, create_stack, be, fail, lopo, get, fun, P, K, subtract, sub;
 pkg = require('../../dist/types/main');
-utils = pkg.utils, types = pkg.types;
-l = utils.l, z = utils.z, c = utils.c, binapi = utils.binapi, print_fail = utils.print_fail, create_stack = utils.create_stack;
+internal = pkg.internal, types = pkg.types;
+l = internal.l, z = internal.z, c = internal.c, binapi = internal.binapi, print_fail = internal.print_fail, create_stack = internal.create_stack;
 be = types;
 fail = print_fail("test/utils/test.js");
 lopo = function(state){

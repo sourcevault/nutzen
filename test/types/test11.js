@@ -1,7 +1,7 @@
-var pkg, utils, types, z, l, R, j, print_fail, p, be, S, N, V, fin_ret, name, val, r1, von, r2, r3, r4, r5;
+var pkg, internal, types, z, l, R, j, print_fail, p, be, S, N, V, fin_ret, name, val, r1, von, r2, r3, r4, r5;
 pkg = require('../../dist/types/main');
-utils = pkg.utils, types = pkg.types;
-z = utils.z, l = utils.l, R = utils.R, j = utils.j, print_fail = utils.print_fail;
+internal = pkg.internal, types = pkg.types;
+z = internal.z, l = internal.l, R = internal.R, j = internal.j, print_fail = internal.print_fail;
 p = print_fail("test/types/test11.js");
 be = types;
 S = JSON.stringify;

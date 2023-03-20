@@ -1,9 +1,9 @@
-var proj, name, pkg, utils, types, guard, l, z, c, binapi, print_fail, create_stack, be, fail, bothNum, argE, typeE, add;
+var proj, name, pkg, internal, types, guard, l, z, c, binapi, print_fail, create_stack, be, fail, bothNum, argE, typeE, add;
 proj = 'guard';
 name = 'test';
 pkg = require('../../dist/types/main');
-utils = pkg.utils, types = pkg.types, guard = pkg.guard;
-l = utils.l, z = utils.z, c = utils.c, binapi = utils.binapi, print_fail = utils.print_fail, create_stack = utils.create_stack;
+internal = pkg.internal, types = pkg.types, guard = pkg.guard;
+l = internal.l, z = internal.z, c = internal.c, binapi = internal.binapi, print_fail = internal.print_fail, create_stack = internal.create_stack;
 be = types;
 fail = print_fail("test/" + proj + "/" + name + ".js");
 bothNum = function(x, y){

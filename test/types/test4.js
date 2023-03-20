@@ -1,7 +1,7 @@
-var pkg, utils, types, z, l, R, j, print_fail, be, p, inn, main, example, von;
+var pkg, internal, types, z, l, R, j, print_fail, be, p, inn, main, example, von;
 pkg = require('../../dist/types/main');
-utils = pkg.utils, types = pkg.types;
-z = utils.z, l = utils.l, R = utils.R, j = utils.j, print_fail = utils.print_fail;
+internal = pkg.internal, types = pkg.types;
+z = internal.z, l = internal.l, R = internal.R, j = internal.j, print_fail = internal.print_fail;
 be = types;
 p = print_fail("test/types/test4.js");
 inn = be.str.or(be.num.or(be.obj.on("age", be.num)));
