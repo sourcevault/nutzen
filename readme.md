@@ -23,11 +23,11 @@ hoplon.guard
 hoplon.utils
 ```
 
-◾️ [`hoplon.types`](https://github.com/sourcevault/hoplon/blob/dev/docs/types.md) - immutable type validator that puts composability ( recursiveness ) and extensibility as it's core feature. It can also be used for validating `json` schemas.
+◾️ [`hoplon.types`](docs/types.md) - immutable type validator that puts composability ( recursiveness ) and extensibility as it's core feature. It can also be used for validating `json` schemas.
 
-◾️ [`hoplon.guard`](https://github.com/sourcevault/hoplon/blob/dev/docs/guard.md) - functional guards (mutable & immutable), similar to what exists in Elixir / Erlang for graceful error handling.
+◾️ [`hoplon.guard`](docs/guard.md) - functional guards (mutable & immutable), similar to what exists in Elixir / Erlang for graceful error handling.
 
-◾️ [`hoplon.utils`](https://github.com/sourcevault/hoplon/blob/dev/docs/utils.md) - exposes `hoplon`'s internal utils, like [`Ramda`](https://github.com/ramda/ramda)  and [`error-stack-parser`](https://github.com/stacktracejs/error-stack-parser), ( this way there are fewer direct dependencies ).
+◾️ [`hoplon.utils`](docs/utils.md) - exposes `hoplon`'s internal utils, like [`Ramda`](https://github.com/ramda/ramda)  and [`error-stack-parser`](https://github.com/stacktracejs/error-stack-parser), ( this way there are fewer direct dependencies ).
 
 ## LICENCE
 
