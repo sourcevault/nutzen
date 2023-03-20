@@ -1,8 +1,8 @@
 pkg = require \../../dist/types/main
 
-{utils,types} = pkg
+{internal,types} = pkg
 
-{l,z,c,binapi,print_fail,create_stack} = utils
+{l,z,c,binapi,print_fail,create_stack} = internal
 
 be = types
 

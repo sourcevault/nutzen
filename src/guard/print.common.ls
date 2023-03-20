@@ -18,7 +18,7 @@ help         = c.grey "[  docs] #{com.homepage}"
 
 show_stack   = create_stack 2,['internal/modules/cjs','node:internal'],(help + '\n')
 
-object_name  = \hoplon.guard
+object_name  = \utilitat.guard
 
 pkgname      = "#{object_name}\#v#{version}"
 
@@ -38,9 +38,9 @@ print.log.wrap = (state) -> -> print.log.main state
 
 print.log.prox = (state) ->
 
-  # [hoplon.guard#v2.0.0|debug|unary] []
-  # [hoplon.guard#v2.0.0|debug] []
-  # [hoplon.guard#v2.0.0] []
+  # [utilitat.guard#v2.0.0|debug|unary] []
+  # [utilitat.guard#v2.0.0|debug] []
+  # [utilitat.guard#v2.0.0] []
 
   if state is null
     return c.er2 "[error.#{pkgname}]"
@@ -60,7 +60,7 @@ print.log.prox = (state) ->
 
   (c.pink str) + " []"
 
-# [hoplon.guard] [ ar(2) ]
+# [utilitat.guard] [ ar(2) ]
 
 arrange = R.pipe do
   R.groupWith R.equals
@@ -464,7 +464,7 @@ print.typeError = (ta) ->
       *" F = function"
        " PI =  pos_int|[pos_int,...]"
        " FA = function|any"
-       " FT = function|hoplon.types"
+       " FT = function|utilitat.types"
 
   legend = [c.grey I for I in legend].join "\n"
 

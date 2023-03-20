@@ -497,7 +497,7 @@ pkg.types = be
 
 pkg.guard = xop
 
-pkg.utils = com
+pkg.internal = com
 
 pkg = Object.freeze pkg
 

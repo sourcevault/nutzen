@@ -255,7 +255,7 @@ core.cap.2 = (da,ta) ->
 
       return unshift_resolve exec,ret,da.arg
 
-  | \v => # hoplon validator
+  | \v => # .types validator
 
     vd = vF.auth da.arg
 
@@ -316,7 +316,7 @@ core.cap.3 = (da,ta) ->
 
     if (lvret isnt void) then return lvret
 
-  | \v => # hoplon validator
+  | \v => # .types validator
 
     vd = vF.auth da.arg
 

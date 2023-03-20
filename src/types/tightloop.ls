@@ -262,7 +262,7 @@ apply.auth.key = (F,val,args,key) ->
     F.auth ...A
 
 \d # default
-\i # instance / hoplon.types instance
+\i # instance / utilitat.types instance
 \f # function / user provided function
 
 exec_key = (type,F,val,args,key) ->

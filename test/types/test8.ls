@@ -1,6 +1,6 @@
-{utils,types} = require \../../dist/types/main
+{internal,types} = require \../../dist/types/main
 
-{z,l,R,j,print_fail} = utils
+{z,l,R,j,print_fail} = internal
 
 be = types
 

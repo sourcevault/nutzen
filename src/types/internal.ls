@@ -1,7 +1,6 @@
 
 pkg = require \./print.common
 
-
 {com,symbols,print} = pkg
 
 tightloop = require \./tightloop

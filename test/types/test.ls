@@ -1,8 +1,8 @@
 pkg = require \../../dist/types/main
 
-{utils,types} = pkg
+{internal,types} = pkg
 
-{z,l,R,j,print_fail} = utils
+{z,l,R,j,print_fail} = internal
 
 xop = pkg.guard
 

@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------------------------
 
-vendor           = require "./vendor"
+vendor           = require \./vendor
 
 l                = console.log
 
@@ -12,9 +12,9 @@ deep_freeze      = vendor.deepFreeze
 
 alpha_sort       = vendor.alpha_sort
 
-R                = require "ramda"
+R                = require \ramda
 
-esp              = require "error-stack-parser"
+esp              = require \error-stack-parser
 
 _jspc            = vendor.stringify
 
@@ -310,7 +310,7 @@ tupnest.concat = (da,ta) ->
 
 generic_log = (state) -> state
 
-veri_err_str = c.er3 "[hoplon.utils.binapi\##{version}][argument.error]\n"
+veri_err_str = c.er3 "[utilitat.utils.binapi\##{version}][argument.error]\n"
 
 veri = ->
 
@@ -473,12 +473,12 @@ com =
 
 com.version = version
 
-com.homepage = \https://github.com/sourcevault/hoplon#readme.md
+com.homepage = \https://github.com/sourcevault/utilitat#readme.md
 
 symbols = {}
 
-  ..htypes = Symbol \hoplon.types
-  ..guard = Symbol \hoplon.guard
+  ..htypes = Symbol \utilitat.types
+  ..guard = Symbol \utilitat.guard
 
 symbols = Object.freeze symbols
 

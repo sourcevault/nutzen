@@ -1,6 +1,6 @@
-{utils,types} = require \../../dist/types/main
+{internal,types} = require \../../dist/types/main
 
-{l,z,c,binapi,print_fail,create_stack} = utils
+{l,z,c,binapi,print_fail,create_stack} = internal
 
 be = types
 
