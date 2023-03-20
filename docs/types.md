@@ -1,5 +1,4 @@
-
-# `hoplon.types`
+# `nutzen.types`
 1. Chainable Functions
     - [and](#--and)
     - [or](#--or)
@@ -27,7 +26,7 @@
 🟡 Object with required properties `foo` and `bar`.
 
 ```js
-var is = require("hoplon").types
+var is = require("nutzen").types
 
 var V = is.required("foo","bar")
 
@@ -46,9 +45,8 @@ console.log(V.auth({}))
 
 🟡 Object with required properties `name` `age` and `address`, with `address` having required fields of `city` and `country.`
 
-
 ```js
-var is = require("hoplon").types
+var is = require("nutzen").types
 
 var address = is.required("city","country")
 .on("city",is.str)
@@ -102,7 +100,7 @@ err            error
 alt            alternative
 ```
 
-`hoplon.types` uses few chainable operators for creating type validators, for handling arbitrary complex data types.
+`nutzen.types` uses few chainable operators for creating type validators, for handling arbitrary complex data types.
 
 We start by defining our basetypes:
 
@@ -116,7 +114,7 @@ We start by defining our basetypes:
 
 - `cont/edit`,`tap`,`forEach`,`jam`,`err` and `fix`.
 
-- `wrap` is a special helper function, that **does not** return a `hoplon.types` object.
+- `wrap` is a special helper function, that **does not** return a `nutzen.types` object.
 
 #### Initializing Validator
 
@@ -165,7 +163,7 @@ In case the side channel information is relevant, you can **rewrite** your main 
 
 After initilizating a validator with its basetype, you are returned a unit object that can be chained ( infinitely ) using a few operators.
 
-These operators all accept custom validators but also other `hoplon` validator (`hoplon.types`) objects.
+These operators all accept custom validators but also other `nutzen` validator (`nutzen.types`) objects.
 
 ### - `and`
 
@@ -276,41 +274,6 @@ V2.auth((foo:1,bar:2))
 
 ```
 
-a common pattern with `.on` is type validation based on prior values.
-
-an example taken from the `remotemon` project :
-
-```ls
-be = hoplon.types
-
-bko = be.known.obj
-
-check_if_remote_not_defined = bko
-.on \remote,be.arr
-.and do
-  bko.on \remotehost,be.undefnull
-  .or do
-    bko.on \remotefold,be.undefnull
-.cont true
-.fix false
-```
-
-here we can see that `remotehost` and `remotefold` cannot be `undefined` **if** `remote` is an array type.
-
-the logic is hard to decipher using normal usage of `.on`.
-
-```ls
-V = be.known.obj
-.on do
-  *[
-    [\and,\remote,be.arr]
-    [\alt,[\remotefold,\remotehost],be.undefnull]
-   ]
-.cont true
-.fix false
-```
-however we can use the single array pattern to flatten the same logic, this is a 'special' function provided to match on `.on` due to the commonality of the usage.
-
 ### - `cont`
 
 Alias: **edit**
@@ -339,8 +302,9 @@ var V = canbeIP
 🟡 `.cont` can be used to making values **consistent**, using the IP address validator from above :
 
 
+
 ```js
-var IS = require("hoplon").types
+var IS = require("nutzen").types
 
 var canbeIP = is.arr.map(is.str)
 .or(is.str.cont (x) => [x]) // <-- we want string to go inside an array
@@ -360,8 +324,9 @@ console.log(ret)
 
 - Used commonly in creating default, using the IP address from above :
 
+
 ```js
-IS = require("hoplon").types
+IS = require("nutzen").types
 
 var canbeIP = is.arr.map(is.str)
 .or(is.string.cont((x) => [x]))
@@ -396,7 +361,7 @@ console.log(ret) // ["127.0.0.1"]
 
 - `tap` is just like `cont` but it does not use the returned value to change the original value.
 
-- there is also `hoplon.type.tap` provided as a helper function.
+- there is also `nutzen.type.tap` provided as a helper function.
 
 ### - `forEach`
 
@@ -407,7 +372,7 @@ console.log(ret) // ["127.0.0.1"]
 - For user facing function, we generally end up having to create a wrapper function of this sort :
 
 ```js
-IS = require("hoplon").types
+IS = require("nutzene").types
 
 var V = is.arr.fix(() => []) // empty array if not array
 
@@ -421,7 +386,7 @@ F(null) // []
 `.wrap()` prevents us from having to write `line 5`, instead we could just do :
 
 ```js
-IS = require("hoplon").types
+IS = require("nutzen").types
 
 var V = is.arr.fix(() => []) // empty array if not array
 .wrap()
@@ -441,10 +406,10 @@ In case defaults are not sufficient, clean validators can be easily created.
   - `boolean`
   - `[boolean,any]`
 
-2. provide it as first argument into `holplon.types` as shown below :
+2. provide it as first argument into `nutzen.types` as shown below :
 
 ```js
-var IS = require("hoplon").types
+var IS = require("nutzen").types
 
 var simpleEmail = function(value){
 
@@ -457,7 +422,7 @@ var simpleEmail = function(value){
 
 var isEmail = IS(simpleEmail)
 
-// isEmail is now an holplon validator which means it gets
+// isEmail is now an nutzen validator which means it gets
 
 // .and, .or, .cont, .err , .jam and .fix methods.
 
@@ -472,7 +437,7 @@ isEmail.cont
 
 - but expects the first argument to be what needs to be validated.
 
-🟡 *so, what does `holplon.types` do with the extra arguments ?*
+🟡 *so, what does `nutzen.types` do with the extra arguments ?*
 
 - It simply passes it downstream ( as subsequent ) arguments in case they are needed.
 
@@ -499,7 +464,7 @@ Some validators are common enough to be added in core.
 🟡 using `int` :
 
 ```js
-var is = require("hoplon").types
+var is = require("nutzen").types
 
 is.int(2)
 //{continue:true,error:false,value:1}
@@ -517,7 +482,7 @@ is.int(2.1)
 - The function exposed through `maybe.*` using `is.int` :
 
 ```js
-var IS = require("hoplon").types
+var IS = require("nutzen").types
 
 
 var V = is.maybe.int
@@ -541,13 +506,9 @@ V.auth("foo bar")
 
 ```js
 // how to see both helper and primitive validators
-> console.log((require("hoplon")).types)
+> console.log((require("nutzen")).types)
 {.*}
 int.neg              int.pos
-known.arr            known.bool
-known.fun            known.null
-known.num            known.obj
-known.str            known.undef
 list.ofint           list.ofnum
 list.ofstr           maybe.arr
 maybe.bool           maybe.boolnum
@@ -579,7 +540,7 @@ tap
 
 **solution:**
 
-`hoplon.types` provides a helper function `hoplon.types.flatro` to smoothly flatten raw error values.
+`nutzen.types` provides a helper function `nutzen.types.flatro` to smoothly flatten raw error values.
 
 but it requires your messages to follow a specific protocol :
 
@@ -623,7 +584,7 @@ each value is rewritten *at every return*, so for example using context variable
 
 ```ls
 # .. in livescript instead of javascript ..
-be = (require "hoplon").types
+be = require("nutzen").types
 
 V = be.obj.on \foo,
   (foo,__,data) ->
@@ -636,12 +597,5 @@ torn = (V data,data).value
 
 console.log torn #{foo:undefined} 🡐 ( won't change, can't change )
 ```
-It's one of the trade off of having hidden **mutability**, it's easy to avoid such "bugs" by restricting the use of the chainable functions for their stated purpose ( e.g don't use `.and` to edit variables, use `.edit` instead ).
 
-
-#### `hoplon.types.known`
-
-Using `hoplon` validators in `hoplon.guard` is quite common, it's why `hoplon.types.known` was introduced as a namespace.
-
-`hoplon.types.known.*` avoids making the **first** type check, but **does do** the subsequent type check. At first glance the namespace does not seem useful, but as it turns out, algebraic unit functions are really good at describing control flow logic - again use the right tool for the job 👀.
-
+It's one of the trade off of having *hidden* **mutability**, it's easy to avoid such "bugs" by restricting the use of the chainable functions for their stated purpose ( e.g don't use `.and` to edit variables, use `.edit` instead ).

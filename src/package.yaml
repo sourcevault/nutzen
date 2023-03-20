@@ -1,10 +1,10 @@
-name: utilitat
+name: nutzen
 author: sourcevault
 email: joykrishnamondal@gmail.com
-homepage: https://github.com/sourcevault/utilitat#readme.md
+homepage: https://github.com/sourcevault/nutzen#readme.md
 license: BSD-3-Clause
 description: type validator & Erlang/Elixir style guards.
-repository: https://github.com/sourcevault/utilitat.git
+repository: https://github.com/sourcevault/nutzen.git
 version: 2.0.0
 main: dist/types/main.js
 scripts:
@@ -25,25 +25,25 @@ devDependencies:
   "gulp-changed": "*"
 
 keywords:
-  - "json-schema-validator"
-  - "pattern matching"
-  - "schema-validator"
-  - "error-messages"
-  - "type-check"
-  - "functional"
-  - "livescript"
-  - "validator"
-  - "chainable"
-  - "immutable"
-  - "validate"
-  - "guard-js"
-  - "objects"
-  - "monadic"
-  - "mostjs"
-  - "simple"
-  - "schema"
-  - "types"
-  - "utils"
-  - "Array"
-  - "monad"
-  - "JSON"
+  - json-schema-validator
+  - pattern matching
+  - schema-validator
+  - error-messages
+  - type-check
+  - functional
+  - livescript
+  - validator
+  - chainable
+  - immutable
+  - validate
+  - guard-js
+  - objects
+  - monadic
+  - mostjs
+  - simple
+  - schema
+  - types
+  - utils
+  - Array
+  - monad
+  - JSON

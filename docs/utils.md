@@ -1,4 +1,4 @@
-# `hoplon.utils`
+# `nutzen.internal`
 
 - `binapi`
 - `flat` - [flat](https://github.com/hughsk/flat)
@@ -19,11 +19,11 @@
 - `wait` - setTimeout with the arguments reversed.
 - `print_fail` - used in test files to show file location for test failure.
 - `create_stack` - wrapper for `error-stack-parser` that accepts error object.
-- `common_symbols` - Symbols used to identify different objects, like `hoplon.type`.
+- `common_symbols` - Symbols used to identify different objects, like `nutzen.type`.
 - `loopfault` - a proxy object that acts as a dummy return object to prevent throwing unnecessary errors.
 - `util_inspect_custom` - wrapper for `node.js`'s `util_inspect_custom`  that does not throw error if used in browser.
 
-### `hoplon.utils.binapi`
+### `nutzen.internal.binapi`
 
 - [quick examples](#quick-example-2)
 - [using state variable](#using-state-variable)
@@ -32,7 +32,7 @@
 ##### *Quick Example 1*
 
 ```js
-var binapi = require("hoplon").utils.binapi
+var binapi = require("nutzen").internal.binapi
 
 var main = function (state,args)
 {
@@ -81,7 +81,7 @@ As shown above, we are using object properties as switches to turn "ON" certain 
 
 [colors](https://www.npmjs.com/package/colors) is a good example of module that follows this pattern.
 
-`hoplon.guard` namespaces also depends on `binapi`.
+`nutzen.guard` namespaces also depends on `binapi`.
 
 `binapi` is a shorthand for binary APIs.
 
@@ -91,15 +91,22 @@ As shown above, we are using object properties as switches to turn "ON" certain 
 
 `binapi` requires 2 functions to initialize :
 
-- *application function* - it is run whenever there is a call from the user.
-- *getter function* - run whenever  `.` operation is appiled, needed for updating state variable needed by the application function.
+1. *application function* - it is run whenever there is a call from the user.
+2. *getter function* - run whenever  `.` operation is appiled, needed for updating state variable needed by the application function.
 
+However, it accepts more parameters:
+
+3. *state* - the data that is mutated between each getter call.
+
+4. *ulog* - custom logger function, the return value is what is displayed.
+
+5. *user_map* - when more keys need to be customized.
 
 ##### *Quick Example 2*
 
 ```js
 
-var binapi = require("hoplon").utils.binapi
+var binapi = require("nutzen").internal.binapi
 
 folks =
 {
@@ -134,7 +141,7 @@ Sometimes some state has to be present in your function, this is especially usef
 🟡 *..Example 3 - adding state variable as second argument..*
 
 ```js
-var binapi = require("hoplon").utils.binapi
+var binapi = require("nutzen").internal.binapi
 
 var main,getter;
 
@@ -173,7 +180,7 @@ Internally `binapi` uses ES6 proxies allowing binding of custom log functions - 
 🟡 *..Example 4 - custom logger provided as 4rth argument..*
 
 ```js
-var binapi = require("hoplon").utils.binapi
+var binapi = require("nutzen").internal.binapi
 
 var main = function (){}
 

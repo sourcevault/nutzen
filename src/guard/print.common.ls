@@ -1,4 +1,4 @@
-ext = require \../utils/main
+ext = require \../internal/main
 
 print = {}
 
@@ -18,7 +18,7 @@ help         = c.grey "[  docs] #{com.homepage}"
 
 show_stack   = create_stack 2,['internal/modules/cjs','node:internal'],(help + '\n')
 
-object_name  = \utilitat.guard
+object_name  = \nutzen.guard
 
 pkgname      = "#{object_name}\#v#{version}"
 
@@ -38,9 +38,9 @@ print.log.wrap = (state) -> -> print.log.main state
 
 print.log.prox = (state) ->
 
-  # [utilitat.guard#v2.0.0|debug|unary] []
-  # [utilitat.guard#v2.0.0|debug] []
-  # [utilitat.guard#v2.0.0] []
+  # [nutzen.guard#v2.0.0|debug|unary] []
+  # [nutzen.guard#v2.0.0|debug] []
+  # [nutzen.guard#v2.0.0] []
 
   if state is null
     return c.er2 "[error.#{pkgname}]"
@@ -60,7 +60,7 @@ print.log.prox = (state) ->
 
   (c.pink str) + " []"
 
-# [utilitat.guard] [ ar(2) ]
+# [nutzen.guard] [ ar(2) ]
 
 arrange = R.pipe do
   R.groupWith R.equals
@@ -464,7 +464,7 @@ print.typeError = (ta) ->
       *" F = function"
        " PI =  pos_int|[pos_int,...]"
        " FA = function|any"
-       " FT = function|utilitat.types"
+       " FT = function|nutzen.types"
 
   legend = [c.grey I for I in legend].join "\n"
 

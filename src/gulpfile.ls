@@ -74,11 +74,11 @@ def = (done) ->
 
     version_number = raw-json.version
 
-    T = gulp.src "./dist/utils/main.js"
+    T = gulp.src "./dist/internal/main.js"
 
     .pipe replace \__VERSION__,version_number
 
-    .pipe gulp.dest "./dist/utils/"
+    .pipe gulp.dest "./dist/internal/"
 
     .on \done, ->
 

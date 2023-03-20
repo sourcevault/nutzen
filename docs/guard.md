@@ -1,4 +1,4 @@
-## `hoplon.guard`
+## `nutzen.guard`
 
 - [Quick Example](#quick-examples-to-get-started)
 - [Introduction](#why-)
@@ -26,7 +26,7 @@
 
 🟡 Handling argument errror for adder function :
 ```js
-var guard = require("hoplon").guard
+var guard = require("nutzen").guard
 
 var add = (x,y) => x + y
 
@@ -80,7 +80,7 @@ The document makes use of [Hindley-Milner](https://en.wikipedia.org/wiki/Hindley
 
 2. `pos_int|[pos_int...]` 👉🏼 same as (1) but instead of number you have positive integers.
 
-3. `(function|any)` 👉🏼 it means either a function or any value, the last argument of all `hoplon.guard` is of this type.
+3. `(function|any)` 👉🏼 it means either a function or any value, the last argument of all `nutzen.guard` is of this type.
 
 4. `{ validator },{ execution }` 👉🏼 this shows that the function accepts two arguments, one if called the validator, and the other is called `execution` function.
 
@@ -96,8 +96,8 @@ The document makes use of [Hindley-Milner](https://en.wikipedia.org/wiki/Hindley
 [ LEGENDS ]
 
 PI  =    pos_int | [pos_int,...]
-FT  =  validator | hoplon.types
-FT  =  (-> bool) | hoplon.types
+FT  =  validator | nutzen.types
+FT  =  (-> bool) | nutzen.types
 FA  =   function | any
  F  =   function
 ```
@@ -118,26 +118,26 @@ Second argument can also just be an `any`, in which case, we just return an `any
 
 ```
 ✅ wh :: {validator},{execution}
-↪️ wh :: (hoplon.types|function),(function|any)
-↪️ wh :: (hoplon.types|(-> bool)),(function|any)
+↪️ wh :: (nutzen.types|function),(function|any)
+↪️ wh :: (nutzen.types|(-> bool)),(function|any)
 ↪️ wh :: FT,FA
 ```
 First function should return a boolean, which determines if second function is run or not.
 
-`hoplon.types` validator can also be used.
+`nutzen.types` validator can also be used.
 
 ### `cap`
 
 ```
 ✅ cap/2 :: {validator},{execution}
-↪️ cap/2 :: (hoplon.types|function),(function|any) 
-↪️ cap/2 :: (hoplon.types|(-> false|any)),(function|any)
+↪️ cap/2 :: (nutzen.types|function),(function|any) 
+↪️ cap/2 :: (nutzen.types|(-> false|any)),(function|any)
 ↪️ cap/2 :: FT,FA
 ```
 ```
 ✅ cap/3 :: {validator},{handleError},{execution}
-↪️ cap/3 :: (hoplon.types|function),function,(function|any) 
-↪️ cap/3 :: (hoplon.types|(-> false|any)),function,(function|any)
+↪️ cap/3 :: (nutzen.types|function),function,(function|any) 
+↪️ cap/3 :: (nutzen.types|(-> false|any)),function,(function|any)
 ↪️ cap/3 :: FT,F,FA
 ```
 
@@ -153,7 +153,7 @@ It's important to ensure two things :
 
 -  return value of the validator function is sent to the execution function, as the first **argument**.
 
-If the validator function in `.cap` returns `false` then `hoplon.guard` jumps to the next validator, in *any other value type including undefined*, `hoplon` **adds** this value as the first argument to the execution function.
+If the validator function in `.cap` returns `false` then `nutzen.guard` jumps to the next validator, in *any other value type including undefined*, `nutzen` **adds** this value as the first argument to the execution function.
 
 ### `arcap`
 
@@ -168,8 +168,8 @@ If the validator function in `.cap` returns `false` then `hoplon.guard` jumps to
 
 ```
 ✅ arcap/3 :: {arglen},{validator},{execution}
-↪️ arcap/3 :: (pos_int|[pos_int,...]),(hoplon.types|function),(function|any)
-↪️ arcap/3 :: (pos_int|[pos_int,...]),(hoplon.types|(-> false|any)),(function|any)
+↪️ arcap/3 :: (pos_int|[pos_int,...]),(nutzen.types|function),(function|any)
+↪️ arcap/3 :: (pos_int|[pos_int,...]),(nutzen.types|(-> false|any)),(function|any)
 ↪️ arcap/3 :: PI,FT,FA
 ```
 
@@ -177,25 +177,25 @@ First argument can be an array of positive integer or just single positive integ
 
 `{validator}` can return `false|any` where `any` is treated as value to be captured to be used by `{execution}`.
 
-in case `{validator}` is `hoplon.types` object, then the corrosponding `.value` is used as data to be captured by `{execution}`.
+in case `{validator}` is `nutzen.types` object, then the corrosponding `.value` is used as data to be captured by `{execution}`.
 
 ```
 ✅ arcap/4 :: {arglen},{validator},{handleError},{execution}
-↪️ arcap/4 :: (pos_int|[pos_int,...]),(hoplon.types|function),(function|any)
-↪️ arcap/4 :: -----------------------,(hoplon.types|(-> false|any|[bool,any])),(-> void|any),(function|any)
+↪️ arcap/4 :: (pos_int|[pos_int,...]),(nutzen.types|function),(function|any)
+↪️ arcap/4 :: -----------------------,(nutzen.types|(-> false|any|[bool,any])),(-> void|any),(function|any)
 ↪️ arcap/4 :: PI,FT,F,FA
 ```
 
 In the trivial case, validator functions return just `true` or `false`, but as we have to deal with more complicated error handling scenarios, a better return signature would be a tuple, where the second value is relevant metadata (in case of error) or just data.
 
-If the `{handleError}` function returns `void` then `hoplon.guard` jumps to the next validator, *for any other value* **X** it terminates the loop and returns **X**.
+If the `{handleError}` function returns `void` then `nutzen.guard` jumps to the next validator, *for any other value* **X** it terminates the loop and returns **X**.
 
 ### `whn`
 
 ```
 ✅ whn :: {validator},{execution}
-↪️ whn :: (hoplon.types|function),(function|any)
-↪️ whn :: (hoplon.types|(-> bool)),(function|any)
+↪️ whn :: (nutzen.types|function),(function|any)
+↪️ whn :: (nutzen.types|(-> bool)),(function|any)
 ↪️ whn :: FT,FA
 ```
 Same as `wh` but `{execution}` runs if `{validator}` return `false`.
@@ -213,8 +213,8 @@ Same as `ar` but the functions added is only run if the `arguments.length` **doe
 
 ```
 ✅ arwh :: {arglen},{validator},{execution}
-↪️ arwh :: (pos_int|[pos_int...]),(hoplon.types|function),(function|any)
-↪️ arwh :: ----------------------,(hoplon.types|(-> bool)),------------
+↪️ arwh :: (pos_int|[pos_int...]),(nutzen.types|function),(function|any)
+↪️ arwh :: ----------------------,(nutzen.types|(-> bool)),------------
 ↪️ arwh :: PI,FT,FA
 ```
 
@@ -224,8 +224,8 @@ A combination of `ar` and `wh` operators, first argument is number of argument w
 
 ```
 ✅ arwhn :: {arglen},{validator},{execution}
-↪️ arwhn :: (pos_int|[pos_int...]),(hoplon.types|function),(function|any)
-↪️ arwhn :: ----------------------,(hoplon.types|(-> bool)),------------
+↪️ arwhn :: (pos_int|[pos_int...]),(nutzen.types|function),(function|any)
+↪️ arwhn :: ----------------------,(nutzen.types|(-> bool)),------------
 ↪️ arwhn :: PI,FT,FA
 ```
 
@@ -235,8 +235,8 @@ Just like `arwh` but only runs if the validator function return `false`.
 
 ```
 ✅ arnwh :: {arglen},{validator},{execution}
-↪️ arnwh :: (pos_int|[pos_int...]),(hoplon.types|function),(function|any)
-↪️ arnwh :: ----------------------,(hoplon.types|(-> bool)),------------
+↪️ arnwh :: (pos_int|[pos_int...]),(nutzen.types|function),(function|any)
+↪️ arnwh :: ----------------------,(nutzen.types|(-> bool)),------------
 ↪️ arnwh :: PI,FT,FA
 ```
 
@@ -246,8 +246,8 @@ Just like `arwh` but runs if the `ar` does not match and validator returns `true
 
 ```
 ✅ arnwh :: {arglen},{validator},{execution}
-↪️ arnwh :: (pos_int|[pos_int...]),(hoplon.types|function),(function|any)
-↪️ arnwh :: ----------------------,(hoplon.types|(-> bool)),------------
+↪️ arnwh :: (pos_int|[pos_int...]),(nutzen.types|function),(function|any)
+↪️ arnwh :: ----------------------,(nutzen.types|(-> bool)),------------
 ↪️ arnwh :: PI,FT,FA
 ```
 
@@ -257,7 +257,7 @@ Just like `arwh` but runs if **both** `ar` and `wh` do not match.
 
 `def :: (function|any)`
 
-In case `hoplon` is unable to match anything, the return value of the function added to `.def`  is used.
+In case `nutzen` is unable to match anything, the return value of the function added to `.def`  is used.
 
 It's also possible to just provide a static value or object as default.
 
@@ -265,17 +265,17 @@ It's also possible to just provide a static value or object as default.
 
 `clone :: void`
 
-Alongside the `hoplon.guard.immutable` namespace, `hoplon.guard` also has a handy `.clone` operator in case there needs to be seperation in the validator chain.
+Alongside the `nutzen.guard.immutable` namespace, `nutzen.guard` also has a handy `.clone` operator in case there needs to be seperation in the validator chain.
 
 When using fluent API pattern, the underlying object is kept by default to be mutable, to aid in efficiency, but there are rare situations where validator chains share a common parent chain.
 
 #### `⛔️ Notes ⛔️`
 
-- Each `hoplon.guard` object **always** has to end with a `.def`.
+- Each `nutzen.guard` object **always** has to end with a `.def`.
 
 - all the methods also accept **non-functions** as their last value, in case only static values are returned. 
 
-- `hoplon.guard` also accepts validators created using `hoplon.types`.
+- `nutzen.guard` also accepts validators created using `nutzen.types`.
 
 ##### why introduce functions like `arn`,`arwhn`, `arnwh` and `arnwhn` ?
 
@@ -292,7 +292,7 @@ This feature is available to be used on `ar`,`arwh`,`arcap` and `arwhn`.
 Lets suppose we have the following example :
 
 ```js
-var xop = hoplon.guard
+var xop = nutzen.guard
 
 var show = xop
 .ar(1,() => console.log("one"));
@@ -306,7 +306,7 @@ show(null,null); // two
 we can rewrite it using an object:
 
 ```js
-var xop = hoplon.guard
+var xop = nutzen.guard
 
 var ob = {
   1:() => console.log("one")
@@ -326,8 +326,8 @@ show(null,null); // two
 [ LEGENDS ]
 
 PI  =    pos_int | [pos_int,...]
-FT  =  validator | hoplon.types
-FT  =  (-> bool) | hoplon.types
+FT  =  validator | nutzen.types
+FT  =  (-> bool) | nutzen.types
 FA  =  function  | any
  F  =  function
 
@@ -378,10 +378,10 @@ def          function|any
 
 ##### *immutable*
 
-In case immutable chain is needed, `hoplon.guard` offers immutability through `hoplon.guard.immutable` namespace.
+In case immutable chain is needed, `nutzen.guard` offers immutability through `nutzen.guard.immutable` namespace.
 
 ```js
-var guard = hoplon.guard.immutable
+var guard = nutzen.guard.immutable
 
 var init = guard
 .def(=> console.log ("wrong number of arguments"))
@@ -397,7 +397,7 @@ console.log (add2 == add3) // false
 
 It's common enough to want to apply the `.ar` counting on a specific argument itself.
 
-`hoplon.guard.unary` is a namespace where the `.ar` counting is done on the first argument.
+`nutzen.guard.unary` is a namespace where the `.ar` counting is done on the first argument.
 
 The condition of course is that the first argument **has** to be **array like**.
 
@@ -405,5 +405,5 @@ The condition of course is that the first argument **has** to be **array like**.
 
 By default exit function doesn't have debug logging enabled.
 
-In case debug message is needed then `.debug` (`hoplon.guard.debug`) namespace can be used.
+In case debug message is needed then `.debug` (`nutzen.guard.debug`) namespace can be used.
 

@@ -6,7 +6,9 @@ name  = \test7
 
 # BOILER PLATE
 
-{internal,types,guard} = require \../../dist/types/main
+pkg = require \../../dist/types/main
+
+{internal,types,guard} = pkg
 
 {l,z,c,binapi,print_fail,create_stack,R} = internal
 

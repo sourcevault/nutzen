@@ -1,8 +1,8 @@
-pc = require \./print.common
+pkg = require \./print.common
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
-{com,pkgname,print} = pc
+{com,pkgname,print} = pkg
 
 {l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack} = com
 
@@ -262,7 +262,7 @@ apply.auth.key = (F,val,args,key) ->
     F.auth ...A
 
 \d # default
-\i # instance / utilitat.types instance
+\i # instance / nutzen.types instance
 \f # function / user provided function
 
 exec_key = (type,F,val,args,key) ->

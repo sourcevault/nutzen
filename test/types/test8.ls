@@ -1,4 +1,6 @@
-{internal,types} = require \../../dist/types/main
+pkg = require \../../dist/types/main
+
+{internal,types} = pkg
 
 {z,l,R,j,print_fail} = internal
 

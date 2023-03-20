@@ -1,6 +1,6 @@
-{internal,types} = require \../../dist/types/main
+pkg = require \../../dist/types/main
 
-{l,z,c,binapi,print_fail,create_stack} = internal
+{internal,types} = pkg
 
 be = types
 

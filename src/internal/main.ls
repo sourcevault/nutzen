@@ -114,8 +114,6 @@ z.pa = (obj) ->
 
   # console.log disp
 
-
-
 # --------------------------------------------------------------------------------------
 
 loopfault = ->
@@ -275,7 +273,6 @@ tupnest_recurse = (a,index = 0) ->
 
     [ot,tupnest_recurse(a,index+1)]
 
-
 tupnest = -> tupnest_recurse arguments,0
 
 tupnest.push = (da,ta)->
@@ -310,7 +307,7 @@ tupnest.concat = (da,ta) ->
 
 generic_log = (state) -> state
 
-veri_err_str = c.er3 "[utilitat.utils.binapi\##{version}][argument.error]\n"
+veri_err_str = c.er3 "[nutzen.utils.binapi\##{version}][argument.error]\n"
 
 veri = ->
 
@@ -318,7 +315,7 @@ veri = ->
 
   str = veri_err_str
 
-  if not (arglen in [3,4,5])
+  if not (arglen in [2,3,4,5])
 
     str += c.er1 " top level function did not recieve correct number of argument."
 
@@ -327,6 +324,12 @@ veri = ->
     return null
 
   switch arglen
+  | 2 =>
+
+    [fun,uget] = arguments
+
+    user_map = {}
+
   | 3 =>
 
     [fun,uget,state] = arguments
@@ -429,7 +432,7 @@ get = (__,ukey,___) ->
   return P
 
 pub = (fun,uget,state,ulog,user_map) -> # u stands for user 
-  
+
   user_map = veri.apply null,arguments
 
   # arguments.length,fun,uget,state,ulog,user_map
@@ -473,12 +476,12 @@ com =
 
 com.version = version
 
-com.homepage = \https://github.com/sourcevault/utilitat#readme.md
+com.homepage = \https://github.com/sourcevault/nutzen#readme.md
 
 symbols = {}
 
-  ..htypes = Symbol \utilitat.types
-  ..guard = Symbol \utilitat.guard
+  ..htypes = Symbol \nutzen.types
+  ..guard = Symbol \nutzen.guard
 
 symbols = Object.freeze symbols
 

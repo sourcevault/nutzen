@@ -12,7 +12,7 @@ com = pkg.com
 
 pkgversion = version
 
-pkgname    = \utilitat.types
+pkgname    = \nutzen.types
 
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - - -  - -- -  - -
 
@@ -116,7 +116,7 @@ print.input_fault.rest = (data)->
 
   txt = switch etype
   | \arg_count       => " incorrect number of argument provided."
-  | \type_error      => " one of the argument is not a function or utilitat.type object."
+  | \type_error      => " one of the argument is not a function or nutzen.type object."
   | \undefined_error => " illegal error, please report to original author."
 
   l c.er3 txt
@@ -165,7 +165,7 @@ print.input_fault.custom = (patt) ->
 
   | \not_function =>
 
-    l c.er1 " first argument has to be a function / utilitat.types object."
+    l c.er1 " first argument has to be a function / nutzen.types object."
 
   l ""
 
