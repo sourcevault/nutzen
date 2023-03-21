@@ -1,11 +1,11 @@
 {
-  "name": "hoplon",
+  "name": "nutzen",
   "author": "sourcevault",
   "email": "joykrishnamondal@gmail.com",
-  "homepage": "https://github.com/sourcevault/hoplon#readme.md",
+  "homepage": "https://github.com/sourcevault/nutzen#readme.md",
   "license": "BSD-3-Clause",
-  "description": "utility module, immutable type validator & Erlang/Elixir style guards ( but with every imaginable method ).",
-  "repository": "https://github.com/sourcevault/hoplon.git",
+  "description": "type validator & Erlang/Elixir style guards.",
+  "repository": "https://github.com/sourcevault/nutzen.git",
   "version": "2.0.0",
   "main": "dist/types/main.js",
   "scripts": {
