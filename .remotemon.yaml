@@ -93,6 +93,6 @@ dev.install:
 
 version.update:
   watch: false
-  local: update-version src/package.yaml hoplon version
+  local: update-version src/package.yaml nutzen version
 
 
