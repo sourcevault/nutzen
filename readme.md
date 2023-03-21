@@ -8,8 +8,6 @@ npm install nutzen
 npm install sourcevault/nutzen#dist
 ```
 
-[![Build Status](https://travis-ci.org/sourcevault/nutzen.svg?branch=dev)](https://travis-ci.org/sourcevault/nutzen)
-
 `nutzen` provides common utility functions for coders that make heavy use of pattern matching technique(s) in `javascript`.
 
 #### Introduction
