@@ -4,6 +4,8 @@
 
   - object notation added.
 
+  - renamed repository to `nutzen`.
+
 ◾️ `1.0.3` :
   - bug fixes and `.par` added,
   - `getdef` is now `symdef`, reflection the fact it's a symbol.

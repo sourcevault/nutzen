@@ -1,36 +1,36 @@
-<!-- ![](https://raw.githubusercontent.com/sourcevault/hoplon/dev/logo.jpg) -->
+<!-- ![](https://raw.githubusercontent.com/sourcevault/nutzen/dev/logo.png) -->
 
-![](./logo.jpg)
+![](./logo.png)
 
 ```js
-npm install hoplon
+npm install nutzen
 // github            much install |
-npm install sourcevault/hoplon#dist
+npm install sourcevault/nutzen#dist
 ```
 
-[![Build Status](https://travis-ci.org/sourcevault/hoplon.svg?branch=dev)](https://travis-ci.org/sourcevault/hoplon) [![Join the chat at https://gitter.im/sourcevault/hoplon](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sourcevault/hoplon)
+[![Build Status](https://travis-ci.org/sourcevault/nutzen.svg?branch=dev)](https://travis-ci.org/sourcevault/nutzen)
 
-`hoplon` provides common utility functions for coders that make heavy use of pattern matching technique(s) in `javascript`.
+`nutzen` provides common utility functions for coders that make heavy use of pattern matching technique(s) in `javascript`.
 
 #### Introduction
 
-There are 3 namespaces that exists in `hoplon` :
+There are 3 namespaces that exists in `nutzen` :
 
 ```js
-var hoplon = require("hoplon")
-hoplon.types
-hoplon.guard
-hoplon.utils
+var nutzen = require("nutzen")
+nutzen.types
+nutzen.guard
+nutzen.utils
 ```
 
-◾️ [`hoplon.types`](docs/types.md) - immutable type validator that puts composability ( recursiveness ) and extensibility as it's core feature. It can also be used for validating `json` schemas.
+◾️ [`nutzen.types`](docs/types.md) - immutable type validator that puts composability ( recursiveness ) and extensibility as it's core feature. It can also be used for validating `json` schemas.
 
-◾️ [`hoplon.guard`](docs/guard.md) - functional guards (mutable & immutable), similar to what exists in Elixir / Erlang for graceful error handling.
+◾️ [`nutzen.guard`](docs/guard.md) - functional guards (mutable & immutable), similar to what exists in Elixir / Erlang for graceful error handling.
 
-◾️ [`hoplon.utils`](docs/utils.md) - exposes `hoplon`'s internal utils, like [`Ramda`](https://github.com/ramda/ramda)  and [`error-stack-parser`](https://github.com/stacktracejs/error-stack-parser), ( this way there are fewer direct dependencies ).
+◾️ [`nutzen.utils`](docs/utils.md) - exposes `nutzen`'s internal utils, like [`Ramda`](https://github.com/ramda/ramda)  and [`error-stack-parser`](https://github.com/stacktracejs/error-stack-parser), ( this way there are fewer direct dependencies ).
 
 ## LICENCE
 
 - Code released under BSD-3-Clause.
 - Documentation and images released under CC BY-NC-ND 4.0.
-- details can be found [here](https://github.com/sourcevault/hoplon/blob/dev/COPYING.txt).
+- details can be found [here](https://github.com/sourcevault/nutzen/blob/dev/COPYING.txt).
