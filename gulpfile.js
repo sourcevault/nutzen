@@ -34,7 +34,7 @@ def = function(done){
     var rawJson, version_number, T;
     rawJson = JSON.parse(fs.readFileSync('./package.json').toString());
     version_number = rawJson.version;
-    return T = gulp.src("./dist/utils/main.js").pipe(replace('__VERSION__', version_number)).pipe(gulp.dest("./dist/utils/")).on('done', function(){});
+    return T = gulp.src("./dist/internal/main.js").pipe(replace('__VERSION__', version_number)).pipe(gulp.dest("./dist/internal/")).on('done', function(){});
   });
   return gulp.src("./test/*/*.ls").pipe(gulpLivescript({
     bare: true

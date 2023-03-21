@@ -5,7 +5,7 @@ com = pkg.com;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack, version = com.version, loopError = com.loopError;
 wait = com.wait;
 pkgversion = version;
-pkgname = 'utilitat.types';
+pkgname = 'nutzen.types';
 ref$ = out$;
 import$(ref$, pkg);
 ref$.print = print;
@@ -110,7 +110,7 @@ print.input_fault.rest = function(data){
     case 'arg_count':
       return " incorrect number of argument provided.";
     case 'type_error':
-      return " one of the argument is not a function or utilitat.type object.";
+      return " one of the argument is not a function or nutzen.type object.";
     case 'undefined_error':
       return " illegal error, please report to original author.";
     }
@@ -148,7 +148,7 @@ print.input_fault.custom = function(patt){
     l(c.er1(" accepts only 1 argument of type function."));
     break;
   case 'not_function':
-    l(c.er1(" first argument has to be a function / utilitat.types object."));
+    l(c.er1(" first argument has to be a function / nutzen.types object."));
   }
   return l("");
 };

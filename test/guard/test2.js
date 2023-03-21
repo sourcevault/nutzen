@@ -1,7 +1,8 @@
-var proj, name, ref$, internal, types, guard, l, z, c, binapi, print_fail, create_stack, R, be, xop, pf, dum1, dum2, V, out;
+var proj, name, pkg, internal, types, guard, l, z, c, binapi, print_fail, create_stack, R, be, xop, pf, dum1, dum2, V, out;
 proj = 'guard';
 name = 'test2';
-ref$ = require('../../dist/types/main'), internal = ref$.internal, types = ref$.types, guard = ref$.guard;
+pkg = require('../../dist/types/main');
+internal = pkg.internal, types = pkg.types, guard = pkg.guard;
 l = internal.l, z = internal.z, c = internal.c, binapi = internal.binapi, print_fail = internal.print_fail, create_stack = internal.create_stack, R = internal.R;
 be = types;
 xop = guard;
