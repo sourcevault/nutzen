@@ -8,7 +8,7 @@ alpha_sort = vendor.alpha_sort;
 R = require('ramda');
 esp = require('error-stack-parser');
 _jspc = vendor.stringify;
-version = '2.0.2';
+version = '2.0.3';
 if (typeof window === "undefined" && typeof module === "object") {
   util = require('util');
   util_inspect_custom = util.inspect.custom;
