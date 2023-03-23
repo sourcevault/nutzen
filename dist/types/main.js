@@ -1,4 +1,4 @@
-var pkg, internal, com, print, z, l, R, j, deep_freeze, uic, loopError, noop, xop, custom, define, defset, be, non_map_props, props, base, not_base, undefnull, F, i$, len$, ref$, name, type, A, B, C, resreq, objarr, reqError, resError, resreqError, restricted, integer, boolnum, maybe_boolnum, maybe, list, flatro, is_special_str, rm_not_arrays, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var pkg, internal, com, print, z, l, R, j, deep_freeze, uic, loopError, noop, xop, custom, define, defset, be, non_map_props, props, base, not_base, undefnull, F, i$, len$, ref$, name, type, A, B, resreq, objarr, reqError, resError, resreqError, restricted, integer, boolnum, maybe_boolnum, maybe, list, flatro, is_special_str, rm_not_arrays, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 pkg = require('./print.common');
 internal = require('./internal');
 com = pkg.com, print = pkg.print;
@@ -6,7 +6,6 @@ z = com.z, l = com.l, R = com.R, j = com.j, deep_freeze = com.deep_freeze, uic =
 xop = pkg.guard;
 custom = internal.custom, define = internal.define, defset = internal.defset;
 be = custom;
-be.known = {};
 non_map_props = [['undef', 'Undefined'], ['null', 'Null'], ['num', 'Number'], ['str', 'String'], ['fun', 'Function'], ['bool', 'Boolean'], ['objerr', 'Error']];
 props = [['obj', 'Object'], ['arr', 'Array']].concat(arrayFrom$(non_map_props));
 base = function(type){
@@ -113,8 +112,6 @@ for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
   B = not_base(type);
   define.basis(name, B);
   be.not[name] = B;
-  C = define.basis.empty(name);
-  be.known[name] = C;
 }
 for (i$ = 0, len$ = non_map_props.length; i$ < len$; ++i$) {
   name = non_map_props[i$][0];

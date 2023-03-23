@@ -14,8 +14,6 @@ xop = pkg.guard
 
 be = custom
 
-be.known = {}
-
 #---------------------------
 
 # first column is the function name, second column is error message.
@@ -145,10 +143,6 @@ for [name,type] in props
   be.not[name] = B
 
   #----------------------------
-
-  C = define.basis.empty name
-
-  be.known[name] = C
 
 #------------------------------
 
