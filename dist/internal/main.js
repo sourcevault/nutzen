@@ -268,7 +268,7 @@ tupnest.concat = function(da, ta){
 generic_log = function(state){
   return state;
 };
-veri_err_str = c.er3("[nutzen.utils.binapi#" + version + "][argument.error]\n");
+veri_err_str = c.er3("[nutzen.internal.binapi#" + version + "][argument.error]\n");
 veri = function(){
   var arglen, str, fun, uget, user_map, state, uu_map, ulog, log;
   arglen = arguments.length;
@@ -331,11 +331,11 @@ veri = function(){
   }
   return user_map;
 };
-ap = function(__, ___, args){
-  return this.fun(this.state, args);
+ap = function(__, parent_object, args){
+  return this.fun(this.state, args, parent_object);
 };
 isA = Array.isArray;
-get = function(__, ukey, ___){
+get = function(_a, ukey, _b, _c){
   var exists, ret, sortir, cont, state, handle, P;
   exists = this.user_map[ukey];
   if (exists) {
