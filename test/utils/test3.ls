@@ -42,6 +42,12 @@ von = ins.test 1
 
 # <| TEST 1 |>
 
-if not (von.color is \blue )
+if not (von.color is \blue)
 
   fail 1
+
+
+
+
+
+

@@ -408,9 +408,7 @@ tightloop = (state) -> ->
 
     | otherwise =>
 
-      print.route [\unary_not_array,[(new Error!),state]]
-
-      return undefined
+      return print.route [\unary_not_array,[(new Error!),state]]
 
   else
 

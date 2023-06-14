@@ -10,13 +10,15 @@ export {...ext,print:print}
 
 com = ext.com
 
-{z,j,l,R,c,esp,create_stack,lit,version} = com
+
+{z,j,l,R,c,esp,create_stack,lit,version,loopError} = com
 
 print.log  = {}
 
 help         = c.grey "[  docs] #{com.homepage}"
 
 show_stack   = create_stack 2,['internal/modules/cjs','node:internal'],(help + '\n')
+
 
 object_name  = \nutzen.guard
 
@@ -30,7 +32,7 @@ print.log.proto = ->
 
   if state is undefined
 
-    return (c.pink "[#{pkgname}]") + (c.er2 "[state is undefined]")
+    return (c.er2 "[#{pkgname}]") + (c.er2 "[state is undefined]")
 
   print.log.main state
 
@@ -58,7 +60,7 @@ print.log.prox = (state) ->
 
   str = R.join "",["[#{pkgname}",inner,"]"]
 
-  (c.pink str) + " []"
+  (c.er2 str) + " []"
 
 # [nutzen.guard] [ ar(2) ]
 
@@ -137,7 +139,7 @@ map_fname_to_ctypes = (fname)->
 
 txt = {}
 
-arcap_txt = 
+arcap_txt =
   *c.er2 ".arcap only accepts 1,2,3 or 4 arguments :\n"
    c.ok " arcap/1 :: object"
    c.ok " arcap/2 :: PI,F"
@@ -470,7 +472,7 @@ print.typeError = (ta) ->
 
   l lit do
     ["[#{pkgname}]","[typeError]"," .#{fname}(...)"]
-    [c.pink,c.er2,c.er2]
+    [c.er2,c.er2,c.er2]
 
   l do
     '\n'
@@ -489,7 +491,7 @@ print.unary_not_array = ([E,data]) ->
 
   l lit do
     ["[#{pkgname}]","[typeError]"]
-    [c.pink,c.er2]
+    [c.er2,c.er2]
 
   l do
     '\n'
@@ -504,6 +506,8 @@ print.unary_not_array = ([E,data]) ->
 
   show_stack E
 
+
+
 print.setting = ([E,type,vr,key]) ->
 
   msg = switch type
@@ -513,7 +517,7 @@ print.setting = ([E,type,vr,key]) ->
 
   l lit do
     ["[#{pkgname}]","[configError]"," #{msg}"]
-    [c.pink,c.er2,c.er1]
+    [c.er2,c.er2,c.er1]
 
   l do
     '\n'
@@ -526,7 +530,7 @@ print.state_undef = ([E,fname]) ->
 
   l lit do
     ["[#{pkgname}]","[Error]"]
-    [c.pink,c.er1]
+    [c.er2,c.er2]
 
   l lit do
     [("\n  ." + fname)]
@@ -546,7 +550,7 @@ print.validator_return_not_array = (ta) ->
 
   l lit do
     ["[#{pkgname}]","[typeError]"," .#{type}(","...",")"]
-    [c.pink,c.er2,c.er2,c.er3,c.er2]
+    [c.er2,c.er2,c.er2,c.er3,c.er2]
 
   l do
     '\n'
@@ -559,7 +563,7 @@ print.validator_return_not_array = (ta) ->
 
   show_stack E
 
-print.route = (ta) !->
+print.route = (ta) ->
 
   [ECLASS,data] = ta
 
@@ -575,6 +579,11 @@ print.route = (ta) !->
   | \state_undef                => print.state_undef data
 
   | otherwise                   => l "print.route\n\n",Er,data
+
+
+  loopError!
+
+
 
 
 print.docstring = """

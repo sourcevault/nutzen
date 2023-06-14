@@ -328,8 +328,7 @@ tightloop = function(state){
         arglen = first.length;
         break;
       default:
-        print.route(['unary_not_array', [new Error(), state]]);
-        return undefined;
+        return print.route(['unary_not_array', [new Error(), state]]);
       }
     } else {
       arglen = arguments.length;

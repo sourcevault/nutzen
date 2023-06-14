@@ -5,7 +5,7 @@ homepage: https://github.com/sourcevault/nutzen#readme.md
 license: BSD-3-Clause
 description: type validator & Erlang/Elixir style guards.
 repository: https://github.com/sourcevault/nutzen.git
-version: 2.0.4
+version: 2.0.5
 main: dist/types/main.js
 scripts:
   test: bash ./testall.sh

@@ -18,7 +18,6 @@ esp              = require \error-stack-parser
 
 _jspc            = vendor.stringify
 
-
 version = \__VERSION__
 
 if (typeof window is "undefined") and (typeof module is "object")
@@ -35,7 +34,7 @@ uic = util_inspect_custom
 
 # --------------------------------------------------------------------------------------
 
-noop                      = !->
+noop = !->
 
 noop[uic] = -> @[util_inspect_custom]
 
@@ -116,14 +115,14 @@ z.pa = (obj) ->
 
 # --------------------------------------------------------------------------------------
 
-loopfault = ->
+loopError = ->
 
-  loopError  = ->
+  noop  = ->
 
-  apply = -> new Proxy(loopError,{apply:apply,get:get})
-  get   = -> new Proxy(loopError,{apply:apply,get:get})
+  apply = -> new Proxy(noop,{apply:apply,get:get})
+  get   = -> new Proxy(noop,{apply:apply,get:get})
 
-  new Proxy(loopError,{apply:apply,get:get})
+  new Proxy(noop,{apply:apply,get:get})
 
 # --------------------------------------------------------------------------------------
 
@@ -467,7 +466,7 @@ com =
    binapi:pub
    tupnest:Object.freeze(tupnest)
    pad:Object.freeze(advanced_pad)
-   loopError:loopfault
+   loopError:loopError
    print_fail:print_fail
    alpha_sort:alpha_sort
    uic:util_inspect_custom

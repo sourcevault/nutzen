@@ -1,11 +1,11 @@
-var ext, print, ref$, com, z, j, l, R, c, esp, create_stack, lit, version, help, show_stack, object_name, pkgname, arrange, show_chain, map_fname_to_ctypes, txt, arcap_txt, cap_txt, StrArgLen, defc, StrEType, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var ext, print, ref$, com, z, j, l, R, c, esp, create_stack, lit, version, loopError, help, show_stack, object_name, pkgname, arrange, show_chain, map_fname_to_ctypes, txt, arcap_txt, cap_txt, StrArgLen, defc, StrEType, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 ext = require('../internal/main');
 print = {};
 ref$ = out$;
 import$(ref$, ext);
 ref$.print = print;
 com = ext.com;
-z = com.z, j = com.j, l = com.l, R = com.R, c = com.c, esp = com.esp, create_stack = com.create_stack, lit = com.lit, version = com.version;
+z = com.z, j = com.j, l = com.l, R = com.R, c = com.c, esp = com.esp, create_stack = com.create_stack, lit = com.lit, version = com.version, loopError = com.loopError;
 print.log = {};
 help = c.grey("[  docs] " + com.homepage);
 show_stack = create_stack(2, ['internal/modules/cjs', 'node:internal'], help + '\n');
@@ -18,7 +18,7 @@ print.log.proto = function(){
   var state;
   state = this.self;
   if (state === undefined) {
-    return c.pink("[" + pkgname + "]") + c.er2("[state is undefined]");
+    return c.er2("[" + pkgname + "]") + c.er2("[state is undefined]");
   }
   return print.log.main(state);
 };
@@ -41,7 +41,7 @@ print.log.prox = function(state){
     inner = "/" + state.sorted_path.join(".");
   }
   str = R.join("", ["[" + pkgname, inner, "]"]);
-  return c.pink(str) + " []";
+  return c.er2(str) + " []";
 };
 arrange = R.pipe(R.groupWith(R.equals), R.map(function(x){
   var name;
@@ -346,14 +346,14 @@ print.typeError = function(ta){
     }
     return results$;
   }()).join("\n");
-  l(lit(["[" + pkgname + "]", "[typeError]", " ." + fname + "(...)"], [c.pink, c.er2, c.er2]));
+  l(lit(["[" + pkgname + "]", "[typeError]", " ." + fname + "(...)"], [c.er2, c.er2, c.er2]));
   l('\n', show_chain(data.str, [fname]), '\n\n', legend, '\n\n', type_signature, '\n\n', comment, '\n');
   return show_stack(E);
 };
 print.unary_not_array = function(arg$){
   var E, data;
   E = arg$[0], data = arg$[1];
-  l(lit(["[" + pkgname + "]", "[typeError]"], [c.pink, c.er2]));
+  l(lit(["[" + pkgname + "]", "[typeError]"], [c.er2, c.er2]));
   l('\n', lit(['unary', show_chain(arrayFrom$(data.str).concat(['def']), [])], [c.warn, 0]), '\n');
   l(lit([" unary namespace requires first argument to be array like.", "\n"], [c.pink, 0]));
   return show_stack(E);
@@ -371,14 +371,14 @@ print.setting = function(arg$){
       return "option not defined.";
     }
   }());
-  l(lit(["[" + pkgname + "]", "[configError]", " " + msg], [c.pink, c.er2, c.er1]));
+  l(lit(["[" + pkgname + "]", "[configError]", " " + msg], [c.er2, c.er2, c.er1]));
   l('\n', lit([vr.join("."), "." + key], [c.ok, c.er3]), '\n');
   return show_stack(E);
 };
 print.state_undef = function(arg$){
   var E, fname;
   E = arg$[0], fname = arg$[1];
-  l(lit(["[" + pkgname + "]", "[Error]"], [c.pink, c.er1]));
+  l(lit(["[" + pkgname + "]", "[Error]"], [c.er2, c.er2]));
   l(lit(["\n  ." + fname], [c.warn]));
   l(lit(["\n  Javascript does not allow referencing of .prototype function.\n"], [c.pink]));
   return show_stack(E);
@@ -387,7 +387,7 @@ print.validator_return_not_array = function(ta){
   var E, ref$, type, loc, data, type_signature, I;
   E = ta[0], ref$ = ta[1], type = ref$[0], loc = ref$[1], data = ta[2];
   type_signature = StrEType(type, loc)[0];
-  l(lit(["[" + pkgname + "]", "[typeError]", " ." + type + "(", "...", ")"], [c.pink, c.er2, c.er2, c.er3, c.er2]));
+  l(lit(["[" + pkgname + "]", "[typeError]", " ." + type + "(", "...", ")"], [c.er2, c.er2, c.er2, c.er3, c.er2]));
   l('\n', c.er1((function(){
     var i$, ref$, len$, results$ = [];
     for (i$ = 0, len$ = (ref$ = data.str).length; i$ < len$; ++i$) {
@@ -420,6 +420,7 @@ print.route = function(ta){
   default:
     l("print.route\n\n", Er, data);
   }
+  return loopError();
 };
 print.docstring = "" + c.pink(pkgname) + "\n" + c.grey(help);
 function import$(obj, src){
