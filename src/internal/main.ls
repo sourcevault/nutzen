@@ -307,7 +307,7 @@ tupnest.concat = (da,ta) ->
 
 generic_log = (state) -> state
 
-veri_err_str = c.er3 "[nutzen.utils.binapi\##{version}][argument.error]\n"
+veri_err_str = c.er3 "[nutzen.internal.binapi\##{version}][argument.error]\n"
 
 veri = ->
 
@@ -385,13 +385,13 @@ veri = ->
 
 # -----------------------------------------------
 
-ap = (__,___,args) ->
+ap = (__,parent_object,args) ->
 
-  @fun @state,args
+  @fun @state,args,parent_object
 
 isA = Array.isArray
 
-get = (__,ukey,___) ->
+get = (_a,ukey,_b,_c) ->
 
   exists = @user_map[ukey]
 
@@ -431,7 +431,7 @@ get = (__,ukey,___) ->
 
   return P
 
-pub = (fun,uget,state,ulog,user_map) -> # u stands for user 
+pub = (fun,uget,state,ulog,user_map) -> # u stands for user
 
   user_map = veri.apply null,arguments
 

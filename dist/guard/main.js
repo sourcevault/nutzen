@@ -2,65 +2,35 @@ var ext, com, verify, print, l, z, R, uic, binapi, loopError, resolve, unshift_r
 ext = require("./verify.print.common");
 com = ext.com, verify = ext.verify, print = ext.print;
 l = com.l, z = com.z, R = com.R, uic = com.uic, binapi = com.binapi, loopError = com.loopError;
-resolve = function(F, A){
+resolve = function(F, A, cette){
   var ftype, f;
   ftype = F[0], f = F[1];
   switch (ftype) {
   case 'f':
-    return f.apply(void 8, A);
+    return f.apply(cette, A);
   case 'v':
-    return f.auth.apply(void 8, A);
+    return f.auth.apply(cette, A);
   case 's':
     return f;
   }
 };
-unshift_resolve = function(F, init, A){
-  var ftype, f, modArg;
+unshift_resolve = function(F, init, A, cette){
+  var ftype, f, mod_arg;
   ftype = F[0], f = F[1];
   switch (ftype) {
   case 'f':
-    switch (A.length) {
-    case 1:
-      return f(init, A[0]);
-    case 2:
-      return f(init, A[0], A[1]);
-    case 3:
-      return f(init, A[0], A[1], A[2]);
-    case 0:
-      return f(init);
-    case 4:
-      return f(init, A[0], A[1], A[2], A[3]);
-    case 5:
-      return f(init, A[0], A[1], A[2], A[3], A[4]);
-    default:
-      modArg = [init].concat(arrayFrom$(A));
-      return f.apply(null, modArg);
-    }
+    mod_arg = [init].concat(arrayFrom$(A));
+    return f.apply(cette, mod_arg);
   case 'v':
-    switch (A.length) {
-    case 1:
-      return f.auth(init, A[0]);
-    case 2:
-      return f.auth(init, A[0], A[1]);
-    case 3:
-      return f.auth(init, A[0], A[1], A[2]);
-    case 0:
-      return f.auth(init);
-    case 4:
-      return f.auth(init, A[0], A[1], A[2], A[3]);
-    case 5:
-      return f.auth(init, A[0], A[1], A[2], A[3], A[4]);
-    default:
-      modArg = [init].concat(arrayFrom$(A));
-      return f.auth.apply(f, modArg);
-    }
+    mod_arg = [init].concat(arrayFrom$(A));
+    return f.auth.apply(cette, mod_arg);
   case 's':
     return f;
   }
 };
 UNDEC = Symbol('undecided');
 ob = function(fn){
-  return function(da, ta){
+  return function(da, ta, cette){
     var pick, len, I, ka, val;
     pick = ta[da.arglen];
     if (!pick) {
@@ -70,7 +40,7 @@ ob = function(fn){
     I = 0;
     do {
       ka = pick[I];
-      val = fn(da, ka);
+      val = fn(da, ka, cette);
       if (val !== UNDEC) {
         return val;
       }
@@ -80,165 +50,165 @@ ob = function(fn){
   };
 };
 n = function(fn){
-  return function(da, ta){
+  return function(da, ta, cette){
     var num, ka;
     num = ta[0], ka = ta[1];
     if (num === da.arglen) {
-      return fn(da, ka);
+      return fn(da, ka, cette);
     }
     return UNDEC;
   };
 };
 a = function(fn){
-  return function(da, ta){
+  return function(da, ta, cette){
     var spans, ka;
     spans = ta[0], ka = ta[1];
     if (spans[da.arglen]) {
-      return fn(da, ka);
+      return fn(da, ka, cette);
     }
     return UNDEC;
   };
 };
 core = {};
-core.wh = function(da, ta){
+core.wh = function(da, ta, cette){
   var exec, ref$, vtype, vF, cont, vd;
   if (ta.length === 1) {
     exec = ta[0];
-    return resolve(exec, da.arg);
+    return resolve(exec, da.arg, cette);
   }
   ref$ = ta[0], vtype = ref$[0], vF = ref$[1], exec = ta[1];
   switch (vtype) {
   case 'f':
-    cont = vF.apply(void 8, da.arg);
+    cont = vF.apply(cette, da.arg);
     if (cont) {
-      return resolve(exec, da.arg);
+      return resolve(exec, da.arg, cette);
     }
     break;
   case 'v':
-    vd = vF.auth(da.arg);
+    vd = vF.auth.apply(cette, da.arg);
     if (vd['continue']) {
-      return resolve(exec, vd.value);
+      return resolve(exec, vd.value, cette);
     }
   }
   return UNDEC;
 };
-core.whn = function(da, ta){
+core.whn = function(da, ta, cette){
   var exec, ref$, vtype, vF, cont, vd;
   if (ta.length === 1) {
     exec = ta[0];
-    return resolve(exec, da.arg);
+    return resolve(exec, da.arg, cette);
   }
   ref$ = ta[0], vtype = ref$[0], vF = ref$[1], exec = ta[1];
   switch (vtype) {
   case 'f':
-    cont = vF.apply(null, da.arg);
+    cont = vF.apply(cette, da.arg);
     if (!cont) {
-      return resolve(exec, da.arg);
+      return resolve(exec, da.arg, cette);
     }
     break;
   case 'v':
-    vd = vF.auth(da.arg);
+    vd = vF.auth.apply(cette, da.arg);
     if (vd.error) {
-      return resolve(exec, vd.value);
+      return resolve(exec, vd.value, cette);
     }
     break;
   case 'b':
     if (!vF) {
-      return resolve(exec, da.arg);
+      return resolve(exec, da.arg, cette);
     }
   }
   return UNDEC;
 };
 n_n = function(fn){
-  return function(da, ta){
+  return function(da, ta, cette){
     var num, ka;
     num = ta[0], ka = ta[1];
     if (num === da.arglen) {
       return UNDEC;
     }
-    return fn(da, ka);
+    return fn(da, ka, cette);
   };
 };
 n_a = function(fn){
-  return function(da, ta){
+  return function(da, ta, cette){
     var spans, ka;
     spans = ta[0], ka = ta[1];
     if (spans[da.arglen]) {
       return UNDEC;
     }
-    return fn(da, ka);
+    return fn(da, ka, cette);
   };
 };
 arn = {};
-arn.a = function(da, ta){
+arn.a = function(da, ta, cette){
   var spans, exec;
   spans = ta[0], exec = ta[1];
   if (spans[da.arglen]) {
     return UNDEC;
   }
-  return resolve(exec, da.arg);
+  return resolve(exec, da.arg, cette);
 };
-arn.n = function(da, ta){
+arn.n = function(da, ta, cette){
   var num, exec;
   num = ta[0], exec = ta[1];
   if (da.arglen === num) {
     return UNDEC;
   }
-  return resolve(exec, da.arg);
+  return resolve(exec, da.arg, cette);
 };
-core.arn = function(da, ta){
-  return arn[ta[0]](da, ta[1]);
+core.arn = function(da, ta, cette){
+  return arn[ta[0]](da, ta[1], cette);
 };
 arwhn = {};
 arwhn.ob = ob(core.whn);
 arwhn.n = n(core.whn);
 arwhn.a = a(core.whn);
-core.arwhn = function(da, ta){
-  return arwhn[ta[0]](da, ta[1]);
+core.arwhn = function(da, ta, cette){
+  return arwhn[ta[0]](da, ta[1], cette);
 };
 arnwh = {};
 arnwh.n = n_n(core.wh);
 arnwh.a = n_a(core.wh);
-core.arnwh = function(da, ta){
-  return arnwh[ta[0]](da, ta[1]);
+core.arnwh = function(da, ta, cette){
+  return arnwh[ta[0]](da, ta[1], cette);
 };
 arnwhn = {};
 arnwhn.n = n_n(core.whn);
 arnwhn.a = n_a(core.whn);
-core.arnwhn = function(da, ta){
-  return arnwhn[ta[0]](da, ta[1]);
+core.arnwhn = function(da, ta, cette){
+  return arnwhn[ta[0]](da, ta[1], cette);
 };
-core.cap = function(da, ta){
+core.cap = function(da, ta, cette){
   switch (ta.length) {
   case 3:
-    return core.cap[3](da, ta);
+    return core.cap[3](da, ta, cette);
   case 2:
-    return core.cap[2](da, ta);
+    return core.cap[2](da, ta, cette);
   case 1:
-    return resolve(ta[0], da.arg);
+    return resolve(ta[0], da.arg, cette);
   }
 };
-core.cap[2] = function(da, ta){
+core.cap[2] = function(da, ta, cette){
   var exec, ref$, vtype, vF, ret, vd, as_obj, narg;
   exec = ta[0], ref$ = ta[1], vtype = ref$[0], vF = ref$[1];
   switch (vtype) {
   case 'f':
-    ret = vF.apply(void 8, da.arg);
+    ret = vF.apply(cette, da.arg);
     if (ret !== false) {
-      return unshift_resolve(exec, ret, da.arg);
+      return unshift_resolve(exec, ret, da.arg, cette);
     }
     break;
   case 'v':
-    vd = vF.auth(da.arg);
+    vd = vF.auth.apply(cette, da.arg);
     if (vd['continue']) {
-      return unshift_resolve(exec, vd.value, da.arg);
+      return unshift_resolve(exec, vd.value, da.arg, cette);
     } else {
       as_obj = {
         message: vd.message,
         path: vd.path
       };
       narg = [as_obj].concat(arrayFrom$(da.arg));
-      ret = lastview.apply(void 8, narg);
+      ret = lastview.apply(cette, narg);
       if (ret !== void 8) {
         return ret;
       }
@@ -246,30 +216,30 @@ core.cap[2] = function(da, ta){
     break;
   case 'b':
     if (vF) {
-      return resolve(exec, da.arg);
+      return resolve(exec, da.arg, cette);
     }
   }
   return UNDEC;
 };
-core.cap[3] = function(da, ta){
+core.cap[3] = function(da, ta, cette){
   var exec, ref$, vtype, vF, lastview, ret, cont, msg, narg, lvret, vd, as_obj;
   exec = ta[0], ref$ = ta[1], vtype = ref$[0], vF = ref$[1], lastview = ta[2];
   switch (vtype) {
   case 'f':
-    ret = vF.apply(void 8, da.arg);
+    ret = vF.apply(cette, da.arg);
     if (isArray(ret)) {
       cont = ret[0], msg = ret[1];
       if (cont) {
-        return unshift_resolve(exec, msg, da.arg);
+        return unshift_resolve(exec, msg, da.arg, cette);
       } else {
         narg = [msg].concat(arrayFrom$(da.arg));
-        lvret = lastview.apply(void 8, narg);
+        lvret = lastview.apply(cette, narg);
       }
     } else {
       if (ret) {
-        return resolve(exec, da.arg);
+        return resolve(exec, da.arg, cette);
       } else {
-        lvret = lastview.apply(void 8, da.arg);
+        lvret = lastview.apply(cette, da.arg);
       }
     }
     if (lvret !== void 8) {
@@ -277,16 +247,16 @@ core.cap[3] = function(da, ta){
     }
     break;
   case 'v':
-    vd = vF.auth(da.arg);
+    vd = vF.auth.apply(cette, da.arg);
     if (vd['continue']) {
-      return unshift_resolve(exec, vd.value, da.arg);
+      return unshift_resolve(exec, vd.value, da.arg, cette);
     } else {
       as_obj = {
         message: vd.message,
         path: vd.path
       };
       narg = [as_obj].concat(arrayFrom$(da.arg));
-      ret = lastview.apply(void 8, narg);
+      ret = lastview.apply(cette, narg);
       if (ret !== void 8) {
         return ret;
       }
@@ -294,9 +264,9 @@ core.cap[3] = function(da, ta){
     break;
   case 'b':
     if (vF) {
-      return resolve(exec, da.arg);
+      return resolve(exec, da.arg, cette);
     } else {
-      ret = lastview.apply(void 8, da.arg);
+      ret = lastview.apply(cette, da.arg);
       if (ret !== void 8) {
         return ret;
       }
@@ -308,48 +278,48 @@ arcap = {};
 arcap.ob = ob(core.cap);
 arcap.n = n(core.cap);
 arcap.a = a(core.cap);
-core.arcap = function(da, ta){
-  return arcap[ta[0]](da, ta[1]);
+core.arcap = function(da, ta, cette){
+  return arcap[ta[0]](da, ta[1], cette);
 };
 isArray = Array.isArray;
 arwh = {};
 arwh.ob = ob(core.wh);
 arwh.n = n(core.wh);
 arwh.a = a(core.wh);
-core.arwh = function(da, ta){
-  return arwh[ta[0]](da, ta[1]);
+core.arwh = function(da, ta, cette){
+  return arwh[ta[0]](da, ta[1], cette);
 };
 ar = {};
-ar.ob = function(da, ta){
+ar.ob = function(da, ta, cette){
   var pick;
   pick = ta[da.arglen];
   if (!pick) {
     return UNDEC;
   }
-  return resolve(pick, da.arg);
+  return resolve(pick, da.arg, cette);
 };
-ar.n = function(da, ta){
+ar.n = function(da, ta, cette){
   var num, exec;
   num = ta[0], exec = ta[1];
   if (num === da.arglen) {
-    return resolve(exec, da.arg);
+    return resolve(exec, da.arg, cette);
   }
   return UNDEC;
 };
-ar.a = function(da, ta){
+ar.a = function(da, ta, cette){
   var spans, exec;
   spans = ta[0], exec = ta[1];
   if (spans[da.arglen]) {
-    return resolve(exec, da.arg);
+    return resolve(exec, da.arg, cette);
   }
   return UNDEC;
 };
-core.ar = function(da, ta){
-  return ar[ta[0]](da, ta[1]);
+core.ar = function(da, ta, cette){
+  return ar[ta[0]](da, ta[1], cette);
 };
 tightloop = function(state){
   return function(){
-    var first, arglen, I, fns, terminate, da, elemento, devolver, def;
+    var first, arglen, cette, I, fns, terminate, da, elemento, devolver, def;
     if (state.unary) {
       first = arguments[0];
       switch (R.type(first)) {
@@ -364,6 +334,11 @@ tightloop = function(state){
     } else {
       arglen = arguments.length;
     }
+    if (this === global) {
+      cette = void 8;
+    } else {
+      cette = this;
+    }
     I = 0;
     fns = state.fns;
     terminate = fns.length;
@@ -374,7 +349,7 @@ tightloop = function(state){
     };
     while (I < terminate) {
       elemento = fns[I];
-      devolver = core[elemento[0]](da, elemento[1]);
+      devolver = core[elemento[0]](da, elemento[1], cette);
       if (devolver !== UNDEC) {
         return devolver;
       }
@@ -382,7 +357,7 @@ tightloop = function(state){
     }
     def = state.def;
     if (def) {
-      return resolve(def, arguments);
+      return resolve(def, arguments, cette);
     }
   };
 };
@@ -535,7 +510,7 @@ init = {
   unary: false,
   debug: false
 };
-entry = function(data, args){
+entry = function(data, args, what){
   var str, has, path, lock, key, ob, i$, len$, ke, put;
   if (data === null) {
     return loopError();

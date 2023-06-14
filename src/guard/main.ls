@@ -6,55 +6,37 @@ ext = require "./verify.print.common"
 
 #---------------------------------------------------
 
-resolve = (F,A) ->
+resolve = (F,A,cette) ->
 
   [ftype,f] = F
 
   switch ftype
-  | \f => f.apply void,A
-  | \v => f.auth.apply void,A
+  | \f => f.apply cette,A
+  | \v => f.auth.apply cette,A
   | \s => f
 
-unshift_resolve = (F,init,A) -> # when arguments require manipulation
+unshift_resolve = (F,init,A,cette) -> # when arguments require manipulation
 
   [ftype,f] = F
 
   switch ftype
   | \f =>
 
-    switch A.length
-    | 1 => f init,A[0]
-    | 2 => f init,A[0],A[1]
-    | 3 => f init,A[0],A[1],A[2]
-    | 0 => f init
-    | 4 => f init,A[0],A[1],A[2],A[3]
-    | 5 => f init,A[0],A[1],A[2],A[3],A[4]
-    | otherwise =>
+    mod_arg = [init,...A]
 
-      mod-arg = [init,...A]
-
-      f ...mod-arg
+    f.apply cette,mod_arg
 
   | \v =>
 
-    switch A.length
-    | 1 => f.auth init,A[0]
-    | 2 => f.auth init,A[0],A[1]
-    | 3 => f.auth init,A[0],A[1],A[2]
-    | 0 => f.auth init
-    | 4 => f.auth init,A[0],A[1],A[2],A[3]
-    | 5 => f.auth init,A[0],A[1],A[2],A[3],A[4]
-    | otherwise =>
+    mod_arg = [init,...A]
 
-      mod-arg = [init,...A]
-
-      f.auth ...mod-arg
+    f.auth.apply cette,mod_arg
 
   | \s => f
 
 UNDEC = Symbol \undecided
 
-ob = (fn) -> (da,ta)->
+ob = (fn) -> (da,ta,cette)->
 
   pick = ta[da.arglen]
 
@@ -68,7 +50,7 @@ ob = (fn) -> (da,ta)->
 
     ka = pick[I]
 
-    val = fn da,ka
+    val = fn da,ka,cette
 
     if val isnt UNDEC then return val
 
@@ -78,35 +60,35 @@ ob = (fn) -> (da,ta)->
 
   return UNDEC
 
-n = (fn) -> (da,ta) ->
+n = (fn) -> (da,ta,cette) ->
 
   [num,ka] = ta
 
   if num is da.arglen
 
-    return fn da,ka
+    return fn da,ka,cette
 
   return UNDEC
 
-a = (fn) -> (da,ta) ->
+a = (fn) -> (da,ta,cette) ->
 
   [spans,ka] = ta
 
   if spans[da.arglen]
 
-    return fn da,ka
+    return fn da,ka,cette
 
   return UNDEC
 
 core = {}
 
-core.wh = (da,ta) ->
+core.wh = (da,ta,cette) ->
 
   if ta.length is 1
 
     [exec] = ta
 
-    return resolve exec,da.arg
+    return resolve exec,da.arg,cette
 
   [[vtype,vF],exec] = ta
 
@@ -114,29 +96,29 @@ core.wh = (da,ta) ->
 
   | \f =>
 
-    cont = vF.apply void,da.arg
+    cont = vF.apply cette,da.arg
 
     if cont
 
-      return resolve exec,da.arg
+      return resolve exec,da.arg,cette
 
   | \v =>
 
-    vd = vF.auth da.arg
+    vd = vF.auth.apply cette,da.arg
 
     if vd.continue
 
-      return resolve exec,vd.value
+      return resolve exec,vd.value,cette
 
   UNDEC
 
-core.whn = (da,ta) ->
+core.whn = (da,ta,cette) ->
 
   if ta.length is 1
 
     [exec] = ta
 
-    return resolve exec,da.arg
+    return resolve exec,da.arg,cette
 
   [[vtype,vF],exec] = ta
 
@@ -144,65 +126,65 @@ core.whn = (da,ta) ->
 
   | \f =>
 
-    cont = vF ...da.arg
+    cont = vF.apply cette,da.arg
 
     if not cont
 
-      return resolve exec,da.arg
+      return resolve exec,da.arg,cette
 
   | \v =>
 
-    vd = vF.auth da.arg
+    vd = vF.auth.apply cette,da.arg
 
     if vd.error
 
-      return resolve exec,vd.value
+      return resolve exec,vd.value,cette
 
   | \b =>
 
     if not vF
 
-      return resolve exec,da.arg
+      return resolve exec,da.arg,cette
 
   UNDEC
 
 # ---aux----
 
-n_n = (fn) -> (da,ta) -> # not num
+n_n = (fn) -> (da,ta,cette) -> # not num
 
   [num,ka] = ta
 
   if num is da.arglen then return UNDEC
 
-  return fn da,ka
+  return fn da,ka,cette
 
-n_a = (fn) -> (da,ta) -> # not array
+n_a = (fn) -> (da,ta,cette) -> # not array
 
   [spans,ka] = ta
 
   if spans[da.arglen] then return UNDEC
 
-  return fn da,ka
+  return fn da,ka,cette
 
 arn = {}
 
-arn.a = (da,ta) ->
+arn.a = (da,ta,cette) ->
 
   [spans,exec] = ta
 
   if spans[da.arglen] then return UNDEC
 
-  return resolve exec,da.arg
+  return resolve exec,da.arg,cette
 
-arn.n = (da,ta)  ->
+arn.n = (da,ta,cette)  ->
 
   [num,exec] = ta
 
   if (da.arglen is num) then return UNDEC
 
-  return resolve exec,da.arg
+  return resolve exec,da.arg,cette
 
-core.arn = (da,ta) -> arn[ta[0]] da,ta[1]
+core.arn = (da,ta,cette) -> arn[ta[0]] da,ta[1],cette
 
 arwhn = {}
 
@@ -212,7 +194,7 @@ arwhn.n = n core.whn
 
 arwhn.a = a core.whn
 
-core.arwhn = (da,ta) -> arwhn[ta[0]] da,ta[1]
+core.arwhn = (da,ta,cette) -> arwhn[ta[0]] da,ta[1],cette
 
 arnwh = {}
 
@@ -220,9 +202,9 @@ arnwh.n = n_n core.wh
 
 arnwh.a = n_a core.wh
 
-core.arnwh = (da,ta) ->
+core.arnwh = (da,ta,cette) ->
 
-  arnwh[ta[0]] da,ta[1]
+  arnwh[ta[0]] da,ta[1],cette
 
 arnwhn = {}
 
@@ -230,18 +212,18 @@ arnwhn.n = n_n core.whn
 
 arnwhn.a = n_a core.whn
 
-core.arnwhn = (da,ta) -> arnwhn[ta[0]] da,ta[1]
+core.arnwhn = (da,ta,cette) -> arnwhn[ta[0]] da,ta[1],cette
 
 # -----
 
-core.cap = (da,ta) ->
+core.cap = (da,ta,cette) ->
 
   switch ta.length
-  | 3 => core.cap.3 da,ta
-  | 2 => core.cap.2 da,ta
-  | 1 => resolve ta[0],da.arg
+  | 3 => core.cap.3 da,ta,cette
+  | 2 => core.cap.2 da,ta,cette
+  | 1 => resolve ta[0],da.arg,cette
 
-core.cap.2 = (da,ta) ->
+core.cap.2 = (da,ta,cette) ->
 
   [exec,[vtype,vF]] = ta
 
@@ -249,19 +231,19 @@ core.cap.2 = (da,ta) ->
 
   | \f =>
 
-    ret = vF.apply void,da.arg
+    ret = vF.apply cette,da.arg
 
     if ret isnt false
 
-      return unshift_resolve exec,ret,da.arg
+      return unshift_resolve exec,ret,da.arg,cette
 
   | \v => # .types validator
 
-    vd = vF.auth da.arg
+    vd = vF.auth.apply cette,da.arg
 
     if vd.continue
 
-      return unshift_resolve exec,vd.value,da.arg
+      return unshift_resolve exec,vd.value,da.arg,cette
 
     else
 
@@ -269,7 +251,7 @@ core.cap.2 = (da,ta) ->
 
       narg = [as_obj,...da.arg]
 
-      ret = lastview.apply void,narg
+      ret = lastview.apply cette,narg
 
       if (ret isnt void) then return ret
 
@@ -277,18 +259,18 @@ core.cap.2 = (da,ta) ->
 
     if vF
 
-      return resolve exec,da.arg
+      return resolve exec,da.arg,cette
 
   UNDEC
 
-core.cap.3 = (da,ta) ->
+core.cap.3 = (da,ta,cette) ->
 
   [exec,[vtype,vF],lastview] = ta
 
   switch vtype
   | \f =>
 
-    ret = vF.apply void,da.arg
+    ret = vF.apply cette,da.arg
 
     if isArray ret
 
@@ -296,33 +278,33 @@ core.cap.3 = (da,ta) ->
 
       if cont
 
-        return unshift_resolve exec,msg,da.arg
+        return unshift_resolve exec,msg,da.arg,cette
 
       else
 
         narg = [msg,...da.arg]
 
-        lvret = lastview.apply void,narg
+        lvret = lastview.apply cette,narg
 
     else
 
       if ret
 
-        return resolve exec,da.arg
+        return resolve exec,da.arg,cette
 
       else
 
-        lvret = lastview.apply void,da.arg
+        lvret = lastview.apply cette,da.arg
 
     if (lvret isnt void) then return lvret
 
   | \v => # .types validator
 
-    vd = vF.auth da.arg
+    vd = vF.auth.apply cette,da.arg
 
     if vd.continue
 
-      return unshift_resolve exec,vd.value,da.arg
+      return unshift_resolve exec,vd.value,da.arg,cette
 
     else
 
@@ -330,7 +312,7 @@ core.cap.3 = (da,ta) ->
 
       narg = [as_obj,...da.arg]
 
-      ret = lastview.apply void,narg
+      ret = lastview.apply cette,narg
 
       if (ret isnt void) then return ret
 
@@ -338,11 +320,11 @@ core.cap.3 = (da,ta) ->
 
     if vF
 
-      return resolve exec,da.arg
+      return resolve exec,da.arg,cette
 
     else
 
-      ret = lastview.apply void,da.arg
+      ret = lastview.apply cette,da.arg
 
       if (ret isnt void) then return ret
 
@@ -357,7 +339,7 @@ arcap.n = n core.cap
 
 arcap.a = a core.cap
 
-core.arcap = (da,ta) -> arcap[ta[0]] da,ta[1]
+core.arcap = (da,ta,cette) -> arcap[ta[0]] da,ta[1],cette
 
 isArray = Array.isArray
 
@@ -371,45 +353,46 @@ arwh.n = n core.wh
 
 arwh.a = a core.wh
 
-core.arwh = (da,ta) ->
+core.arwh = (da,ta,cette) ->
 
-  arwh[ta[0]] da,ta[1]
+  arwh[ta[0]] da,ta[1],cette
 
 # .ar  ------------
 
 ar = {}
 
-ar.ob = (da,ta) ->
+ar.ob = (da,ta,cette) ->
 
   pick = ta[da.arglen]
 
   if not pick then return UNDEC
 
-  resolve pick,da.arg
+  resolve pick,da.arg,cette
 
-ar.n = (da,ta) ->
+ar.n = (da,ta,cette) ->
 
   [num,exec] = ta
 
   if num is da.arglen
 
-    return resolve exec,da.arg
+    return resolve exec,da.arg,cette
 
   return UNDEC
 
-ar.a = (da,ta) ->
+ar.a = (da,ta,cette) ->
 
   [spans,exec] = ta
 
   if spans[da.arglen]
 
-    return resolve exec,da.arg
+    return resolve exec,da.arg,cette
 
   return UNDEC
 
-core.ar = (da,ta) ->
+core.ar = (da,ta,cette) ->
 
-  ar[ta[0]] da,ta[1]
+  ar[ta[0]] da,ta[1],cette
+
 
 tightloop = (state) -> ->
 
@@ -433,6 +416,14 @@ tightloop = (state) -> ->
 
     arglen    = arguments.length
 
+  if (@ is global)
+
+    cette = void
+
+  else
+
+    cette = @
+
   I         = 0
 
   fns       = state.fns
@@ -445,7 +436,7 @@ tightloop = (state) -> ->
 
     elemento = fns[I]
 
-    devolver = core[elemento[0]] da,elemento[1]
+    devolver = core[elemento[0]] da,elemento[1],cette
 
     if (devolver != UNDEC) then return devolver
 
@@ -455,7 +446,7 @@ tightloop = (state) -> ->
 
   def = state.def
 
-  if def then return resolve def,arguments
+  if def then return resolve def,arguments,cette
 
 #---------------------------------------------------
 
@@ -667,8 +658,7 @@ init =
   unary    :false
   debug    :false
 
-
-entry = (data,args) ->
+entry = (data,args,what) ->
 
   if data is null then return loopError!
 
@@ -677,12 +667,13 @@ entry = (data,args) ->
   has = topcache[str]
 
   if has
+
     return has[data.key] ...args
 
   {path,lock,key} = data
 
   ob = {} # {unary:true},{unary:true,immutable:true}
-# 
+
   for ke in path
     ob[ke] = true
 
@@ -693,7 +684,6 @@ entry = (data,args) ->
   topcache[str] = put
 
   put[key] ...args
-
 
 proto_log = (state)->
 
@@ -725,7 +715,9 @@ proto =
 
       prop.prototype = Object.create origin.prototype
 
+
 link.proto = guard.ar(proto).def(proto.def)
+
 
 proto_fn =
 

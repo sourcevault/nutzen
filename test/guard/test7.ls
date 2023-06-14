@@ -20,26 +20,29 @@ pf = print_fail "test/#{proj}/#{name}.js"
 
 #-------------------------------------------------------------------------------
 
+
+
+
 # xop = guard.unary.debug.immutable
 
 #   -> z 'hello world'
 #   -> z 'done'
 
-F = -> false
-T = -> true
+# F = -> false
+# T = -> true
 
-binto = {}
+# binto = {}
 
-binto.1  = -> z 'binto_1'
-binto.2  = -> z 'binto_2'
+# binto.1  = -> z 'binto_1'
+# binto.2  = -> z 'binto_2'
 
 
-ob =
-  1:
-   *F
-    binto.1
-   *T
-    binto.2
+# ob =
+#   1:
+#    *F
+#     binto.1
+#    *T
+#     binto.2
 
 # G = xop.arcap do
 #   1

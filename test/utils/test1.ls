@@ -30,7 +30,6 @@ F6 = ([key,x],args) ->
   | otherwise  =>
       fail 6
 
-
 try
 
   compute = lopo [null]
@@ -47,5 +46,3 @@ try
 catch E
   l E
   fail 6
-
-
