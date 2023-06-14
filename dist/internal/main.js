@@ -1,4 +1,4 @@
-var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, version, util, util_inspect_custom, uic, noop, jspc_def, jspc, z, get_all_protos, loopfault, ansi_wrap, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, tupnest_recurse, tupnest, generic_log, veri_err_str, veri, ap, isA, get, pub, com, y$, symbols, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
+var vendor, l, flat, advanced_pad, deep_freeze, alpha_sort, R, esp, _jspc, version, util, util_inspect_custom, uic, noop, jspc_def, jspc, z, get_all_protos, loopError, ansi_wrap, x$, cc, c, aj, name, func, lit, rm_paths, create_stack, print_fail, wait, tupnest_recurse, tupnest, generic_log, veri_err_str, veri, ap, isA, get, pub, com, y$, symbols, slice$ = [].slice, arrayFrom$ = Array.from || function(x){return slice$.call(x);};
 vendor = require('./vendor');
 l = console.log;
 flat = vendor.flat;
@@ -8,7 +8,7 @@ alpha_sort = vendor.alpha_sort;
 R = require('ramda');
 esp = require('error-stack-parser');
 _jspc = vendor.stringify;
-version = '2.0.3';
+version = '2.0.5';
 if (typeof window === "undefined" && typeof module === "object") {
   util = require('util');
   util_inspect_custom = util.inspect.custom;
@@ -79,22 +79,22 @@ z.pa = function(obj){
   }
   return l(disp);
 };
-loopfault = function(){
-  var loopError, apply, get;
-  loopError = function(){};
+loopError = function(){
+  var noop, apply, get;
+  noop = function(){};
   apply = function(){
-    return new Proxy(loopError, {
+    return new Proxy(noop, {
       apply: apply,
       get: get
     });
   };
   get = function(){
-    return new Proxy(loopError, {
+    return new Proxy(noop, {
       apply: apply,
       get: get
     });
   };
-  return new Proxy(loopError, {
+  return new Proxy(noop, {
     apply: apply,
     get: get
   });
@@ -400,7 +400,7 @@ com = {
   binapi: pub,
   tupnest: Object.freeze(tupnest),
   pad: Object.freeze(advanced_pad),
-  loopError: loopfault,
+  loopError: loopError,
   print_fail: print_fail,
   alpha_sort: alpha_sort,
   uic: util_inspect_custom,
