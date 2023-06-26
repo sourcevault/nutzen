@@ -8,13 +8,17 @@ xop = pkg.guard
 
 be = pkg.types
 
-V = be.arr
+# V = be.arr
 
 # V.map -> true
 
+V = be.num
 
+.cont -> \n
 
+.alt be.objerr
 
+.wrap
 
-
+V 1,2
 

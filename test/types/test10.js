@@ -4,4 +4,7 @@ internal = pkg.internal, types = pkg.types;
 z = internal.z, l = internal.l, R = internal.R, j = internal.j, print_fail = internal.print_fail;
 xop = pkg.guard;
 be = pkg.types;
-V = be.arr;
+V = be.num.cont(function(){
+  return 'n';
+}).alt(be.objerr).wrap;
+V(1, 2);

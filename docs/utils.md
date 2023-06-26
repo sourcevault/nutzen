@@ -7,6 +7,11 @@
 - `z` - `console.log`
   - `z.n` - adds new line before and after `console.log`
   - `z.j` - `console.log(j(...))`
+  - `z.p` - display protos.
+  - `z.d` - 
+  - `z.pa` - display all protos.
+
+
 - `noop` - `noop` function
 - `c` - 8 bit color palette
 - `alpha_sort` - [alpha-sort](https://github.com/sindresorhus/alpha-sort)

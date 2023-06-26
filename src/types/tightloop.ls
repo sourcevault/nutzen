@@ -6,6 +6,8 @@ pkg = require \./print.common
 
 {l,z,R,j,flat,pad,alpha_sort,esp,c,lit,create_stack} = com
 
+{jspc} = com
+
 # -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
 sanatize = (x,UFO) ->
@@ -222,6 +224,7 @@ apply.normal.top = (F,val,args) ->
     A.unshift val
 
     F ...A
+
 
 apply.auth.top = (F,val,args) ->
 
@@ -885,4 +888,3 @@ tightloop = (x) !->
 
 
 module.exports = tightloop
-

@@ -146,6 +146,8 @@ for [name,type] in props
 
 #------------------------------
 
+
+
 for [name] in non_map_props
 
   be.maybe[name] = be.maybe be[name]

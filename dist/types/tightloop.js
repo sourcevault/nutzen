@@ -1,7 +1,8 @@
-var pkg, com, pkgname, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, sanatize, x$, apply, y$, z$, red, exec_key, lopy, functor_EMsg, map, forEach, upon, green, split_on_value_list, split_on, i$, len$, I, self_amorty, tightloop;
+var pkg, com, pkgname, print, l, z, R, j, flat, pad, alpha_sort, esp, c, lit, create_stack, jspc, sanatize, x$, apply, y$, z$, red, exec_key, lopy, functor_EMsg, map, forEach, upon, green, split_on_value_list, split_on, i$, len$, I, self_amorty, tightloop;
 pkg = require('./print.common');
 com = pkg.com, pkgname = pkg.pkgname, print = pkg.print;
 l = com.l, z = com.z, R = com.R, j = com.j, flat = com.flat, pad = com.pad, alpha_sort = com.alpha_sort, esp = com.esp, c = com.c, lit = com.lit, create_stack = com.create_stack;
+jspc = com.jspc;
 sanatize = function(x, UFO){
   var unknown, path, von, priority, msg;
   switch (R.type(UFO)) {

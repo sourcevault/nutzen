@@ -68,7 +68,9 @@ cato = (arg) ->
 # -------------------------------------------------------
 
 assign_self = -> (self) ->
+
   @self = self
+
   @
 
 wrap      = {}
@@ -100,6 +102,7 @@ proto       = {}
   ..functor = assign_self!
 
   ..core =  assign_self!
+
   ..try = {}
     ..functor = assign_self!
     ..normal = assign_self!
@@ -117,11 +120,22 @@ user_wrap = ->
 
   F = @
 
-  -> (F.auth.apply F,arguments).value
+  ->
+
+    (F.auth.apply F,arguments).value
 
 p_core = proto.core.prototype
 
 p_core[symbols.htypes] = true
+
+
+p_core.apply = (cette) ->
+
+  A = Array.prototype.slice.call arguments
+
+  A.shift!
+
+  @auth.apply @,A
 
 p_core.auth = tightloop
 
@@ -137,7 +151,7 @@ wrap.core = (type) -> -> guard.core arguments,@self,type
 
 wrap.functor = (type) -> -> define.functor arguments,@self,type
 
-wrap.misc = (type) -> -> define.rest arguments,@self,type 
+wrap.misc = (type) -> -> define.rest arguments,@self,type
 
 main = {}
 

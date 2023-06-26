@@ -88,6 +88,12 @@ user_wrap = function(){
 };
 p_core = proto.core.prototype;
 p_core[symbols.htypes] = true;
+p_core.apply = function(cette){
+  var A;
+  A = Array.prototype.slice.call(arguments);
+  A.shift();
+  return this.auth.apply(this, A);
+};
 p_core.auth = tightloop;
 Object.defineProperty(p_core, 'wrap', {
   get: user_wrap,
